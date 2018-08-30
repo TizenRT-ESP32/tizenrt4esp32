@@ -1,0 +1,46 @@
+#
+# For a description of the syntax of this configuration file,
+# see kconfig-language at https://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+#
+
+config NETUTILS_NTPCLIENT
+	bool "NTP client"
+	default n
+	depends on NET_LWIP_NETDB
+	---help---
+		Enable support for the minimal NTP client.
+
+if NETUTILS_NTPCLIENT
+
+config NETUTILS_NTPCLIENT_STACKSIZE
+	int "NTP client daemon stack stack size"
+	default 2048
+
+config NETUTILS_NTPCLIENT_SERVERPRIO
+	int "NTP client daemon priority"
+	default 100
+
+config NETUTILS_NTPCLIENT_SIGWAKEUP
+	int "NTP client wakeup signal number"
+	default 18
+	depends on !DISABLE_SIGNALS
+
+config NETUTILS_NTPCLIENT_DEFAULT_SERVER
+	string "NTP client default server"
+	default "time.google.com"
+
+config NETUTILS_NTPCLIENT_DEFAULT_SERVER_PORT
+	int "NTP client default server port"
+	default 123
+
+config NETUTILS_NTPCLIENT_DEFAULT_INTERVAL_SECONDS
+	int "NTP client default interval seconds"
+	default 60
+
+config NETUTILS_NTPCLIENT_DEBUG
+	bool "NTP client debug message option"
+	default n
+	---help---
+		Enable NTP client debug message
+
+endif # NETUTILS_NTPCLIENT

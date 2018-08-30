@@ -1,0 +1,48 @@
+#
+# For a description of the syntax of this configuration file,
+# see kconfig-language at https://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+#
+
+config NETUTILS_WEBCLIENT
+	bool "Webclient"
+	default n
+	depends on NET
+	depends on NETUTILS_WEBSERVER
+	---help---
+		Enables the webclient.
+		This webclient supports to send request by sync/async mode.
+		Sync mode is excuted on same task with caller.
+		Async mode is excuted on new task.
+
+if NETUTILS_WEBCLIENT
+	config WEBCLIENT_MAXHTTPLINE
+	int "Maximum Httpline Size"
+	default 200
+	---help---
+		Sets Buffer HTTP header data and parse line at a time.
+
+	config WEBCLIENT_MAXMIMESIZE
+	int "Maximum MimeType Size"
+	default 32
+	---help---
+		Sets Maximum Mimetype Size.
+
+	config WEBCLIENT_MAXHOSTNAME
+	int "Maximum Hostname Size"
+	default 128
+	---help---
+		Sets Maximum Hostname Size.
+
+	config WEBCLIENT_MAXFILENAME
+	int "Maximum Filename Size"
+	default 128
+	---help---
+		Sets Maximum Filename Size.
+
+	config WGET_USERAGENT
+	string "User Agent"
+	default "TinyARA"
+	---help---
+		Sets user agent. It apply to request message.
+
+endif

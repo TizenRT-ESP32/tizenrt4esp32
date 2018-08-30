@@ -1,0 +1,68 @@
+#
+# For a description of the syntax of this configuration file,
+# see kconfig-language at https://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+#
+
+config ST_THINGS
+	bool "SmartThings Things Management"
+	default n
+	select ENABLE_IOTIVITY
+	select ENABLE_IOTIVITY_SECURED
+	select ENABLE_IOTIVITY_CLOUD
+	select NETUTILS_WIFI
+	select WIFI_MANAGER
+	select WPA_SUPPLICANT
+	select SCSC_WLAN
+	select NETUTILS_JSON
+	select NETUTILS_NTPCLIENT
+	depends on FS_ROMFS
+	---help---
+		SmartThings Things Management for applications to use and control devices
+
+if ST_THINGS
+
+comment "ST_Things Config Parameters"
+
+config ST_THINGS_ARTIK_HW_CERT_KEY
+	bool "Enable Artik H/W Certificate & Key"
+	depends on ARCH_BOARD_ARTIK05X_FAMILY
+	select TLS_WITH_SSS
+	select SUPPORT_FULL_SECURITY
+	select HW_RNG
+	select HW_DH_PARAM
+	select HW_ECDH_PARAM
+	select HW_RSA_VERIFICATION
+	select HW_ECDSA_VERIFICATION
+	select HW_RSA_ENC
+	default n
+	---help---
+		Build ST Things for STG Server
+
+config ST_THINGS_SECURESTORAGE
+	bool "Enable Secure Storage"
+	depends on ARCH_BOARD_ARTIK05X_FAMILY
+	select TLS_WITH_SSS
+	select SUPPORT_FULL_SECURITY
+	select HW_RNG
+	select HW_DH_PARAM
+	select HW_ECDH_PARAM
+	select HW_RSA_VERIFICATION
+	select HW_ECDSA_VERIFICATION
+	select HW_RSA_ENC
+	default n
+	---help---
+		Build ST Things for Secure Storage
+
+config ST_THINGS_STG_MODE
+	bool "Enable ST Things STG Mode"
+	default n
+	---help---
+		Build ST Things for STG Server
+
+config ST_THINGS_FOTA
+	bool "Enable ST Things FOTA Service"
+	depends on SYSTEM_FOTA_HAL
+	default n
+	---help---
+		Enable a FOTA service for ST Things
+endif # ST_THINGS

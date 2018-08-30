@@ -1,0 +1,147 @@
+#
+# For a description of the syntax of this configuration file,
+# see kconfig-language at https://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+#
+
+config ARCH_HAVE_NET
+	bool
+	default n
+
+config ARCH_HAVE_PHY
+	bool
+	default n
+
+config NET
+	bool "Networking support"
+	default n
+	select ARCH_HAVE_NET
+	---help---
+		Enable or disable all system network features
+
+if NET
+
+choice
+	prompt "Networking stack"
+	default NET_LWIP
+
+config	NET_LWIP
+	bool "LwIP"
+
+endchoice
+
+if NET_LWIP
+source net/lwip/configs/Kconfig
+endif #NET_LWIP
+
+
+
+menu "Driver buffer configuration"
+
+config NET_MULTIBUFFER
+	bool "Use multiple device-side I/O buffers"
+	default n
+	---help---
+		If this configuration is selected, then the
+		driver can manage multiple I/O buffers and can, for example,
+		be filling one input buffer while sending another output buffer.
+		Or, as another example, the driver may support queuing of concurrent
+		input/ouput and output transfers for better performance.
+
+config NET_ETH_MTU
+	int "Ethernet packet buffer size (MTU)"
+	default 1294 if NET_IPv6
+	default 590 if !NET_IPv6
+	depends on NET_ETHERNET
+	range 590 1518
+	---help---
+		Packet buffer size.  This size includes the TCP/UDP payload plus the
+		size of TCP/UDP header, the IP header, and the Ethernet header.
+		This value is normally referred to as the MTU (Maximum Transmission
+		Unit); the payload is the MSS (Maximum Segment Size).
+
+		IPv4 hosts are required to be able to handle an MSS of at least
+		536 octets, resulting in a minimum buffer size of 536+20+20+14 =
+		590.
+
+		IPv6 hosts are required to be able to handle an MSS of 1220 octets,
+		resulting in a minimum buffer size of of 1220+20+40+14 = 1294
+
+config NET_GUARDSIZE
+	int #"Driver I/O guard size"
+	default 2
+	---help---
+		Network drivers often receive packets with garbage at the end and
+		are longer than the size of packet in the TCP header.  The following
+		"fudge" factor increases the size of the I/O buffering by a small
+		amount to allocate slightly oversize packets.  After receipt, the
+		packet size will be chopped down to the size indicated in the TCP
+		header.
+
+endmenu # Driver buffer configuration
+
+menu "Data link support"
+
+config NET_MULTILINK
+	bool
+	default n
+
+config NET_ETHERNET
+	bool "Ethernet support"
+	default y if !NET_SLIP
+	default n if NET_SLIP
+	select NETDEV_MULTINIC if NET_SLIP
+	select NET_MULTILINK if NET_SLIP
+	---help---
+		If NET_SLIP is not selected, then Ethernet will be used (there is
+		no need to define anything special in the configuration file to use
+		Ethernet -- it is the default).
+
+endmenu # Data link support
+
+source net/netdev/Kconfig
+
+menu "Protocols"
+
+source "$EXTERNALDIR/dhcpd/Kconfig.protocol"
+source "$EXTERNALDIR/xmlrpc/Kconfig.protocol"
+source "$EXTERNALDIR/ntpclient/Kconfig.protocol"
+source "$EXTERNALDIR/webserver/Kconfig.protocol"
+source "$EXTERNALDIR/ftpc/Kconfig.protocol"
+source "$EXTERNALDIR/mdns/Kconfig.protocol"
+source "$EXTERNALDIR/webclient/Kconfig.protocol"
+source "$EXTERNALDIR/ftpd/Kconfig.protocol"
+source "$EXTERNALDIR/dhcpc/Kconfig.protocol"
+source "$EXTERNALDIR/websocket/Kconfig.protocol"
+source "$EXTERNALDIR/libcoap/Kconfig.protocol"
+source "$EXTERNALDIR/tftpc/Kconfig.protocol"
+source "$EXTERNALDIR/telnetd/Kconfig.protocol"
+source "$EXTERNALDIR/smtp/Kconfig.protocol"
+source "$EXTERNALDIR/grpc/Kconfig.protocol"
+
+source "../framework/src/network/mqtt/Kconfig.protocol"
+
+config NET_SECURITY_TLS
+	bool "TLS Support"
+	default n
+	depends on NET_LWIP_NETDB
+
+if NET_SECURITY_TLS
+source "$EXTERNALDIR/mbedtls/Kconfig.protocol"
+endif #NET_SECURITY_TLS
+
+endmenu #Protocols
+
+menu "Wireless"
+
+source ../framework/src/wifi_manager/Kconfig
+
+endmenu #Wireless
+
+menu "Network utilities"
+
+source "$EXTERNALDIR/netutils/Kconfig.netutil"
+
+endmenu #menu "Network utilities"
+
+endif # NET
+

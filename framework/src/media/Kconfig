@@ -1,0 +1,106 @@
+#
+# For a description of the syntax of this configuration file,
+# see kconfig-language at https://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+#
+
+config MEDIA
+	bool "Media Support"
+	default n
+	depends on AUDIO
+	select HAVE_CXX
+	select HAVE_CXXINITIALIZE
+	---help---
+		Enables overall support for Media library.
+
+if MEDIA
+
+config MEDIA_PLAYER
+	bool "Support Media player"
+	default n
+	---help---
+		Enable media player functions
+
+if MEDIA_PLAYER
+
+config MEDIA_PLAYER_STACKSIZE
+	int "Media Player thread stack size"
+	default 4096
+	---help---
+
+config MEDIA_PLAYER_OBSERVER_STACKSIZE
+	int "Media Player Observer thread stack size"
+	default 2048
+	---help---
+
+config INPUT_DATASOURCE_STACKSIZE
+	int "InputDataSource thread stack size"
+	default 4096
+	---help---
+
+endif #MEDIA_PLAYER
+
+config MEDIA_RECORDER
+	bool "Support Media recorder"
+	default n
+	---help---
+		Enable media recoreder functions
+
+if MEDIA_RECORDER
+
+config MEDIA_RECORDER_STACKSIZE
+	int "Media Recorder thread stack size"
+	default 12288
+	---help---
+
+config MEDIA_RECORDER_OBSERVER_STACKSIZE
+	int "Media Recorder Observer thread stack size"
+	default 2048
+	---help---
+
+config OUTPUT_DATASOURCE_STACKSIZE
+	int "OutputDataSource thread stack size"
+	default 4096
+	---help---
+
+endif #MEDIA_RECORDER
+
+config AUDIO_RESAMPLER_BUFSIZE
+	int "Audio Resampler Buffer size"
+	default 4096
+	depends on AUDIO
+	---help---
+		Buffer size for resampler
+
+config FILE_DATASOURCE_STREAM_BUFFER_SIZE
+	int "File DataSource stream buffer size"
+	default 4096
+	---help---
+
+config FILE_DATASOURCE_STREAM_BUFFER_THRESHOLD
+	int "File DataSource stream buffer threshold"
+	default 2048
+
+config BUFFER_DATASOURCE_STREAM_BUFFER_SIZE
+	int "Buffer DataSource stream buffer size"
+	default 4096
+	---help---
+
+config BUFFER_DATASOURCE_STREAM_BUFFER_THRESHOLD
+	int "Buffer DataSource stream buffer threshold"
+	default 1
+
+endif #MEDIA
+
+config AUDIO_CODEC
+	bool "Software Audio Codec Support"
+	default n
+	depends on AUDIO
+	---help---
+		Enable software audio codec functions
+
+config AUDIO_CODEC_RINGBUFFER_SIZE
+	int "Audio Decoder Ringbuffer Size"
+	default 16384
+	depends on AUDIO_CODEC
+	---help---
+		Ring buffer size that used for decoding MP3/AAC
