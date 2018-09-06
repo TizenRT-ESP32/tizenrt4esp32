@@ -380,7 +380,11 @@ void esp32_gpioirqenable(int irq, gpio_intrtype_t intrtype)
    *   Bit 5: SDIO's extent interrupt enable.
    */
 
+#ifdef CONFIG_SMP
   cpu = up_cpu_index();
+#else
+	cpu = 0;
+#endif
   if (cpu == 0)
     {
       /* PRO_CPU */
