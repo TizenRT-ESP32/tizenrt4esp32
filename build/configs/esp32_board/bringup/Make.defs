@@ -105,7 +105,7 @@ LDNXFLATFLAGS = -e main -s 2048
 ASMEXT = .S
 OBJEXT = .o
 LIBEXT = .a
-EXEEXT =
+EXEEXT = .elf
 
 LDFLAGS += -nostartfiles -nodefaultlibs
 ifeq ($(CONFIG_DEBUG_SYMBOLS),y)
@@ -118,3 +118,7 @@ HOSTINCLUDES = -I.
 HOSTCFLAGS = -Wall -Wstrict-prototypes -Wshadow -Wundef -g -pipe
 HOSTLDFLAGS =
 
+define DOWNLOAD
+	@echo "$(1)"
+	make -C ../build/tools/esp32 $(1)
+endef
