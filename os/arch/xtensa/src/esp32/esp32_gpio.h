@@ -58,6 +58,10 @@
 #define PULLUP              (1 << 3)
 #define PULLDOWN            (1 << 4)
 #define OPEN_DRAIN          (1 << 5)
+#define PUPD_SHIFT           3
+#define PUPD_MASK            (7 << PUPD_SHIFT)
+
+
 #define FUNCTION_SHIFT      6
 #define FUNCTION_MASK       (7 << FUNCTION_SHIFT)
 #  define FUNCTION_0        (0 << FUNCTION_SHIFT)
@@ -203,6 +207,8 @@ int digitalRead(uint8_t pin);
 
 void attachInterrupt(uint8_t pin, void (*)(void), int mode);
 void detachInterrupt(uint8_t pin);
+
+struct gpio_lowerhalf_s *esp32_gpio_lowerhalf(int pinnum, uint16_t pincfg);
 
 #ifdef __cplusplus
 }

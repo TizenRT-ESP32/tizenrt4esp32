@@ -91,6 +91,11 @@ CHIP_CSRCS  = esp32_allocateheap.c esp32_clockconfig.c esp32_cpuint.c
 CHIP_CSRCS += esp32_gpio.c esp32_intdecode.c esp32_irq.c esp32_region.c
 CHIP_CSRCS += esp32_timerisr.c
 
+ifeq ($(CONFIG_GPIO),y)
+    CHIP_CSRCS += esp32_gpio_lowerhalf.c
+endif
+
+
 # Configuration-dependent ESP32 files
 
 ifeq ($(CONFIG_SMP),y)
