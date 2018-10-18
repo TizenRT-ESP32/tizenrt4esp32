@@ -95,6 +95,10 @@ ifeq ($(CONFIG_GPIO),y)
     CHIP_CSRCS += esp32_gpio_lowerhalf.c
 endif
 
+ifeq ($(CONFIG_MCPWM),y)
+    CHIP_CSRCS += esp32_pwm.c
+endif
+
 
 # Configuration-dependent ESP32 files
 
