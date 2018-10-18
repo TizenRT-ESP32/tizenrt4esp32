@@ -99,6 +99,10 @@ ifeq ($(CONFIG_MCPWM),y)
     CHIP_CSRCS += esp32_pwm.c
 endif
 
+ifeq ($(CONFIG_LEDC),y)
+    CHIP_CSRCS += esp32_ledc.c
+endif
+
 
 # Configuration-dependent ESP32 files
 
