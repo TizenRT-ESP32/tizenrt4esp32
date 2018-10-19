@@ -94,6 +94,7 @@
 #define _FOTABASE       (0x1900)	/* FOTA ioctl commands */
 #define _GPIOBASE       (0x2000)	/* GPIO ioctl commands */
 #define _TMBASE         (0x2100)	/* Task Management ioctl commands */
+#define _LEDCIOCBASE    (0x2200)    /* LED Controller commands */
 #define _TESTIOCBASE (0xfe00)	/* KERNEL TEST DRV module ioctl commands */
 
 /* boardctl() commands share the same number space */
@@ -275,6 +276,10 @@
 
 #define _PWMIOCVALID(c)   (_IOC_TYPE(c) == _PWMIOCBASE)
 #define _PWMIOC(nr)       _IOC(_PWMIOCBASE, nr)
+
+/* TinyAra LEDC ioctl definitions (see include/tinyara/ledc.h) ****************************/
+#define _LEDCIOCVALID(c)   (_IOC_TYPE(c) == _LEDCIOCBASE)
+#define _LEDCIOC(nr)       _IOC(_LEDCIOCBASE, nr)
 
 /* TinyAra USB CDC/ACM serial driver ioctl definitions ************************/
 /* (see include/tinyara/usb/cdcacm.h) */

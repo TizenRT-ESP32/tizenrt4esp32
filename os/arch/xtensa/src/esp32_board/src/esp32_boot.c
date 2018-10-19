@@ -43,8 +43,9 @@
 
 #include <tinyara/board.h>
 #include <arch/board/board.h>
-
+#include "esp32_gpio.h"
 #include "esp32-core.h"
+#include <tinyara/gpio.h>
 
 /************************************************************************************
  * Pre-processor Definitions
@@ -72,6 +73,31 @@ void esp32_board_initialize(void)
 {
 }
 
+
+static void board_gpio_initialize(void)
+{
+#ifdef CONFIG_GPIO
+    int i;
+    struct gpio_lowerhalf_s *lower;
+
+    struct {
+        uint8_t minor;
+        uint16_t pincfg;
+    } pins[] = {
+        {5,  INPUT_PULLDOWN},
+        {15, INPUT_PULLDOWN},
+        {18, INPUT_PULLDOWN},
+        {19, INPUT_PULLDOWN},
+        {21, INPUT_PULLDOWN},
+    };
+    
+    for (i = 0; i < sizeof(pins) / sizeof(*pins); i++) {
+        lower = esp32_gpio_lowerhalf(pins[i].minor, pins[i].pincfg);
+        gpio_register(pins[i].minor, lower);
+    }
+#endif
+}
+
 /****************************************************************************
  * Name: board_initialize
  *
@@ -90,6 +116,8 @@ void board_initialize(void)
 {
   /* Perform board-specific initialization */
 
-  (void)esp32_bringup();
+    (void)esp32_bringup();
+    
+    board_gpio_initialize();    
 }
 #endif
