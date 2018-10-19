@@ -152,7 +152,7 @@
 
 /* Set bits of register controlled by mask */
 
-#define SET_PERI_REG_MASK(reg, mask)   WRITE_PERI_REG((reg), (READ_PERI_REG(reg)|(mask))) */
+#define SET_PERI_REG_MASK(reg, mask)   WRITE_PERI_REG((reg), (READ_PERI_REG(reg)|(mask))) 
 
 /* Get bits of register controlled by mask */
 
