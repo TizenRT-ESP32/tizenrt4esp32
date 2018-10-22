@@ -518,6 +518,7 @@ typedef struct
 }wifi_static_queue_t;
 
 
+irqstate_t wifi_int_disable_flags;
 
 
 void IRAM_ATTR esp_dport_access_stall_other_cpu_start_wrap(void)
@@ -552,11 +553,20 @@ static void * IRAM_ATTR spin_lock_create_wrapper(void)
 
 static uint32_t IRAM_ATTR wifi_int_disable_wrapper(void *wifi_int_mux)
 {
+	if (wifi_int_mux) {
+		wifi_int_disable_flags = irqsave();
+		pthread_mutex_lock((pthread_mutex_t *)wifi_int_mux);
+	}
 	return 0;
 }
 
 static void IRAM_ATTR wifi_int_restore_wrapper(void *wifi_int_mux, uint32_t tmp)
 {
+	//tmp is useless.
+	if (wifi_int_mux) {
+		pthread_mutex_unlock((pthread_mutex_t *)wifi_int_mux);
+		irqrestore(wifi_int_disable_flags);
+	}
 	return;
 }
 
@@ -572,18 +582,15 @@ static void * IRAM_ATTR queue_create_wrapper(uint32_t queue_len, uint32_t item_s
 	bool flag = false;
 	uint32_t mq_id = 0;
 
-	for(int i=0;i<MAX_QUEUE_INFO;i++)
-	{
-		if(!queues_info[i].valid)
-		{
+	for(int i=0;i<MAX_QUEUE_INFO;i++) {
+		if (!queues_info[i].valid) {
 			flag = true;
 			mq_id = i;
 			break;
 		}
 	}
 
-	if(!flag)
-	{
+	if (!flag) {
 		printf("queue_create_wrapper create failed!\n");
 		return NULL;
 	}
@@ -604,22 +611,20 @@ static void * IRAM_ATTR queue_create_wrapper(uint32_t queue_len, uint32_t item_s
 
 	queues_info[mq_id].valid = true;
 	queues_info[mq_id].mq_item_size = item_size;
-
 	return &queues_info[mq_id];
 }
 
 static void IRAM_ATTR  queue_delete_wrapper(void *queue)
 {
 	queue_info_t *queue_info = NULL;
-	if(queue)
-	{
+	if (queue) {
 		queue_info = (queue_info_t *)queue;
+		if(queue_info->mqd_fd) {
+			mq_close(queue_info->mqd_fd);
+		}
+		queue_info->mq_item_size = 0;
+		queue_info->valid = false;
 	}
-
-	mq_close(queue_info->mqd_fd);
-	queue_info->mq_item_size = 0;
-	queue_info->valid = false;
-
 	return;
 }
 
@@ -628,37 +633,32 @@ static int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t bl
 {
 	int32_t ret;
 	queue_info_t *queue_info = NULL;
-	if(queue)
-	{
+	if (queue) {
 		queue_info = (queue_info_t *)queue;
+		if(queue_info->mqd_fd) {
+			ret = mq_send(queue_info->mqd_fd,(char *)item,queue_info->mq_item_size,NORMAL);
+			if(ret){
+				return pdFAIL;
+			}
+			return pdPASS;
+		}
 	}
-
-	ret = mq_send(queue_info->mqd_fd,(char *)item,queue_info->mq_item_size,NORMAL);
-	if(ret)
-	{
-		return pdFAIL;
-	}
-
-	return pdPASS;
+	return pdFAIL;
 }
 
 static int32_t IRAM_ATTR queue_send_from_isr_wrapper(void *queue, void *item, void *hptw)
 {
-	if(!queue || !item)
-	{
+	if(!queue || !item) {
 		return pdFAIL;
 	}
-
 	return queue_send_wrapper(queue,item,0);
 }
 
 static int32_t IRAM_ATTR queue_send_to_back_wrapper(void *queue, void *item, uint32_t block_time_tick)
 {
-	if(!queue || !item)
-	{
+	if(!queue || !item) {
 		return pdFAIL;
 	}
-
 	return queue_send_wrapper(queue,item,0);
 }
 
@@ -666,18 +666,17 @@ static int32_t IRAM_ATTR queue_send_to_front_wrapper(void *queue, void *item, ui
 {
 	int32_t ret;
 	queue_info_t *queue_info = NULL;
-	if(queue)
-	{
+	if(queue) {
 		queue_info = (queue_info_t *)queue;
+		if(queue_info->mqd_fd) {
+			ret = mq_send(queue_info->mqd_fd,(char *)item,queue_info->mq_item_size,HIGH);
+			if(ret) {
+				return pdFAIL;
+			}
+			return pdPASS;
+		}
 	}
-
-	ret = mq_send(queue_info->mqd_fd,(char *)item,queue_info->mq_item_size,HIGH);
-	if(ret)
-	{
-		return pdFAIL;
-	}
-
-	return pdPASS;
+	return pdFAIL;
 }
 
 static int32_t IRAM_ATTR queue_recv_wrapper(void *queue, void *item, uint32_t block_time_tick)
@@ -686,19 +685,32 @@ static int32_t IRAM_ATTR queue_recv_wrapper(void *queue, void *item, uint32_t bl
 	size_t msglen = 0;
 	int prio = 0;
 	int32_t ret;
-	if(queue)
-	{
+	if(queue) {
 		queue_info = (queue_info_t *)queue;
+		if (queue_info->mqd_fd) {
+			ret = mq_receive(queue_info->mqd_fd,(char *)item,msglen,&prio);
+			if(ret) {
+				return pdFAIL;
+			}
+			return pdPASS;
+		}
 	}
-
-	ret = mq_receive(queue_info->mqd_fd,(char *)item,msglen,&prio);
-	if(ret)
-	{
-		return pdFAIL;
-	}
-
-	return pdPASS;
+	return pdFAIL;
 }
+
+
+static uint32_t IRAM_ATTR queue_msg_waiting_wrapper(void *queue)
+{
+	queue_info_t *queue_info = NULL;
+	if (queue) {
+		queue_info = (queue_info_t *)queue;
+		if(queue_info->mqd_fd && queue_info->mqd_fd->msgq) {
+			return queue_info->mqd_fd->msgq->nmsgs;
+		}
+	}
+	return pdFAIL;
+}
+
 
 static uint32_t IRAM_ATTR event_group_wait_bits_wrapper(void *event, uint32_t bits_to_wait_for, int32_t clear_on_exit, int32_t wait_for_all_bits, uint32_t block_time_tick)
 {
@@ -868,7 +880,7 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._queue_send_to_front = queue_send_to_front_wrapper,
 	._queue_recv = queue_recv_wrapper,
 	//._queue_recv_from_isr = xQueueReceiveFromISR,
-	//._queue_msg_waiting = uxQueueMessagesWaiting,
+	._queue_msg_waiting = queue_msg_waiting_wrapper,
 	._event_group_create = xEventGroupCreate,
 	._event_group_delete = vEventGroupDelete,
 	._event_group_set_bits = xEventGroupSetBits,
