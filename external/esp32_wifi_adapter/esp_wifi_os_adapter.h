@@ -16,6 +16,8 @@
 #define ESP_WIFI_OS_ADAPTER_H_
 
 #include <stdarg.h>
+#include <tinyara/mqueue.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,6 +31,19 @@ extern "C" {
 #define OSI_QUEUE_SEND_FRONT         0
 #define OSI_QUEUE_SEND_BACK          1
 #define OSI_QUEUE_SEND_OVERWRITE     2
+
+typedef struct {
+	bool valid;
+	uint32_t mq_item_size;
+	mqd_t mqd_fd;
+}queue_info_t;
+
+
+typedef struct {
+    void *handle;
+    void *storage;
+}wifi_static_queue_t;
+
 
 typedef struct {
     int32_t _version;
@@ -101,7 +116,7 @@ typedef struct {
     int32_t (* _nvs_set_u16)(uint32_t handle, const char* key, uint16_t value);
     int32_t (* _nvs_get_u16)(uint32_t handle, const char* key, uint16_t* out_value);
     int32_t (* _nvs_open)(const char* name, uint32_t open_mode, uint32_t *out_handle);
-    void (* _nvs_close)(uint32_t handle); 
+    void (* _nvs_close)(uint32_t handle);
     int32_t (* _nvs_commit)(uint32_t handle);
     int32_t (* _nvs_set_blob)(uint32_t handle, const char* key, const void* value, size_t length);
     int32_t (* _nvs_get_blob)(uint32_t handle, const char* key, void* out_value, size_t* length);
