@@ -27,6 +27,23 @@
 
 
 
+#define MAX_QUEUE_INFO 20
+const char *mq_name = "mq_wifi";
+
+
+enum {
+	NORMAL = 0,
+	MIDDLE,
+	HIGH,
+}queue_prio_e;
+
+
+queue_info_t queues_info[MAX_QUEUE_INFO];
+irqstate_t wifi_int_disable_flags;
+
+
+
+
 /*extern functions declare*/
 extern uint32_t IRAM_ATTR esp_random(void);
 int64_t get_instant_time(void);
@@ -484,41 +501,6 @@ static inline int32_t esp_nvs_open_wrapper(const char* name, uint32_t open_mode,
 
 /*=================espwifi smart config API=========================*/
 /* Will complete next stage, not block WIFI ENABLE*/
-
-
-
-
-
-#define MAX_QUEUE_INFO 20
-const char *mq_name = "mq_wifi";
-
-typedef struct
-{
-	bool valid;
-	uint32_t mq_item_size;
-	mqd_t mqd_fd;
-}queue_info_t;
-
-
-enum {
-	NORMAL = 0,
-	MIDDLE,
-	HIGH,
-}queue_prio_e;
-
-
-queue_info_t queues_info[MAX_QUEUE_INFO];
-
-
-typedef struct
-{
-    void * handle;     /**< FreeRTOS queue handler */
-    void *storage;     /**< storage for FreeRTOS queue */
-
-}wifi_static_queue_t;
-
-
-irqstate_t wifi_int_disable_flags;
 
 
 void IRAM_ATTR esp_dport_access_stall_other_cpu_start_wrap(void)
