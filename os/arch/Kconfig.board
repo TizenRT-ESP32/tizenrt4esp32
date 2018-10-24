@@ -77,7 +77,7 @@ config ARCH_BOARD
 	default "lm3s6965-ek"        if ARCH_BOARD_LM3S6965EK
 	default "sidk_s5jt200"       if ARCH_BOARD_SIDK_S5JT200
 	default "cy4390x"            if ARCH_BOARD_CY4390x
-	default "esp32_DevKit"            if ARCH_BOARD_ESP32_DEVKIT
+	default "esp32_DevKit"       if ARCH_BOARD_ESP32_DEVKIT
 
 comment "Common Board Options"
 
