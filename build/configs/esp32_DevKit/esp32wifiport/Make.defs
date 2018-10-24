@@ -47,6 +47,13 @@ else
   LDSCRIPT2 = $(TOPDIR)/../build/configs/$(CONFIG_ARCH_BOARD)/scripts/esp32_flash.ld
 endif
 
+ifeq ($(CONFIG_LIBCXX_HAVE_LIBSUPCXX),y)
+LIBSUPXX = ${shell $(CC) $(CXXFLAGS) --print-file-name=libsupc++.a}
+EXTRA_LIBPATHS += -L "${shell dirname "$(LIBSUPXX)"}"
+EXTRA_LIBS += -lsupc++
+endif
+
+
 ifeq ($(WINTOOL),y)
   # Windows-native toolchains
   DIRLINK = $(TOPDIR)/tools/copydir.sh
