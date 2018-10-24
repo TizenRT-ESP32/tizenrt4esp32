@@ -80,7 +80,7 @@ esp_rom_spiflash_result_t esp_rom_spiflash_unlock()
 }
 
 
-#if CONFIG_SPI_FLASH_ROM_DRIVER_PATCH
+#ifdef CONFIG_SPI_FLASH_ROM_DRIVER_PATCH
 
 extern uint8_t g_rom_spiflash_dummy_len_plus[];
 
