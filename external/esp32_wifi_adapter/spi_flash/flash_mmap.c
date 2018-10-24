@@ -19,6 +19,7 @@
 
 #include <rom/spi_flash.h>
 #include <rom/cache.h>
+#include <soc/soc_memory_layout.h>
 #include <chip/esp32_soc.h>
 #include <chip/dport_access.h>
 #include "esp_ipc.h"
@@ -72,7 +73,7 @@ static uint8_t s_mmap_page_refcnt[REGIONS_COUNT * PAGES_PER_REGION] = {0};
 static uint32_t s_mmap_last_handle = 0;
 
 
-static void IRAM_ATTR spi_flash_mmap_init()
+static void IRAM_ATTR spi_flash_mmap_init(void)
 {
     if (s_mmap_page_refcnt[0] != 0) {
         return; /* mmap data already initialised */
@@ -126,7 +127,11 @@ esp_err_t IRAM_ATTR spi_flash_mmap(size_t src_addr, size_t size, spi_flash_mmap_
     int phys_page = src_addr / SPI_FLASH_MMU_PAGE_SIZE;
     int page_count = (size + SPI_FLASH_MMU_PAGE_SIZE - 1) / SPI_FLASH_MMU_PAGE_SIZE;
     // prepare a linear pages array to feed into spi_flash_mmap_pages
+#ifdef CONFIG_SPIRAM_SUPPORT
     int *pages = heap_caps_malloc(sizeof(int)*page_count, MALLOC_CAP_INTERNAL);
+#else
+    int *pages = (int*)malloc(sizeof(int)*page_count);
+#endif
     if (pages == NULL) {
         return ESP_ERR_NO_MEM;
     }
@@ -154,7 +159,11 @@ esp_err_t IRAM_ATTR spi_flash_mmap_pages(const int *pages, size_t page_count, sp
             return ESP_ERR_INVALID_ARG;
         }
     }
+#ifdef CONFIG_SPIRAM_SUPPORT
     mmap_entry_t* new_entry = (mmap_entry_t*) heap_caps_malloc(sizeof(mmap_entry_t), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);
+#else
+    mmap_entry_t* new_entry = (mmap_entry_t*) malloc(sizeof(mmap_entry_t));
+#endif
     if (new_entry == 0) {
         return ESP_ERR_NO_MEM;
     }
@@ -242,7 +251,7 @@ esp_err_t IRAM_ATTR spi_flash_mmap_pages(const int *pages, size_t page_count, sp
        entire cache.
     */
     if (!did_flush && need_flush) {
-#if CONFIG_SPIRAM_SUPPORT
+#ifdef CONFIG_SPIRAM_SUPPORT
         esp_spiram_writeback_cache();
 #endif
         Cache_Flush(0);
@@ -284,7 +293,7 @@ void IRAM_ATTR spi_flash_munmap(spi_flash_mmap_handle_t handle)
     free(it);
 }
 
-void spi_flash_mmap_dump()
+void spi_flash_mmap_dump(void)
 {
     spi_flash_mmap_init();
     mmap_entry_t* it;
@@ -368,11 +377,11 @@ static inline IRAM_ATTR bool update_written_pages(size_t start_addr, size_t leng
                tricky because mmaped memory can be used on un-pinned
                cores, or the pointer passed between CPUs.
             */
-#if CONFIG_SPIRAM_SUPPORT
+#ifdef CONFIG_SPIRAM_SUPPORT
             esp_spiram_writeback_cache();
 #endif
             Cache_Flush(0);
-#ifndef CONFIG_FREERTOS_UNICORE
+#ifdef CONFIG_SMP
             Cache_Flush(1);
 #endif
             bzero(written_pages, sizeof(written_pages));

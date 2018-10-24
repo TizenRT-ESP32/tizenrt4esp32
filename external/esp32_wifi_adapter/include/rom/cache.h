@@ -21,6 +21,11 @@
 extern "C" {
 #endif
 
+#define DPORT_STALL_OTHER_CPU_START()
+#define DPORT_STALL_OTHER_CPU_END()
+#define DPORT_INTERRUPT_DISABLE()
+#define DPORT_INTERRUPT_RESTORE()
+
 /** \defgroup uart_apis, uart configuration and communication related apis
   * @brief uart apis
   */
