@@ -32,6 +32,20 @@ config ESP32_I2C
 	---help---
 		No yet implemented
 
+config ESP32_I2C0
+	bool "I2C 0"
+	default n
+	depends on EXPERIMENTAL
+	---help---
+		No yet implemented
+
+config ESP32_I2C1
+	bool "I2C 1"
+	default n
+	depends on EXPERIMENTAL
+	---help---
+		No yet implemented
+
 config ESP32_I2S0
 	bool "I2S 0"
 	default n
@@ -309,4 +323,43 @@ endif # SERIAL_IFLOWCONTROL || SERIAL_OFLOWCONTROL
 endif # ESP32_UART2
 
 endmenu # UART configuration
+
+
+menu "I2C configuration"
+	depends on ESP32_I2C
+	
+if ESP32_I2C0
+
+config ESP32_I2C0_SCLKPIN
+	int "I2C 0 Sclk Pin"
+	default 4
+	range 0 39
+
+config ESP32_I2C0_SDAPIN
+	int "I2C0 SDA Pin"
+	default 5
+	range 0 39
+
+endif # ESP32_I2C0
+
+if ESP32_I2C1
+
+config ESP32_I2C1_SCLKPIN
+	int "I2C 1 RTS Pin"
+	default 22
+	range 0 39
+
+config ESP32_I2C1_SDAPIN
+	int "I2C 1 CTS Pin"
+	default 19
+	range 0 39
+
+endif # ESP32_I2C1
+
+
+endmenu # I2C configuration
+
+
+
+
 endif # ARCH_CHIP_ESP32
