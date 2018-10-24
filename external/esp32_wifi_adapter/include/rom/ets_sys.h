@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <tinyara/wdog.h>
 
 #include "chip/esp32_soc.h"
 
@@ -283,6 +284,7 @@ void ets_install_uart_printf(void);
   */
 typedef void ETSTimerFunc(void *timer_arg);/**< timer handler*/
 
+#if 0
 typedef struct _ETSTIMER_ {
     struct _ETSTIMER_    *timer_next;   /**< timer linker*/
     uint32_t              timer_expire; /**< abstruct time when timer expire*/
@@ -290,6 +292,11 @@ typedef struct _ETSTIMER_ {
     ETSTimerFunc         *timer_func;   /**< timer handler*/
     void                 *timer_arg;    /**< timer handler argument*/
 } ETSTimer;
+#endif
+
+typedef struct _ETSTIMER_ {
+    WDOG_ID wdog;    
+}ETSTimer;
 
 /**
   * @brief  Init ets timer, this timer range is 640 us to 429496 ms

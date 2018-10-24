@@ -21,6 +21,7 @@
 #include "esp_wifi_os_adapter.h"
 #include "nvs.h"
 #include "esp_system.h"
+#include "rom/ets_sys.h"
 #include <sched/sched.h>
 #include <semaphore/semaphore.h>
 #include "event_groups.h"
@@ -71,7 +72,7 @@ static void IRAM_ATTR semphr_delete_wrapper(void *semphr)
 {
     if(semphr == NULL)
     {
-        printf("semphr is NULL\n");
+        dbg("semphr is NULL\n");
         return;
     }
     sem_destroy(semphr);
@@ -134,7 +135,7 @@ static int32_t IRAM_ATTR semphr_take_wrapper(void *semphr, uint32_t block_time_t
     int ret;
     if(semphr == NULL)
     {
-        printf("semphr is NULL\n");
+        dbg("semphr is NULL\n");
         return pdFAIL;
     }
 
@@ -170,7 +171,7 @@ static int32_t IRAM_ATTR semphr_give_wrapper(void *semphr)
         int ret;
         if(semphr == NULL)
         {
-            printf("semphr is NULL\n");
+            dbg("semphr is NULL\n");
             return EINVAL;
         }
         ret = sem_post(semphr);
@@ -201,7 +202,7 @@ static void *IRAM_ATTR recursive_mutex_create_wrapper(void)
     pthread_mutexattr_init(&mattr);
     status = pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
     if (status != 0) {
-        printf("recursive_mutex_test: ERROR pthread_mutexattr_settype failed, status=%d\n", status);
+        dbg("recursive_mutex_test: ERROR pthread_mutexattr_settype failed, status=%d\n", status);
         return NULL;
     }
     status =  pthread_mutex_init(mutex, &mattr);
@@ -232,7 +233,7 @@ static void IRAM_ATTR mutex_delete_wrapper(void *mutex)
 {
         if(mutex == NULL)
         {
-            printf("mutex is NULL\n");
+            dbg("mutex is NULL\n");
             return;
         }
         pthread_mutex_destroy(mutex);
@@ -244,7 +245,7 @@ static int32_t IRAM_ATTR mutex_lock_wrapper(void *mutex)
 {
         if(mutex == NULL)
         {
-            printf("mutex is NULL\n");
+            dbg("mutex is NULL\n");
             return EINVAL;
         }
         int ret = pthread_mutex_lock(mutex);
@@ -258,7 +259,7 @@ static int32_t IRAM_ATTR mutex_unlock_wrapper(void *mutex)
 {
         if(mutex == NULL)
         {
-            printf("mutex is NULL\n");
+            dbg("mutex is NULL\n");
             return EINVAL;
         }
         int ret = pthread_mutex_unlock(mutex);
@@ -366,62 +367,59 @@ void ets_timer_deinit(void)
 
 static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat)
 {
-    if(timer == NULL)
-    {
-        printf("timer is NULL\n");
+    ETSTimer *etimer = (ETSTimer*)timer;
+    if(etimer == NULL || etimer->wdog == NULL) {   
+        dbg("timer is NULL\n");
         return;
-    }
-
-    WDOG_ID wdog =(WDOG_ID)timer;
+    }   
     int delay = MSEC2TICK(tmout);
-    wd_start(wdog, delay, NULL, 0, NULL);
+    wd_start(etimer->wdog, delay, NULL, 0, NULL);
+
 }
 
 static void IRAM_ATTR timer_disarm_wrapper(void *timer)
 {
-    if(timer == NULL)
-    {
-        printf("timer is NULL\n");
+    ETSTimer *etimer = (ETSTimer*)timer;
+    if(etimer == NULL || etimer->wdog == NULL) {   
+        dbg("timer is NULL\n");
         return;
-    }
-    WDOG_ID wdog =(WDOG_ID)timer;
-    wd_cancel(wdog);
-
+    }   
+    wd_cancel(etimer->wdog); 
 }
 
 static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 {
-    if(ptimer == NULL)
-    {
-        printf("timer is NULL\n");
+    ETSTimer *etimer = (ETSTimer*)ptimer;
+    if(etimer == NULL || etimer->wdog == NULL) {   
+        dbg("timer is NULL\n");
         return;
-    }
-    WDOG_ID wdog =(WDOG_ID)ptimer;
-    wd_delete(wdog);
+    }   
+    wd_delete(etimer->wdog); 
 }
 
 static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *parg)
 {
-    if(ptimer == NULL)
-    {
-        printf("timer is NULL\n");
+    ETSTimer *etimer = (ETSTimer*)ptimer;
+    if(etimer == NULL){
+        dbg("timer is NULL\n");
         return;
     }
-    WDOG_ID wdog =(WDOG_ID)ptimer;
-    wd_start(wdog, 0, pfunction, 1, parg);
+    etimer->wdog = wd_create();
+    if (!etimer->wdog) {
+            return;
+    }
+    wd_start(etimer->wdog, 0, pfunction, 1, parg); 
 }
 
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
 {
-    if(ptimer == NULL)
-    {
-        printf("timer is NULL\n");
+    ETSTimer *etimer = (ETSTimer*)ptimer;
+    if(etimer == NULL) {
+        dbg("timer is NULL\n");
         return;
     }
-
-    WDOG_ID wdog =(WDOG_ID)ptimer;
     int delay = USEC2TICK(us);
-    wd_start(wdog, delay, NULL, 0, NULL);
+    wd_start(etimer->wdog, delay, NULL, 0, NULL);   
 }
 
 static inline int32_t IRAM_ATTR get_time_wrapper(void *t)
@@ -573,11 +571,11 @@ static void * IRAM_ATTR queue_create_wrapper(uint32_t queue_len, uint32_t item_s
 	}
 
 	if (!flag) {
-		printf("queue_create_wrapper create failed!\n");
+		dbg("queue_create_wrapper create failed!\n");
 		return NULL;
 	}
 
-	sprintf(name,"%s%d",mq_name,mq_id);
+	sdbg(name,"%s%d",mq_name,mq_id);
 
 	struct mq_attr attr;
 	attr.mq_maxmsg  = queue_len;
@@ -587,7 +585,7 @@ static void * IRAM_ATTR queue_create_wrapper(uint32_t queue_len, uint32_t item_s
 	/*Invalid param*/
 	queues_info[mq_id].mqd_fd = mq_open(name,O_RDWR|O_CREAT, 0666, &attr);
 	if (queues_info[mq_id].mqd_fd == (mqd_t)-1) {
-		printf("queue_create_wrapper FAIL: mq_open\n");
+		dbg("queue_create_wrapper FAIL: mq_open\n");
 		return NULL;
 	}
 
