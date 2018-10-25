@@ -41,7 +41,7 @@
 
 static const char *TAG __attribute__((unused)) = "spi_flash";
 
-#if CONFIG_SPI_FLASH_ENABLE_COUNTERS
+#ifdef CONFIG_SPI_FLASH_ENABLE_COUNTERS
 static spi_flash_counters_t s_flash_stats;
 
 #define COUNTER_START()     uint32_t ts_begin = xthal_get_ccount()
@@ -91,7 +91,7 @@ static const spi_flash_guard_funcs_t *s_flash_guard_ops;
 /* CHECK_WRITE_ADDRESS macro to fail writes which land in the
    bootloader, partition table, or running application region.
 */
-#if CONFIG_SPI_FLASH_WRITING_DANGEROUS_REGIONS_ALLOWED
+#ifdef CONFIG_SPI_FLASH_WRITING_DANGEROUS_REGIONS_ALLOWED
 #define CHECK_WRITE_ADDRESS(ADDR, SIZE)
 #else /* FAILS or ABORTS */
 #define CHECK_WRITE_ADDRESS(ADDR, SIZE) do {                            \
@@ -123,7 +123,7 @@ static __attribute__((unused)) bool is_safe_write_address(size_t addr, size_t si
 void spi_flash_init()
 {
     spi_flash_init_lock();
-#if CONFIG_SPI_FLASH_ENABLE_COUNTERS
+#ifdef CONFIG_SPI_FLASH_ENABLE_COUNTERS
     spi_flash_reset_counters();
 #endif
 }
@@ -133,45 +133,45 @@ void IRAM_ATTR spi_flash_guard_set(const spi_flash_guard_funcs_t *funcs)
     s_flash_guard_ops = funcs;
 }
 
-const spi_flash_guard_funcs_t *IRAM_ATTR spi_flash_guard_get()
+const spi_flash_guard_funcs_t *IRAM_ATTR spi_flash_guard_get(void)
 {
     return s_flash_guard_ops;
 }
 
-size_t IRAM_ATTR spi_flash_get_chip_size()
+size_t IRAM_ATTR spi_flash_get_chip_size(void)
 {
     return g_rom_flashchip.chip_size;
 }
 
-static inline void IRAM_ATTR spi_flash_guard_start()
+static inline void IRAM_ATTR spi_flash_guard_start(void)
 {
     if (s_flash_guard_ops && s_flash_guard_ops->start) {
         s_flash_guard_ops->start();
     }
 }
 
-static inline void IRAM_ATTR spi_flash_guard_end()
+static inline void IRAM_ATTR spi_flash_guard_end(void)
 {
     if (s_flash_guard_ops && s_flash_guard_ops->end) {
         s_flash_guard_ops->end();
     }
 }
 
-static inline void IRAM_ATTR spi_flash_guard_op_lock()
+static inline void IRAM_ATTR spi_flash_guard_op_lock(void)
 {
     if (s_flash_guard_ops && s_flash_guard_ops->op_lock) {
         s_flash_guard_ops->op_lock();
     }
 }
 
-static inline void IRAM_ATTR spi_flash_guard_op_unlock()
+static inline void IRAM_ATTR spi_flash_guard_op_unlock(void)
 {
     if (s_flash_guard_ops && s_flash_guard_ops->op_unlock) {
         s_flash_guard_ops->op_unlock();
     }
 }
 
-static esp_rom_spiflash_result_t IRAM_ATTR spi_flash_unlock()
+static esp_rom_spiflash_result_t IRAM_ATTR spi_flash_unlock(void)
 {
     static bool unlocked = false;
     if (!unlocked) {
@@ -645,7 +645,7 @@ static esp_err_t IRAM_ATTR spi_flash_translate_rc(esp_rom_spiflash_result_t rc)
     }
 }
 
-#if CONFIG_SPI_FLASH_ENABLE_COUNTERS
+#ifdef CONFIG_SPI_FLASH_ENABLE_COUNTERS
 
 static inline void dump_counter(spi_flash_counter_t *counter, const char *name)
 {

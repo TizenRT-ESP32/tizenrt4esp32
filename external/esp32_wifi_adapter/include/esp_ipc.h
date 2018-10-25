@@ -45,7 +45,7 @@ typedef void (*esp_ipc_func_t)(void* arg);
  * esp_ipc_call_blocking.
  */
 /** @cond */
-void esp_ipc_init();
+void esp_ipc_init(void);
 /** @endcond */
 
 /**

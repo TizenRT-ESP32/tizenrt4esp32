@@ -217,6 +217,34 @@ uint32_t IRAM_ATTR esp_log_timestamp()
     return base + clock_systimer() * (1000 / CLK_TCK);
 }
 
+#ifndef XTSTR
+#define _XTSTR(x)   # x
+#define XTSTR(x)    _XTSTR(x)
+#endif
 
+#define XCHAL_EXCM_LEVEL 3
+#define XTOS_SET_INTLEVEL(intlevel)        ({ unsigned __tmp; \
+            __asm__ __volatile__(   "rsil   %0, " XTSTR(intlevel) "\n" \
+                        : "=a" (__tmp) : : "memory" ); \
+            __tmp;})
+
+
+# define XTOS_RESTORE_INTLEVEL(restoreval)  do{ unsigned __tmp = (restoreval); \
+            __asm__ __volatile__(   "wsr    %0, " XTSTR(PS) " ; rsync\n" \
+                        : : "a" (__tmp) : "memory" ); \
+            }while(0)
+
+unsigned portENTER_CRITICAL_NESTED(void) 
+{
+    unsigned state = XTOS_SET_INTLEVEL(XCHAL_EXCM_LEVEL);
+    up_irq_disable();
+    return state;
+}
+
+void portEXIT_CRITICAL_NESTED(unsigned state) 
+{
+    up_irq_enable();
+    XTOS_RESTORE_INTLEVEL(state);
+}
 
 

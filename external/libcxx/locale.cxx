@@ -1284,7 +1284,7 @@ ctype_byname<wchar_t>::do_is(mask m, char_type c) const
     if ((m & digit) == digit) result |= (iswdigit_l(ch, __l) != 0);
     if ((m & punct) == punct) result |= (iswpunct_l(ch, __l) != 0);
     if ((m & xdigit) == xdigit) result |= (iswxdigit_l(ch, __l) != 0);
-    if ((m & blank) == blank) result |= (iswblank_l(ch, __l) != 0);
+//    if ((m & blank) == blank) result |= (iswblank_l(ch, __l) != 0);
     return result;
 #endif
 }
@@ -1325,8 +1325,8 @@ ctype_byname<wchar_t>::do_is(const char_type* low, const char_type* high, mask* 
                 *vec |= xdigit;
 #endif
 #if !defined(__sun__)
-            if (iswblank_l(ch, __l))
-                *vec |= blank;
+          //  if (iswblank_l(ch, __l))
+            //    *vec |= blank;
 #endif
         }
     }
@@ -1352,7 +1352,7 @@ ctype_byname<wchar_t>::do_scan_is(mask m, const char_type* low, const char_type*
         if ((m & digit) == digit && iswdigit_l(ch, __l)) break;
         if ((m & punct) == punct && iswpunct_l(ch, __l)) break;
         if ((m & xdigit) == xdigit && iswxdigit_l(ch, __l)) break;
-        if ((m & blank) == blank && iswblank_l(ch, __l)) break;
+//        if ((m & blank) == blank && iswblank_l(ch, __l)) break;
 #endif
     }
     return low;
@@ -1377,7 +1377,7 @@ ctype_byname<wchar_t>::do_scan_not(mask m, const char_type* low, const char_type
         if ((m & digit) == digit && iswdigit_l(ch, __l)) continue;
         if ((m & punct) == punct && iswpunct_l(ch, __l)) continue;
         if ((m & xdigit) == xdigit && iswxdigit_l(ch, __l)) continue;
-        if ((m & blank) == blank && iswblank_l(ch, __l)) continue;
+       // if ((m & blank) == blank && iswblank_l(ch, __l)) continue;
         break;
 #endif
     }

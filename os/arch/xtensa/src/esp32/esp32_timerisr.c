@@ -52,6 +52,7 @@
 #include "xtensa_timer.h"
 #include "xtensa.h"
 
+#include <tinyara/clock.h>
 /****************************************************************************
  * Private data
  ****************************************************************************/
@@ -108,6 +109,16 @@ static inline void xtensa_setcompare(uint32_t compare)
   );
 }
 
+extern uint32_t g_ticks_per_us_pro;
+int64_t get_instant_time(void)
+{
+    uint32_t compare;
+    uint32_t diff;
+    compare = xtensa_getcompare();
+    diff = xtensa_getcount() - compare; 
+    int64_t ms =  clock_systimer()* TICK2MSEC(diff) + diff / (g_ticks_per_us_pro * 1000); 
+    return ms;
+}
 /****************************************************************************
  * Function:  esp32_timerisr
  *
@@ -126,7 +137,6 @@ static inline void xtensa_setcompare(uint32_t compare)
  *   wrapped (2^32 cycles later).
  *
  ****************************************************************************/
-
 static int esp32_timerisr(int irq, uint32_t *regs, FAR void *arg)
 {
   uint32_t divisor;
