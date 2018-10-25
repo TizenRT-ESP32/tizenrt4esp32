@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <sys/lock.h>
+#include <pthread.h>
 
 #include "chip/dport_access.h"
 
@@ -45,8 +46,7 @@
 
 
 //static const char* TAG = "phy_init";
-
-static _lock_t s_phy_rf_init_lock;
+static pthread_mutex_t s_phy_rf_init_lock = PTHREAD_MUTEX_INITIALIZER;
 
 /* Bit mask of modules needing to call phy_rf_init */
 static uint32_t s_module_phy_rf_init = 0;
@@ -65,11 +65,22 @@ static uint32_t s_modem_sleep_module_register = 0;
 /* Whether modern sleep is turned on */
 static volatile bool s_is_modem_sleep_en = false;
 
-static _lock_t s_modem_sleep_lock;
+static pthread_mutex_t s_modem_sleep_lock = PTHREAD_MUTEX_INITIALIZER;
+
+uint32_t IRAM_ATTR phy_enter_critical(void)
+{
+    return portENTER_CRITICAL_NESTED();
+}
+
+void IRAM_ATTR phy_exit_critical(uint32_t level)
+{
+    portEXIT_CRITICAL_NESTED(level);
+}
 
 esp_err_t esp_phy_rf_init(const esp_phy_init_data_t* init_data, esp_phy_calibration_mode_t mode, 
                           esp_phy_calibration_data_t* calibration_data, phy_rf_module_t module)
 {
+#if 0
     /* 3 modules may call phy_init: Wi-Fi, BT, Modem Sleep */
     if (module >= PHY_MODULE_COUNT){
         ESP_LOGE(TAG, "%s, invalid module parameter(%d), should be smaller than \
@@ -77,7 +88,7 @@ esp_err_t esp_phy_rf_init(const esp_phy_init_data_t* init_data, esp_phy_calibrat
         return ESP_ERR_INVALID_ARG;
     }
 
-    _lock_acquire(&s_phy_rf_init_lock);
+    pthread_mutex_lock(&s_phy_rf_init_lock);
     uint32_t s_module_phy_rf_init_old = s_module_phy_rf_init;
     bool is_wifi_or_bt_enabled = !!(s_module_phy_rf_init_old & (BIT(PHY_BT_MODULE) | BIT(PHY_WIFI_MODULE)));
     esp_err_t status = ESP_OK;
@@ -123,14 +134,18 @@ esp_err_t esp_phy_rf_init(const esp_phy_init_data_t* init_data, esp_phy_calibrat
 #endif
             }
 
+
+
 extern esp_err_t wifi_osi_funcs_register(wifi_osi_funcs_t *osi_funcs);
             status = wifi_osi_funcs_register(&g_wifi_osi_funcs);
             if(status != ESP_OK) {
                 ESP_LOGE(TAG, "failed to register wifi os adapter, ret(%d)", status);
-                _lock_release(&s_phy_rf_init_lock);
+                pthread_mutex_unlock(&s_phy_rf_init_lock);
                 return ESP_FAIL;
             }
-            coex_bt_high_prio();
+                 coex_bt_high_prio();
+
+
         }
     }
 
@@ -144,13 +159,14 @@ extern esp_err_t wifi_osi_funcs_register(wifi_osi_funcs_t *osi_funcs);
         }
     }
 #endif
-
-    _lock_release(&s_phy_rf_init_lock);
+    pthread_mutex_unlock(&s_phy_rf_init_lock);
     return status;
+#endif
 }
 
 esp_err_t esp_phy_rf_deinit(phy_rf_module_t module)
 {
+#if 0  
     /* 3 modules may call phy_init: Wi-Fi, BT, Modem Sleep */
     if (module >= PHY_MODULE_COUNT){
         ESP_LOGE(TAG, "%s, invalid module parameter(%d), should be smaller than \
@@ -158,7 +174,7 @@ esp_err_t esp_phy_rf_deinit(phy_rf_module_t module)
         return ESP_ERR_INVALID_ARG;
     }
 
-    _lock_acquire(&s_phy_rf_init_lock);
+    pthread_mutex_lock(&s_phy_rf_init_lock);
     uint32_t s_module_phy_rf_init_old = s_module_phy_rf_init;
     uint32_t phy_bt_wifi_mask = BIT(PHY_BT_MODULE) | BIT(PHY_WIFI_MODULE);
     bool is_wifi_or_bt_enabled = !!(s_module_phy_rf_init_old & phy_bt_wifi_mask);
@@ -205,8 +221,9 @@ esp_err_t esp_phy_rf_deinit(phy_rf_module_t module)
         }
     }
 
-    _lock_release(&s_phy_rf_init_lock);
+    pthread_mutex_unlock(&s_phy_rf_init_lock);
     return status;
+#endif
 }
 
 
@@ -227,15 +244,15 @@ esp_err_t esp_modem_sleep_enter(modem_sleep_module_t module)
         return ESP_ERR_INVALID_ARG;
     }
     else {
-        _lock_acquire(&s_modem_sleep_lock);
+        pthread_mutex_lock(&s_modem_sleep_lock);
         s_modem_sleep_module_enter |= BIT(module);
 #if CONFIG_SW_COEXIST_ENABLE
-        _lock_acquire(&s_phy_rf_init_lock);
+        pthread_mutex_lock(&s_phy_rf_init_lock);
         if (((s_module_phy_rf_init & phy_bt_wifi_mask) == phy_bt_wifi_mask)  //both wifi & bt enabled
                 && (s_modem_sleep_module_enter & (MODEM_BT_MASK | MODEM_WIFI_MASK)) != 0){
             coex_pause();
         }
-        _lock_release(&s_phy_rf_init_lock);
+        pthread_mutex_unlock(&s_phy_rf_init_lock);
 #endif
         if (!s_is_modem_sleep_en && (s_modem_sleep_module_enter == s_modem_sleep_module_register)){
             esp_err_t status = esp_phy_rf_deinit(PHY_MODEM_MODULE);
@@ -243,7 +260,7 @@ esp_err_t esp_modem_sleep_enter(modem_sleep_module_t module)
                 s_is_modem_sleep_en = true;
             }
         }
-        _lock_release(&s_modem_sleep_lock);
+        pthread_mutex_unlock(&s_modem_sleep_lock);
         return ESP_OK;
     }
 }
@@ -264,7 +281,7 @@ esp_err_t esp_modem_sleep_exit(modem_sleep_module_t module)
         return ESP_ERR_INVALID_ARG;
     }
     else {
-        _lock_acquire(&s_modem_sleep_lock);
+        pthread_mutex_lock(&s_modem_sleep_lock);
         s_modem_sleep_module_enter &= ~BIT(module);
         if (s_is_modem_sleep_en){
             esp_err_t status = esp_phy_rf_init(NULL,PHY_RF_CAL_NONE,NULL, PHY_MODEM_MODULE);
@@ -273,14 +290,14 @@ esp_err_t esp_modem_sleep_exit(modem_sleep_module_t module)
             }
         }
 #if CONFIG_SW_COEXIST_ENABLE
-        _lock_acquire(&s_phy_rf_init_lock);
+        pthread_mutex_lock(&s_phy_rf_init_lock);
         if (((s_module_phy_rf_init & phy_bt_wifi_mask) == phy_bt_wifi_mask)  //both wifi & bt enabled
                 && (s_modem_sleep_module_enter & (MODEM_BT_MASK | MODEM_WIFI_MASK)) == 0){
             coex_resume();
         }
-        _lock_release(&s_phy_rf_init_lock);
+        pthread_mutex_unlock(&s_phy_rf_init_lock);
 #endif
-        _lock_release(&s_modem_sleep_lock);
+        pthread_mutex_unlock(&s_modem_sleep_lock);
         return ESP_OK;
     }
     return ESP_OK;
@@ -298,13 +315,13 @@ esp_err_t esp_modem_sleep_register(modem_sleep_module_t module)
         return ESP_OK;
     }
     else{
-        _lock_acquire(&s_modem_sleep_lock);
+        pthread_mutex_lock(&s_modem_sleep_lock);
         s_modem_sleep_module_register |= BIT(module);
         /* The module is set to enter modem sleep by default, otherwise will prevent
          * other modules from entering sleep mode if this module never call enter sleep function
          * in the future */
         s_modem_sleep_module_enter |= BIT(module);
-        _lock_release(&s_modem_sleep_lock);
+        pthread_mutex_unlock(&s_modem_sleep_lock);
         return ESP_OK;
     }
 }
@@ -321,7 +338,7 @@ esp_err_t esp_modem_sleep_deregister(modem_sleep_module_t module)
         return ESP_OK;
     }
     else{
-        _lock_acquire(&s_modem_sleep_lock);
+        pthread_mutex_lock(&s_modem_sleep_lock);
         s_modem_sleep_module_enter &= ~BIT(module);
         s_modem_sleep_module_register &= ~BIT(module);
         if (s_modem_sleep_module_register == 0){
@@ -334,7 +351,7 @@ esp_err_t esp_modem_sleep_deregister(modem_sleep_module_t module)
                esp_phy_rf_init(NULL,PHY_RF_CAL_NONE,NULL, PHY_MODEM_MODULE);
             }
         }
-        _lock_release(&s_modem_sleep_lock);
+        pthread_mutex_unlock(&s_modem_sleep_lock);
         return ESP_OK;
     }
 }
@@ -443,6 +460,7 @@ esp_err_t esp_phy_store_cal_data_to_nvs(const esp_phy_calibration_data_t* cal_da
 static esp_err_t load_cal_data_from_nvs_handle(nvs_handle handle,
         esp_phy_calibration_data_t* out_cal_data)
 {
+#if 0
     esp_err_t err;
     uint32_t cal_data_version;
     err = nvs_get_u32(handle, PHY_CAL_VERSION_KEY, &cal_data_version);
@@ -487,11 +505,13 @@ static esp_err_t load_cal_data_from_nvs_handle(nvs_handle handle,
         return ESP_ERR_INVALID_SIZE;
     }
     return ESP_OK;
+#endif
 }
 
 static esp_err_t store_cal_data_to_nvs_handle(nvs_handle handle,
         const esp_phy_calibration_data_t* cal_data)
 {
+#if 0
     esp_err_t err;
 
     err = nvs_set_blob(handle, PHY_CAL_DATA_KEY, cal_data, sizeof(*cal_data));
@@ -522,10 +542,12 @@ static esp_err_t store_cal_data_to_nvs_handle(nvs_handle handle,
     }
     
     return err;
+#endif
 }
 
 void esp_phy_load_cal_and_init(phy_rf_module_t module)
 {
+#if 0
     esp_phy_calibration_data_t* cal_data =
             (esp_phy_calibration_data_t*) calloc(sizeof(esp_phy_calibration_data_t), 1);
     if (cal_data == NULL) {
@@ -567,5 +589,6 @@ void esp_phy_load_cal_and_init(phy_rf_module_t module)
     esp_phy_release_init_data(init_data);
 
     free(cal_data); // PHY maintains a copy of calibration data, so we can free this
+#endif
 }
 

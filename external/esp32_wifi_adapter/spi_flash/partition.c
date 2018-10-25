@@ -16,7 +16,8 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
-#include <sys/lock.h>
+#include <pthread.h>
+
 #include "esp_flash_partitions.h"
 #include "esp_attr.h"
 #include "esp_flash_data_types.h"
@@ -52,20 +53,19 @@ static esp_err_t load_partitions(void);
 
 static SLIST_HEAD(partition_list_head_, partition_list_item_) s_partition_list =
         SLIST_HEAD_INITIALIZER(s_partition_list);
-static _lock_t s_partition_list_lock;
-
+static pthread_mutex_t s_partition_list_lock = PTHREAD_MUTEX_INITIALIZER;
 
 esp_partition_iterator_t esp_partition_find(esp_partition_type_t type,
         esp_partition_subtype_t subtype, const char* label)
 {
     if (SLIST_EMPTY(&s_partition_list)) {
         // only lock if list is empty (and check again after acquiring lock)
-        _lock_acquire(&s_partition_list_lock);
+        pthread_mutex_lock(&s_partition_list_lock);
         esp_err_t err = ESP_OK;
         if (SLIST_EMPTY(&s_partition_list)) {
             err = load_partitions();
         }
-        _lock_release(&s_partition_list_lock);
+        pthread_mutex_unlock(&s_partition_list_lock);
         if (err != ESP_OK) {
             return NULL;
         }
@@ -87,7 +87,7 @@ esp_partition_iterator_t esp_partition_next(esp_partition_iterator_t it)
         esp_partition_iterator_release(it);
         return NULL;
     }
-    _lock_acquire(&s_partition_list_lock);
+    pthread_mutex_lock(&s_partition_list_lock);
     for (; it->next_item != NULL; it->next_item = SLIST_NEXT(it->next_item, next)) {
         esp_partition_t* p = &it->next_item->info;
         if (it->type != p->type) {
@@ -102,7 +102,7 @@ esp_partition_iterator_t esp_partition_next(esp_partition_iterator_t it)
         // all constraints match, bail out
         break;
     }
-    _lock_release(&s_partition_list_lock);
+    pthread_mutex_unlock(&s_partition_list_lock);
     if (it->next_item == NULL) {
         esp_partition_iterator_release(it);
         return NULL;
