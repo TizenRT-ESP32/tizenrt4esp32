@@ -26,12 +26,12 @@ CXXSRCS =
 
 
 # Include wireless drivers
-CXXSRCS += nvs_flash/src/nvs_item_hash_list.cpp 
-CXXSRCS += nvs_flash/src/nvs_page.cpp
-CXXSRCS += nvs_flash/src/nvs_pagemanager.cpp
-CXXSRCS += nvs_flash/src/nvs_storage.cpp
-CXXSRCS += nvs_flash/src/nvs_types.cpp
-CXXSRCS += nvs_flash/src/nvs_api.cpp 
+#CXXSRCS += nvs_flash/src/nvs_item_hash_list.cpp 
+#CXXSRCS += nvs_flash/src/nvs_page.cpp
+#CXXSRCS += nvs_flash/src/nvs_pagemanager.cpp
+#CXXSRCS += nvs_flash/src/nvs_storage.cpp
+#CXXSRCS += nvs_flash/src/nvs_types.cpp
+#CXXSRCS += nvs_flash/src/nvs_api.cpp 
 
 CXXFLAGS += -I./include
 CXXFLAGS += -I./nvs_flash/include
@@ -39,8 +39,8 @@ CXXFLAGS += -I./spi_flash/include
 CXXFLAGS +=  -std=c++11 -Wall -Werror
 
 
-CSRCS = phy_init.c hw_random.c  system_api.c  esp32_wifi_os_adapter.c  system_api.c event_groups.c esp_ota_eps.c intr_alloc.c
-CSRCS +=  $(wildcard ./spi_flash/*.c)
+CSRCS = phy_init.c hw_random.c  system_api.c  esp32_wifi_os_adapter.c  system_api.c event_groups.c esp_ota_eps.c intr_alloc.c clk.c
+#CSRCS +=  $(wildcard ./spi_flash/*.c)
 
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 CFLAGS += -I./spi_flash/include
