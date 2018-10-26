@@ -50,6 +50,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
+
 ifeq ($(CONFIG_EXAMPLES_ESP32DEMO),y)
 CONFIGURED_APPS += examples/esp32_demo
 endif
+

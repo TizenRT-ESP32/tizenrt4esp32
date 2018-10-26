@@ -31,6 +31,9 @@
 #include "esp_wifi_os_adapter.h"
 #include "event_groups.h"
 #include "esp32_queue_api.h"
+#include <rom/ets_sys.h>
+#include <time.h>
+
 
 //Will enable later.
 #define QUEUE_SEND_HANDLER_STACKSIZE (1024 * 4)
@@ -375,8 +378,10 @@ void event_group_demo(void)
 
 }
 
+
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
+	printf("start esp32 demo!\n");
     test_rand();
     test_mutex();
     test_sem();
@@ -388,9 +393,8 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
     //wait timer handler exit
     sleep(2);
     
-	  printf("start esp32 demo!\n");
-	  queue_operate_demo();
-	  usleep(3*1000*1000);
-	  event_group_demo();
-	  return NULL;
+    queue_operate_demo();
+    usleep(3*1000*1000);
+    event_group_demo();
+    return NULL;
 }
