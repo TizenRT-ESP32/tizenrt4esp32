@@ -35,6 +35,7 @@ config ESP32_I2C
 config ESP32_I2C0
 	bool "I2C 0"
 	default n
+	select ESP32_I2C
 	depends on EXPERIMENTAL
 	---help---
 		No yet implemented
@@ -42,6 +43,7 @@ config ESP32_I2C0
 config ESP32_I2C1
 	bool "I2C 1"
 	default n
+	select ESP32_I2C
 	depends on EXPERIMENTAL
 	---help---
 		No yet implemented
@@ -330,29 +332,69 @@ menu "I2C configuration"
 	
 if ESP32_I2C0
 
-config ESP32_I2C0_SCLKPIN
+choice
+	prompt "I2C 0 mode"
+	default ESP32_I2C0_MODE_MASTER
+
+config ESP32_I2C0_MODE_MASTER
+	bool "I2C0 master mode"
+
+config ESP32_I2C0_MODE_SLAVE
+	bool "I2C0 slave mode"
+
+endchoice
+
+config ESP32_I2C0_SCLK_PIN
 	int "I2C 0 Sclk Pin"
 	default 4
 	range 0 39
 
-config ESP32_I2C0_SDAPIN
+config ESP32_I2C0_SCLK_PULLUP_EN
+	bool "I2C 0 Sclk Pullup enable"
+	default n
+
+config ESP32_I2C0_SDA_PIN
 	int "I2C0 SDA Pin"
 	default 5
 	range 0 39
-
+	
+config ESP32_I2C0_SDA_PULLUP_EN
+	bool "I2C0 SDA Pullup enable"
+	default n
+	
 endif # ESP32_I2C0
 
 if ESP32_I2C1
 
-config ESP32_I2C1_SCLKPIN
-	int "I2C 1 RTS Pin"
-	default 22
+choice
+	prompt "I2C 1 mode"
+	default ESP32_I2C1_MODE_MASTER
+
+config ESP32_I2C1_MODE_MASTER
+	bool "I2C1 master mode"
+
+config ESP32_I2C1_MODE_SLAVE
+	bool "I2C1 slave mode"
+
+endchoice
+
+config ESP32_I2C1_SCLK_PIN
+	int "I2C 1 SCLK Pin"
+	default 18
 	range 0 39
 
-config ESP32_I2C1_SDAPIN
-	int "I2C 1 CTS Pin"
+config ESP32_I2C1_SCLK_PULLUP_EN
+	bool "I2C 1 Sclk Pullup enable"
+	default n
+
+config ESP32_I2C1_SDA_PIN
+	int "I2C 1 SDA Pin"
 	default 19
 	range 0 39
+	
+config ESP32_I2C1_SDA_PULLUP_EN
+	bool "I2C1 SDA Pullup enable"
+	default n
 
 endif # ESP32_I2C1
 
