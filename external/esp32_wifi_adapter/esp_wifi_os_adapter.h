@@ -16,7 +16,8 @@
 #define ESP_WIFI_OS_ADAPTER_H_
 
 #include <stdarg.h>
-#include <tinyara/mqueue.h>
+#include "esp32_queue_api.h"
+#include "event_groups.h"
 
 
 #ifdef __cplusplus
@@ -27,16 +28,6 @@ extern "C" {
 #define ESP_WIFI_OS_ADAPTER_MAGIC    0xDEADBEAF
 
 #define OSI_FUNCS_TIME_BLOCKING      0xffffffff
-
-#define OSI_QUEUE_SEND_FRONT         0
-#define OSI_QUEUE_SEND_BACK          1
-#define OSI_QUEUE_SEND_OVERWRITE     2
-
-typedef struct {
-	bool valid;
-	uint32_t mq_item_size;
-	mqd_t mqd_fd;
-}queue_info_t;
 
 
 typedef struct {
