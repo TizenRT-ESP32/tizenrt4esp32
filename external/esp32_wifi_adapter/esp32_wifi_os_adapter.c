@@ -368,10 +368,10 @@ void ets_timer_deinit(void)
 static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat)
 {
     ETSTimer *etimer = (ETSTimer*)timer;
-    if(etimer == NULL || etimer->wdog == NULL) {   
+    if(etimer == NULL || etimer->wdog == NULL) {
         dbg("timer is NULL\n");
         return;
-    }   
+    }
     int delay = MSEC2TICK(tmout);
     wd_start(etimer->wdog, delay, NULL, 0, NULL);
 
@@ -380,21 +380,21 @@ static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat
 static void IRAM_ATTR timer_disarm_wrapper(void *timer)
 {
     ETSTimer *etimer = (ETSTimer*)timer;
-    if(etimer == NULL || etimer->wdog == NULL) {   
+    if(etimer == NULL || etimer->wdog == NULL) {
         dbg("timer is NULL\n");
         return;
-    }   
-    wd_cancel(etimer->wdog); 
+    }
+    wd_cancel(etimer->wdog);
 }
 
 static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 {
     ETSTimer *etimer = (ETSTimer*)ptimer;
-    if(etimer == NULL || etimer->wdog == NULL) {   
+    if(etimer == NULL || etimer->wdog == NULL) {
         dbg("timer is NULL\n");
         return;
-    }   
-    wd_delete(etimer->wdog); 
+    }
+    wd_delete(etimer->wdog);
 }
 
 static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *parg)
@@ -408,7 +408,7 @@ static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *p
     if (!etimer->wdog) {
             return;
     }
-    wd_start(etimer->wdog, 0, pfunction, 1, parg); 
+    wd_start(etimer->wdog, 0, pfunction, 1, parg);
 }
 
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
@@ -419,7 +419,7 @@ static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repea
         return;
     }
     int delay = USEC2TICK(us);
-    wd_start(etimer->wdog, delay, NULL, 0, NULL);   
+    wd_start(etimer->wdog, delay, NULL, 0, NULL);
 }
 
 static inline int32_t IRAM_ATTR get_time_wrapper(void *t)
@@ -555,6 +555,7 @@ static void IRAM_ATTR task_yield_from_isr_wrapper(void)
 	return;
 }
 
+#if 0
 static void * IRAM_ATTR queue_create_wrapper(uint32_t queue_len, uint32_t item_size)
 {
 #define NAME_LEN 20
@@ -691,6 +692,7 @@ static uint32_t IRAM_ATTR queue_msg_waiting_wrapper(void *queue)
 	return pdFAIL;
 }
 
+#endif
 
 static uint32_t IRAM_ATTR event_group_wait_bits_wrapper(void *event, uint32_t bits_to_wait_for, int32_t clear_on_exit, int32_t wait_for_all_bits, uint32_t block_time_tick)
 {
