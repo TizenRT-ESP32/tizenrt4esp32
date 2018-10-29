@@ -98,6 +98,18 @@
 #define I2C_ESP32_BUFFER_SIZE           (32)
 
 
+#define ESP32_I2C0_DEFAULT_SCLK_PIN         4
+#define ESP32_I2C0_DEFAULT_SCLK_PULLUP_EN   1
+#define ESP32_I2C0_DEFAULT_SDA_PIN          5
+#define ESP32_I2C0_DEFAULT_SDA_PULLUP_EN    1
+
+#define ESP32_I2C1_DEFAULT_SCLK_PIN         18
+#define ESP32_I2C1_DEFAULT_SCLK_PULLUP_EN   1
+#define ESP32_I2C1_DEFAULT_SDA_PIN          19
+#define ESP32_I2C1_DEFAULT_SDA_PULLUP_EN    1
+
+
+
 #ifndef min
 #define min(a, b)       (((a) < (b)) ? (a) : (b))
 #endif
@@ -161,13 +173,29 @@ static const i2c_config_t esp32_i2c0_config = {
 
     .irq_num = ESP32_IRQ_I2C_EXT0,
 
+#ifdef CONFIG_ESP32_I2C0_SCLK_PIN
 	.scl_pin = CONFIG_ESP32_I2C0_SCLK_PIN,
+#else
+    .scl_pin = ESP32_I2C0_DEFAULT_SCLK_PIN,
+#endif
+#ifdef CONFIG_ESP32_I2C0_SCLK_PULLUP_EN
     .scl_pullup_en = CONFIG_ESP32_I2C0_SCLK_PULLUP_EN,
+#else
+    .scl_pullup_en = ESP32_I2C0_DFFAULT_SCLK_PULLUP_EN,
+#endif
     .scl_in_sig = I2CEXT0_SCL_IN_IDX,
     .scl_out_sig = I2CEXT0_SCL_OUT_IDX,
 	 
+#ifdef CONFIG_ESP32_I2C0_SDA_PIN
     .sda_pin = CONFIG_ESP32_I2C0_SDA_PIN,
+#else
+    .sda_pin = ESP32_I2C0_DEFAULT_SDA_PIN
+#endif
+#ifdef CONFIG_ESP32_I2C0_SDA_PULLUP_EN
     .sda_pullup_en = CONFIG_ESP32_I2C0_SDA_PULLUP_EN,
+#else
+    .sda_pullup_en = ESP32_I2C0_DEFAULT_SDA_PULLUP_EN,
+#endif
     .sda_in_sig = I2CEXT0_SDA_IN_IDX,
     .sda_out_sig = I2CEXT0_SDA_OUT_IDX,
 };
@@ -189,14 +217,29 @@ static const i2c_config_t esp32_i2c1_config = {
 #endif
 
     .irq_num = ESP32_IRQ_I2C_EXT1,
-
+#ifdef CONFIG_ESP32_I2C1_SCLK_PIN
 	.scl_pin = CONFIG_ESP32_I2C1_SCLK_PIN,
+#else
+    .scl_pin = ESP32_I2C1_DEFAULT_SCLK_PIN,
+#endif
+#ifdef CONFIG_ESP32_I2C1_SCLK_PULLUP_EN
     .scl_pullup_en = CONFIG_ESP32_I2C1_SCLK_PULLUP_EN,
+#else
+    .scl_pullup_en = ESP32_I2C1_DEFAULT_SCLK_PULLUP_EN,
+#endif
     .scl_in_sig = I2CEXT1_SCL_IN_IDX,
     .scl_out_sig = I2CEXT1_SCL_OUT_IDX,
 	
+#ifdef CONFIG_ESP32_I2C1_SDA_PIN
     .sda_pin = CONFIG_ESP32_I2C1_SDA_PIN,
+#else
+    .sda_pin = ESP32_I2C1_DEFAULT_SDA_PIN,
+#endif
+#ifdef CONFIG_ESP32_I2C1_SDA_PULLUP_EN
     .scl_pullup_en = CONFIG_ESP32_I2C1_SDA_PULLUP_EN,
+#else
+    .scl_pullup_en = ESP32_I2C1_DEFAULT_SDA_PULLUP_EN,
+#endif
     .sda_in_sig = I2CEXT1_SDA_IN_IDX,
     .sda_out_sig = I2CEXT1_SDA_OUT_IDX,
 };

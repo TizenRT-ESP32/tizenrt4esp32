@@ -56,8 +56,8 @@
  *
  ****************************************************************************/
 
-#ifndef __ARCH_ARM_SRC_S5J_I2C_H
-#define __ARCH_ARM_SRC_S5J_I2C_H
+#ifndef __ARCH_XTENSA_SRC_ESP32_I2C_H
+#define __ARCH_XTENSA_SRC_ESP32_I2C_H
 
 /****************************************************************************
  * Included Files
@@ -145,4 +145,4 @@ typedef struct{
  ****************************************************************************/
 void esp32_i2c_register(int bus);
 
-#endif							/* __ARCH_ARM_SRC_S5J_I2C_H */
+#endif							/* __ARCH_XTENSA_SRC_ESP32_I2C_H */
