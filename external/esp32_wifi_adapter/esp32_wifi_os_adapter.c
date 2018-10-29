@@ -28,21 +28,8 @@
 
 
 
-#define MAX_QUEUE_INFO 20
-const char *mq_name = "mq_wifi";
 
-
-enum {
-	NORMAL = 0,
-	MIDDLE,
-	HIGH,
-}queue_prio_e;
-
-
-queue_info_t queues_info[MAX_QUEUE_INFO];
-irqstate_t wifi_int_disable_flags;
-
-
+static irqstate_t wifi_int_disable_flags;
 
 
 /*extern functions declare*/
@@ -444,10 +431,10 @@ static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat
 #endif
 {
     ETSTimer *etimer = (ETSTimer*)timer;
-    if(etimer == NULL || etimer->wdog == NULL) {   
+    if(etimer == NULL || etimer->wdog == NULL) {
         dbg("timer is NULL\n");
         return;
-    }   
+    }
     int delay = MSEC2TICK(tmout);
     wd_start(etimer->wdog, delay, NULL, 0, NULL);
 
@@ -460,11 +447,11 @@ static void IRAM_ATTR timer_disarm_wrapper(void *timer)
 #endif
 {
     ETSTimer *etimer = (ETSTimer*)timer;
-    if(etimer == NULL || etimer->wdog == NULL) {   
+    if(etimer == NULL || etimer->wdog == NULL) {
         dbg("timer is NULL\n");
         return;
-    }   
-    wd_cancel(etimer->wdog); 
+    }
+    wd_cancel(etimer->wdog);
 }
 
 #ifdef CONFIG_OS_ADAPTER_TEST
@@ -474,11 +461,11 @@ static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 #endif
 {
     ETSTimer *etimer = (ETSTimer*)ptimer;
-    if(etimer == NULL || etimer->wdog == NULL) {   
+    if(etimer == NULL || etimer->wdog == NULL) {
         dbg("timer is NULL\n");
         return;
-    }   
-    wd_delete(etimer->wdog); 
+    }
+    wd_delete(etimer->wdog);
 }
 
 #ifdef CONFIG_OS_ADAPTER_TEST
@@ -496,7 +483,7 @@ static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *p
     if (!etimer->wdog) {
             return;
     }
-    wd_start(etimer->wdog, 0, pfunction, 1, parg); 
+    wd_start(etimer->wdog, 0, pfunction, 1, parg);
 }
 
 #ifdef CONFIG_OS_ADAPTER_TEST
@@ -511,7 +498,7 @@ static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repea
         return;
     }
     int delay = USEC2TICK(us);
-    wd_start(etimer->wdog, delay, NULL, 0, NULL);   
+    wd_start(etimer->wdog, delay, NULL, 0, NULL);
 }
 
 #ifdef CONFIG_OS_ADAPTER_TEST
@@ -631,6 +618,9 @@ static void * IRAM_ATTR spin_lock_create_wrapper(void)
 	return NULL;
 }
 
+
+static irqstate_t wifi_int_disable_flags;
+
 static uint32_t IRAM_ATTR wifi_int_disable_wrapper(void *wifi_int_mux)
 {
 	if (wifi_int_mux) {
@@ -654,143 +644,6 @@ static void IRAM_ATTR task_yield_from_isr_wrapper(void)
 {
 	return;
 }
-
-static void * IRAM_ATTR queue_create_wrapper(uint32_t queue_len, uint32_t item_size)
-{
-#define NAME_LEN 20
-	char name[NAME_LEN];
-	bool flag = false;
-	uint32_t mq_id = 0;
-
-	for(int i=0;i<MAX_QUEUE_INFO;i++) {
-		if (!queues_info[i].valid) {
-			flag = true;
-			mq_id = i;
-			break;
-		}
-	}
-
-	if (!flag) {
-		dbg("queue_create_wrapper create failed!\n");
-		return NULL;
-	}
-
-	sdbg(name,"%s%d",mq_name,mq_id);
-
-	struct mq_attr attr;
-	attr.mq_maxmsg  = queue_len;
-	attr.mq_msgsize = item_size *queue_len; //max msg size
-	attr.mq_flags   = 0;
-
-	/*Invalid param*/
-	queues_info[mq_id].mqd_fd = mq_open(name,O_RDWR|O_CREAT, 0666, &attr);
-	if (queues_info[mq_id].mqd_fd == (mqd_t)-1) {
-		dbg("queue_create_wrapper FAIL: mq_open\n");
-		return NULL;
-	}
-
-	queues_info[mq_id].valid = true;
-	queues_info[mq_id].mq_item_size = item_size;
-	return &queues_info[mq_id];
-}
-
-static void IRAM_ATTR  queue_delete_wrapper(void *queue)
-{
-	queue_info_t *queue_info = NULL;
-	if (queue) {
-		queue_info = (queue_info_t *)queue;
-		if(queue_info->mqd_fd) {
-			mq_close(queue_info->mqd_fd);
-		}
-		queue_info->mq_item_size = 0;
-		queue_info->valid = false;
-	}
-	return;
-}
-
-
-static int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t block_time_tick)
-{
-	int32_t ret;
-	queue_info_t *queue_info = NULL;
-	if (queue) {
-		queue_info = (queue_info_t *)queue;
-		if(queue_info->mqd_fd) {
-			ret = mq_send(queue_info->mqd_fd,(char *)item,queue_info->mq_item_size,NORMAL);
-			if(ret){
-				return pdFAIL;
-			}
-			return pdPASS;
-		}
-	}
-	return pdFAIL;
-}
-
-static int32_t IRAM_ATTR queue_send_from_isr_wrapper(void *queue, void *item, void *hptw)
-{
-	if(!queue || !item) {
-		return pdFAIL;
-	}
-	return queue_send_wrapper(queue,item,0);
-}
-
-static int32_t IRAM_ATTR queue_send_to_back_wrapper(void *queue, void *item, uint32_t block_time_tick)
-{
-	if(!queue || !item) {
-		return pdFAIL;
-	}
-	return queue_send_wrapper(queue,item,0);
-}
-
-static int32_t IRAM_ATTR queue_send_to_front_wrapper(void *queue, void *item, uint32_t block_time_tick)
-{
-	int32_t ret;
-	queue_info_t *queue_info = NULL;
-	if(queue) {
-		queue_info = (queue_info_t *)queue;
-		if(queue_info->mqd_fd) {
-			ret = mq_send(queue_info->mqd_fd,(char *)item,queue_info->mq_item_size,HIGH);
-			if(ret) {
-				return pdFAIL;
-			}
-			return pdPASS;
-		}
-	}
-	return pdFAIL;
-}
-
-static int32_t IRAM_ATTR queue_recv_wrapper(void *queue, void *item, uint32_t block_time_tick)
-{
-	queue_info_t *queue_info = NULL;
-	size_t msglen = 0;
-	int prio = 0;
-	int32_t ret;
-	if(queue) {
-		queue_info = (queue_info_t *)queue;
-		if (queue_info->mqd_fd) {
-			ret = mq_receive(queue_info->mqd_fd,(char *)item,msglen,&prio);
-			if(ret) {
-				return pdFAIL;
-			}
-			return pdPASS;
-		}
-	}
-	return pdFAIL;
-}
-
-
-static uint32_t IRAM_ATTR queue_msg_waiting_wrapper(void *queue)
-{
-	queue_info_t *queue_info = NULL;
-	if (queue) {
-		queue_info = (queue_info_t *)queue;
-		if(queue_info->mqd_fd && queue_info->mqd_fd->msgq) {
-			return queue_info->mqd_fd->msgq->nmsgs;
-		}
-	}
-	return pdFAIL;
-}
-
 
 static uint32_t IRAM_ATTR event_group_wait_bits_wrapper(void *event, uint32_t bits_to_wait_for, int32_t clear_on_exit, int32_t wait_for_all_bits, uint32_t block_time_tick)
 {
