@@ -44,7 +44,7 @@
 #define ESP_LOGD( tag, format, ... )
 #define ESP_LOGV( tag, format, ... )
 
-
+#if 0
 //static const char* TAG = "phy_init";
 static pthread_mutex_t s_phy_rf_init_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -460,7 +460,6 @@ esp_err_t esp_phy_store_cal_data_to_nvs(const esp_phy_calibration_data_t* cal_da
 static esp_err_t load_cal_data_from_nvs_handle(nvs_handle handle,
         esp_phy_calibration_data_t* out_cal_data)
 {
-#if 0
     esp_err_t err;
     uint32_t cal_data_version;
     err = nvs_get_u32(handle, PHY_CAL_VERSION_KEY, &cal_data_version);
@@ -505,13 +504,11 @@ static esp_err_t load_cal_data_from_nvs_handle(nvs_handle handle,
         return ESP_ERR_INVALID_SIZE;
     }
     return ESP_OK;
-#endif
 }
 
 static esp_err_t store_cal_data_to_nvs_handle(nvs_handle handle,
         const esp_phy_calibration_data_t* cal_data)
 {
-#if 0
     esp_err_t err;
 
     err = nvs_set_blob(handle, PHY_CAL_DATA_KEY, cal_data, sizeof(*cal_data));
@@ -542,12 +539,10 @@ static esp_err_t store_cal_data_to_nvs_handle(nvs_handle handle,
     }
     
     return err;
-#endif
 }
 
 void esp_phy_load_cal_and_init(phy_rf_module_t module)
 {
-#if 0
     esp_phy_calibration_data_t* cal_data =
             (esp_phy_calibration_data_t*) calloc(sizeof(esp_phy_calibration_data_t), 1);
     if (cal_data == NULL) {
@@ -589,6 +584,5 @@ void esp_phy_load_cal_and_init(phy_rf_module_t module)
     esp_phy_release_init_data(init_data);
 
     free(cal_data); // PHY maintains a copy of calibration data, so we can free this
-#endif
 }
-
+#endif

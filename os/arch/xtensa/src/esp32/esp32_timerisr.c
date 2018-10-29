@@ -115,8 +115,9 @@ int64_t get_instant_time(void)
     uint32_t compare;
     uint32_t diff;
     compare = xtensa_getcompare();
-    diff = xtensa_getcount() - compare; 
-    int64_t ms =  clock_systimer()* TICK2MSEC(diff) + diff / (g_ticks_per_us_pro * 1000); 
+    diff = xtensa_getcount() - compare;
+    int ticks = clock_systimer();
+    int64_t ms = TICK2MSEC(ticks) + diff / (g_ticks_per_us_pro * 1000); 
     return ms;
 }
 /****************************************************************************

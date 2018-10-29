@@ -37,8 +37,11 @@ extern uint32_t IRAM_ATTR esp_random(void);
 int64_t get_instant_time(void);
 
 /*=================seamphore API=================*/
-
+#ifdef CONFIG_OS_ADAPTER_TEST
+void *IRAM_ATTR semphr_create_wrapper(uint32_t max, uint32_t init)
+#else
 static void *IRAM_ATTR semphr_create_wrapper(uint32_t max, uint32_t init)
+#endif
 {
     if(max > SEM_VALUE_MAX || init > SEM_VALUE_MAX)
         return NULL;
@@ -55,7 +58,11 @@ static void *IRAM_ATTR semphr_create_wrapper(uint32_t max, uint32_t init)
 
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR semphr_delete_wrapper(void *semphr)
+#else
 static void IRAM_ATTR semphr_delete_wrapper(void *semphr)
+#endif
 {
     if(semphr == NULL)
     {
@@ -66,7 +73,11 @@ static void IRAM_ATTR semphr_delete_wrapper(void *semphr)
     free(semphr);
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
+#else
 static int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
+#endif
 {
 
     *(bool*)hptw = pdFALSE;
@@ -117,7 +128,11 @@ static int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
 
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR semphr_take_wrapper(void *semphr, uint32_t block_time_tick)
+#else
 static int32_t IRAM_ATTR semphr_take_wrapper(void *semphr, uint32_t block_time_tick)
+#endif
 {
     int ret;
     if(semphr == NULL)
@@ -153,7 +168,11 @@ static int32_t IRAM_ATTR semphr_take_wrapper(void *semphr, uint32_t block_time_t
     }
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR semphr_give_wrapper(void *semphr)
+#else
 static int32_t IRAM_ATTR semphr_give_wrapper(void *semphr)
+#endif
 {
         int ret;
         if(semphr == NULL)
@@ -168,7 +187,11 @@ static int32_t IRAM_ATTR semphr_give_wrapper(void *semphr)
             return pdFAIL;
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
+#else
 static int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
+#endif
 {
        *(int*)hptw = pdFALSE;
        return semphr_give_wrapper(semphr);
@@ -177,7 +200,11 @@ static int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
 
 /*=================mutx API=================*/
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void *IRAM_ATTR recursive_mutex_create_wrapper(void)
+#else
 static void *IRAM_ATTR recursive_mutex_create_wrapper(void)
+#endif
 {
     pthread_mutexattr_t mattr;
     int status = 0;
@@ -199,7 +226,11 @@ static void *IRAM_ATTR recursive_mutex_create_wrapper(void)
     return (void*)mutex;
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void *IRAM_ATTR mutex_create_wrapper(void)
+#else
 static void *IRAM_ATTR mutex_create_wrapper(void)
+#endif
 {
     int status = 0;
     pthread_mutex_t *mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
@@ -216,7 +247,11 @@ static void *IRAM_ATTR mutex_create_wrapper(void)
 
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR mutex_delete_wrapper(void *mutex)
+#else
 static void IRAM_ATTR mutex_delete_wrapper(void *mutex)
+#endif
 {
         if(mutex == NULL)
         {
@@ -228,7 +263,11 @@ static void IRAM_ATTR mutex_delete_wrapper(void *mutex)
 }
 
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR mutex_lock_wrapper(void *mutex)
+#else
 static int32_t IRAM_ATTR mutex_lock_wrapper(void *mutex)
+#endif
 {
         if(mutex == NULL)
         {
@@ -242,7 +281,11 @@ static int32_t IRAM_ATTR mutex_lock_wrapper(void *mutex)
 
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR mutex_unlock_wrapper(void *mutex)
+#else
 static int32_t IRAM_ATTR mutex_unlock_wrapper(void *mutex)
+#endif
 {
         if(mutex == NULL)
         {
@@ -256,8 +299,13 @@ static int32_t IRAM_ATTR mutex_unlock_wrapper(void *mutex)
 }
 
 /*=================task control API=================*/
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR task_create_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *
+task_handle)
+#else
 static int32_t IRAM_ATTR task_create_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *
 task_handle)
+#endif
 {
     int pid = task_create(name, prio, stack_depth, task_func, param);
     if(pid < 0)
@@ -278,7 +326,11 @@ void *task_handle, uint32_t core_id)
 #endif
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR task_delete_wrapper(void *task_handle)
+#else
 static void IRAM_ATTR task_delete_wrapper(void *task_handle)
+#endif
 {
     if(task_handle < 0 )
         return;
@@ -288,31 +340,51 @@ static void IRAM_ATTR task_delete_wrapper(void *task_handle)
 
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR task_delay_wrapper(uint32_t tick)
+#else
 static void IRAM_ATTR task_delay_wrapper(uint32_t tick)
+#endif
 {
     uint64_t usecs = TICK2USEC(tick);
     usleep(usecs);
 }
 
+
 static int curpid;
+#ifdef CONFIG_OS_ADAPTER_TEST
+void* IRAM_ATTR task_get_current_task_wrapper(void)
+#else    
 static void* IRAM_ATTR task_get_current_task_wrapper(void)
+#endif
 {
     curpid = getpid();
     return (void*)&curpid;
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR task_ms_to_tick_wrapper(uint32_t ms)
+#else
 static inline int32_t IRAM_ATTR task_ms_to_tick_wrapper(uint32_t ms)
+#endif
 {
     return (int32_t)MSEC2TICK(ms);
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR task_get_max_priority_wrapper(void)
+#else
 static inline int32_t IRAM_ATTR task_get_max_priority_wrapper(void)
+#endif
 {
     return (int32_t)(SCHED_PRIORITY_MAX);
 }
 
-
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR is_in_isr_wrapper(void)
+#else
 static inline int32_t IRAM_ATTR is_in_isr_wrapper(void)
+#endif
 {
     return (int32_t)up_interrupt_context();
 }
@@ -352,7 +424,11 @@ void ets_timer_deinit(void)
 
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat)
+#else
 static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat)
+#endif
 {
     ETSTimer *etimer = (ETSTimer*)timer;
     if(etimer == NULL || etimer->wdog == NULL) {
@@ -364,7 +440,11 @@ static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat
 
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR timer_disarm_wrapper(void *timer)
+#else
 static void IRAM_ATTR timer_disarm_wrapper(void *timer)
+#endif
 {
     ETSTimer *etimer = (ETSTimer*)timer;
     if(etimer == NULL || etimer->wdog == NULL) {
@@ -374,7 +454,11 @@ static void IRAM_ATTR timer_disarm_wrapper(void *timer)
     wd_cancel(etimer->wdog);
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR timer_done_wrapper(void *ptimer)
+#else
 static void IRAM_ATTR timer_done_wrapper(void *ptimer)
+#endif
 {
     ETSTimer *etimer = (ETSTimer*)ptimer;
     if(etimer == NULL || etimer->wdog == NULL) {
@@ -384,7 +468,11 @@ static void IRAM_ATTR timer_done_wrapper(void *ptimer)
     wd_delete(etimer->wdog);
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *parg)
+#else
 static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *parg)
+#endif
 {
     ETSTimer *etimer = (ETSTimer*)ptimer;
     if(etimer == NULL){
@@ -398,7 +486,11 @@ static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *p
     wd_start(etimer->wdog, 0, pfunction, 1, parg);
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
+#else
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
+#endif
 {
     ETSTimer *etimer = (ETSTimer*)ptimer;
     if(etimer == NULL) {
@@ -409,14 +501,22 @@ static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repea
     wd_start(etimer->wdog, delay, NULL, 0, NULL);
 }
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR get_time_wrapper(void *t)
+#else
 static inline int32_t IRAM_ATTR get_time_wrapper(void *t)
+#endif
 {
     return (int32_t)gettimeofday((struct timeval*) t, NULL);
 }
 
 /*=================Miscellaneous API================================*/
 
+#ifdef CONFIG_OS_ADAPTER_TEST
+int32_t IRAM_ATTR esp_os_get_random_wrapper(uint8_t *buf, size_t len)
+#else
 static inline int32_t IRAM_ATTR esp_os_get_random_wrapper(uint8_t *buf, size_t len)
+#endif
 {
     return (int32_t)os_get_random((unsigned char *)buf, len);
 
@@ -566,11 +666,6 @@ uint32_t IRAM_ATTR esp_get_free_heap_size( void )
 #endif
 
     return mem_info.fordblks;
-}
-
-uint32_t IRAM_ATTR esp_random(void)
-{
-    return (uint32_t)rand();
 }
 
 static void * IRAM_ATTR malloc_internal_wrapper(size_t size)
@@ -733,9 +828,9 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
     ._rand = esp_random,
     ._dport_access_stall_other_cpu_start_wrap = esp_dport_access_stall_other_cpu_start_wrap,
     ._dport_access_stall_other_cpu_end_wrap = esp_dport_access_stall_other_cpu_end_wrap,
-    ._phy_rf_init = phy_rf_init_wrapper,
-    ._phy_rf_deinit = esp_phy_rf_deinit_wrapper,
-    ._phy_load_cal_and_init = esp_phy_load_cal_and_init_wrapper,
+    //._phy_rf_init = phy_rf_init_wrapper,
+    //._phy_rf_deinit = esp_phy_rf_deinit_wrapper,
+    //._phy_load_cal_and_init = esp_phy_load_cal_and_init_wrapper,
     ._read_mac = esp_read_mac_wrapper,
     ._timer_init = ets_timer_init,
     ._timer_deinit = ets_timer_deinit,
@@ -745,18 +840,18 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
     ._timer_setfn = timer_setfn_wrapper,
     ._timer_arm_us = timer_arm_us_wrapper,
     ._esp_timer_get_time = get_instant_time,
-    ._nvs_set_i8 = nvs_set_i8,
-    ._nvs_get_i8 = nvs_get_i8,
-    ._nvs_set_u8 = nvs_set_u8,
-    ._nvs_get_u8 = nvs_get_u8,
-    ._nvs_set_u16 = nvs_set_u16,
-    ._nvs_get_u16 = nvs_get_u16,
-    ._nvs_open = esp_nvs_open_wrapper,
-    ._nvs_close = nvs_close,
-    ._nvs_commit = nvs_commit,
-    ._nvs_set_blob = nvs_set_blob,
-    ._nvs_get_blob = nvs_get_blob,
-    ._nvs_erase_key = nvs_erase_key,
+//    ._nvs_set_i8 = nvs_set_i8,
+//    ._nvs_get_i8 = nvs_get_i8,
+  //  ._nvs_set_u8 = nvs_set_u8,
+   // ._nvs_get_u8 = nvs_get_u8,
+   // ._nvs_set_u16 = nvs_set_u16,
+   // ._nvs_get_u16 = nvs_get_u16,
+   // ._nvs_open = esp_nvs_open_wrapper,
+   // ._nvs_close = nvs_close,
+   // ._nvs_commit = nvs_commit,
+   // ._nvs_set_blob = nvs_set_blob,
+   // ._nvs_get_blob = nvs_get_blob,
+   // ._nvs_erase_key = nvs_erase_key,
     ._get_random = esp_os_get_random_wrapper,
     ._get_time = get_time_wrapper,
     ._random = esp_random,
@@ -772,10 +867,10 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._wifi_zalloc = wifi_zalloc_wrapper,
 	._wifi_create_queue = wifi_create_queue_wrapper,
 	._wifi_delete_queue = wifi_delete_queue_wrapper,
-    ._modem_sleep_enter = esp_modem_sleep_enter_wrapper,
-    ._modem_sleep_exit = esp_modem_sleep_exit_wrapper,
-    ._modem_sleep_register = esp_modem_sleep_register_wrapper,
-    ._modem_sleep_deregister = esp_modem_sleep_deregister_wrapper,
+    //._modem_sleep_enter = esp_modem_sleep_enter_wrapper,
+    //._modem_sleep_exit = esp_modem_sleep_exit_wrapper,
+    //._modem_sleep_register = esp_modem_sleep_register_wrapper,
+    //._modem_sleep_deregister = esp_modem_sleep_deregister_wrapper,
     //._sc_ack_send = sc_ack_send_wrapper,
     //._sc_ack_send_stop = sc_ack_send_stop,
     ._magic = ESP_WIFI_OS_ADAPTER_MAGIC,
