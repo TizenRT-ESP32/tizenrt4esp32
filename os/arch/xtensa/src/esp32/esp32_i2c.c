@@ -90,15 +90,8 @@
  ****************************************************************************/
 #define I2C_NUM_MAX         2
 
-#define GPIO_I2C0_SCL       4
-#define GPIO_I2C0_SDA       5
-#define GPIO_I2C1_SCL       18
-#define GPIO_I2C1_SDA       19
-
-#define GPIO_PULLUP_ENABLE              0x1
 #define I2C_IO_INIT_LEVEL               (1)
-
-#define ESP32_DEFAULT_I2CXFER_CLOCK	    (100 * 1000)	/* 100Khz */
+#define ESP32_DEFAULT_I2CXFER_CLOCK     (100 * 1000)        /* 100Khz */
 #define ESP32_DEFAULT_I2C_TIMEOUT		(100)
 #define I2C_MASTER_TOUT_CNUM_DEFAULT    (8)
 
@@ -120,16 +113,15 @@
 struct esp32_i2c_priv_s {  
 	const struct i2c_ops_s *ops;	/* Standard I2C operations */
     i2c_port_t i2c_num;  
-	const i2c_config_t *config;	/* Port configuration */
+	const i2c_config_t *config;	    /* Port configuration */
 
-	sem_t sem_excl;				/* Mutual exclusion semaphore */
+	sem_t sem_excl;				    /* Mutual exclusion semaphore */
     sem_t sem_isr;
 
-	uint8_t refs;				/* Reference count */
+	uint8_t refs;				    /* Reference count */
 
-    uint8_t  cpuint;              /* CPU interrupt assigned to this UART */
+    uint8_t  cpuint;                /* CPU interrupt */
 
-//	int clock;
 	int xfer_speed;
 	unsigned int slave_addr;
 	unsigned int timeout;
@@ -138,7 +130,6 @@ struct esp32_i2c_priv_s {
 	unsigned int retries;
 };
 
-
 enum i2c_esp32_opcodes {
     I2C_ESP32_OP_RSTART = 0,
     I2C_ESP32_OP_WRITE,
@@ -146,7 +137,6 @@ enum i2c_esp32_opcodes {
     I2C_ESP32_OP_STOP,
     I2C_ESP32_OP_END
 };
-
 
 struct i2c_esp32_cmd {
     uint32_t num_bytes : 8;
@@ -162,24 +152,29 @@ struct i2c_esp32_cmd {
  ****************************************************************************/
 static const i2c_config_t esp32_i2c0_config = {
     .periph = ESP32_PERIPH_I2C_EXT0,
+
+#if CONFIG_ESP32_I2C0_MODE_SLAVE
     .mode = I2C_MODE_SLAVE,
+#else
+    .mode = I2C_MODE_MASTER,
+#endif
 
     .irq_num = ESP32_IRQ_I2C_EXT0,
 
-	.scl_pin = GPIO_I2C0_SCL,
-    .scl_pullup_en = GPIO_PULLUP_ENABLE,
+	.scl_pin = CONFIG_ESP32_I2C0_SCLK_PIN,
+    .scl_pullup_en = CONFIG_ESP32_I2C0_SCLK_PULLUP_EN,
     .scl_in_sig = I2CEXT0_SCL_IN_IDX,
     .scl_out_sig = I2CEXT0_SCL_OUT_IDX,
 	 
-    .sda_pin = GPIO_I2C0_SDA,
-    .sda_pullup_en = GPIO_PULLUP_ENABLE,
+    .sda_pin = CONFIG_ESP32_I2C0_SDA_PIN,
+    .sda_pullup_en = CONFIG_ESP32_I2C0_SDA_PULLUP_EN,
     .sda_in_sig = I2CEXT0_SDA_IN_IDX,
     .sda_out_sig = I2CEXT0_SDA_OUT_IDX,
 };
 
 static struct esp32_i2c_priv_s esp32_i2c0_priv = {
     .i2c_num = 0,
-	.xfer_speed = 0,
+    .xfer_speed = 0,
 	.timeout = ESP32_DEFAULT_I2C_TIMEOUT,
 	.initialized = 0,
 	.retries = 3,
@@ -187,38 +182,39 @@ static struct esp32_i2c_priv_s esp32_i2c0_priv = {
 
 static const i2c_config_t esp32_i2c1_config = {
     .periph = ESP32_PERIPH_I2C_EXT1,
+#if CONFIG_ESP32_I2C1_MODE_SLAVE
+    .mode = I2C_MODE_SLAVE,
+#else
     .mode = I2C_MODE_MASTER,
+#endif
 
     .irq_num = ESP32_IRQ_I2C_EXT1,
 
-	.scl_pin = GPIO_I2C1_SCL,
+	.scl_pin = CONFIG_ESP32_I2C1_SCLK_PIN,
+    .scl_pullup_en = CONFIG_ESP32_I2C1_SCLK_PULLUP_EN,
     .scl_in_sig = I2CEXT1_SCL_IN_IDX,
     .scl_out_sig = I2CEXT1_SCL_OUT_IDX,
-    .scl_pullup_en = GPIO_PULLUP_ENABLE,
 	
-    .sda_pin = GPIO_I2C1_SDA,
-    .scl_pullup_en = GPIO_PULLUP_ENABLE,
+    .sda_pin = CONFIG_ESP32_I2C1_SDA_PIN,
+    .scl_pullup_en = CONFIG_ESP32_I2C1_SDA_PULLUP_EN,
     .sda_in_sig = I2CEXT1_SDA_IN_IDX,
     .sda_out_sig = I2CEXT1_SDA_OUT_IDX,
 };
 
 static struct esp32_i2c_priv_s esp32_i2c1_priv = {
     .i2c_num = 1,
-	.xfer_speed = 0,
+    .xfer_speed = 0,
 	.timeout = ESP32_DEFAULT_I2C_TIMEOUT,
 	.initialized = 0,
 	.retries = 3,
 };
 
-
 struct esp32_i2c_priv_s *g_esp32_i2c_priv[I2C_NUM_MAX] = {NULL, NULL};
 static i2c_dev_t* const I2C[I2C_NUM_MAX] = {&I2C0, &I2C1 };
-
 
 /****************************************************************************
  * Private Function Prototypes
  ****************************************************************************/
-
 static int hsi2c_setup(struct esp32_i2c_priv_s *priv);
 static int i2c_hw_enable(i2c_port_t i2c_num);
 static int i2c_hw_disable(i2c_port_t i2c_num);
@@ -263,7 +259,6 @@ static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
     I2C[i2c_num]->ctr.rx_lsb_first = I2C_DATA_MODE_MSB_FIRST; //set rx data msb first
     I2C[i2c_num]->ctr.tx_lsb_first = I2C_DATA_MODE_MSB_FIRST; //set tx data msb first
     I2C[i2c_num]->ctr.ms_mode = priv->config->mode; //mode for master or slave
-    //printf("I2c_%d mode: %d\n", i2c_num, I2C[i2c_num]->ctr.ms_mode);
     I2C[i2c_num]->ctr.sda_force_out = 1; // set open-drain output mode
     I2C[i2c_num]->ctr.scl_force_out = 1; // set open-drain output mode
     I2C[i2c_num]->ctr.sample_scl_level = 0; //sample at high level of clock
@@ -277,24 +272,16 @@ static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
     /* interrupt chip configure */
     uint32_t intr_mask = 0;
     intr_mask |= I2C_ARBITRATION_LOST_INT_ENA_M | I2C_TIME_OUT_INT_ST_M;
-    /*intr_mask |= ( I2C_TRANS_START_INT_ENA_M |
-                   I2C_TRANS_COMPLETE_INT_ENA_M |
-                   I2C_ACK_ERR_INT_ENA_M |
-                   I2C_RXFIFO_OVF_INT_ENA_M);*/
     intr_mask |= ( I2C_TRANS_COMPLETE_INT_ENA_M |
                    I2C_ACK_ERR_INT_ENA_M);
-    
     I2C[i2c_num]->int_clr.val = intr_mask;
-    I2C[i2c_num]->int_ena.val = intr_mask; 
-   
-    //printf("I2c_%d_ISR ...\n", i2c_num);
+    I2C[i2c_num]->int_ena.val = intr_mask;
 
     /*register isr*/
     priv->cpuint = esp32_alloc_levelint(1);
     if (priv->cpuint < 0)
     {
         /* Failed to allocate a CPU interrupt of this type */
-        //printf("I2c_%d_ISR esp32_alloc_levelint: %d\n", i2c_num, priv->cpuint);
         return priv->cpuint;
     }
 
@@ -316,14 +303,11 @@ static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
 
     /* Attach and enable the IRQ */
     int ret = irq_attach(priv->config->irq_num, i2c_esp32_isr, priv); 
-    //printf("I2c_%d_ISR at %d: %d; ret=%d\n", i2c_num, cpu, priv->cpuint, ret);
     if (ret == OK)
     {
         /* Enable the CPU interrupt */
         up_enable_irq(priv->cpuint);
     }
-
-    //printf("I2c_%d IRQ %d: %d;\n", i2c_num, priv->config->irq_num, g_irqvector[priv->config->irq_num].arg == NULL);
 
     return OK;
 }
@@ -375,35 +359,6 @@ static int i2c_hw_disable(i2c_port_t i2c_num)
 **/
 static int i2c_hw_clear_bus(const i2c_config_t* config)
 {
-    /*I2C_CHECK(i2c_num < I2C_NUM_MAX, I2C_NUM_ERROR_STR, ESP_ERR_INVALID_ARG);
-    int sda_in_sig = 0, scl_in_sig = 0;
-    if (i2c_num == I2C_NUM_0) {
-        sda_in_sig = I2CEXT0_SDA_IN_IDX;
-        scl_in_sig = I2CEXT0_SCL_IN_IDX;
-    }
-    else if (i2c_num == I2C_NUM_1) {
-        sda_in_sig = I2CEXT1_SDA_IN_IDX;
-        scl_in_sig = I2CEXT1_SCL_IN_IDX;
-    }
-    int scl_io = GPIO.func_in_sel_cfg[scl_in_sig].func_sel;
-    int sda_io = GPIO.func_in_sel_cfg[sda_in_sig].func_sel;
-    I2C_CHECK((GPIO_IS_VALID_OUTPUT_GPIO(scl_io)), I2C_SCL_IO_ERR_STR, ESP_ERR_INVALID_ARG);
-    I2C_CHECK((GPIO_IS_VALID_GPIO(sda_io)), I2C_SDA_IO_ERR_STR, ESP_ERR_INVALID_ARG);
-    // We do not check whether the SDA line is low
-    // because after some serious interference, the bus may keep high all the time and the i2c bus is out of service.
-    gpio_set_direction(scl_io, GPIO_MODE_OUTPUT_OD);
-    gpio_set_direction(sda_io, GPIO_MODE_OUTPUT_OD);
-    gpio_set_level(scl_io, 1);
-    gpio_set_level(sda_io, 1);
-    gpio_set_level(sda_io, 0);
-    for (int i = 0; i < 9; i++) {
-        gpio_set_level(scl_io, 0);
-        gpio_set_level(scl_io, 1);
-    }
-    gpio_set_level(sda_io, 1);
-    i2c_set_pin(i2c_num, sda_io, scl_io, 1, 1, I2C_MODE_MASTER);
-    return OK;*/
-
     i2c_hw_setpins(config);
 
     esp32_gpiowrite(config->scl_pin, 1);
@@ -415,8 +370,6 @@ static int i2c_hw_clear_bus(const i2c_config_t* config)
     }
     esp32_gpiowrite(config->sda_pin, 1);
 }
-
-
 
 static inline void i2c_esp32_reset_txfifo(i2c_port_t i2c_num)
 {
@@ -444,30 +397,29 @@ static void i2c_esp32_clear_commands(i2c_port_t i2c_num)
         *cmd++ = (struct i2c_esp32_cmd) { 0 };
     }
 }
-
+#if 0
 static void i2c_esp32_dump(struct esp32_i2c_priv_s *priv)
 {
     printf("esp32_i2c_%d: \n", priv->i2c_num);
-    //printf("\tscl_low_period:  %08x\n", I2C[priv->i2c_num]->scl_low_period);
+    printf("\tscl_low_period:  %08x\n", I2C[priv->i2c_num]->scl_low_period);
     printf("\tctr:  %08x;\n", I2C[priv->i2c_num]->ctr.val);
     printf("\tstatus : %08x;\n", I2C[priv->i2c_num]->status_reg.val);
     printf("\ttimeout : %08x\n", I2C[priv->i2c_num]->timeout);
-    //printf("\tslave_addr : %08x\n", I2C[priv->i2c_num]->slave_addr);
+    printf("\tslave_addr : %08x\n", I2C[priv->i2c_num]->slave_addr);
     printf("\tfifo_st : %08x\n", I2C[priv->i2c_num]->fifo_st);
     printf("\tfifo_conf : %08x\n", I2C[priv->i2c_num]->fifo_conf);
     //printf("\tfifo_data : %08x\n", I2C[priv->i2c_num]->fifo_data);
     printf("\tint_raw : %08x\n", I2C[priv->i2c_num]->int_raw);
     printf("\tint_ena : %08x\n", I2C[priv->i2c_num]->int_ena);
     printf("\tint_status : %08x\n", I2C[priv->i2c_num]->int_status);
-    //printf("\tsda_hold : %08x\n", I2C[priv->i2c_num]->sda_hold);
-    //printf("\tsda_sample : %08x\n", I2C[priv->i2c_num]->sda_sample);
-    //printf("\tscl_high_period : %08x\n", I2C[priv->i2c_num]->scl_high_period);
-    //printf("\tscl_start_hold : %08x\n", I2C[priv->i2c_num]->scl_start_hold);
-    //printf("\tscl_stop_hold : %08x\n", I2C[priv->i2c_num]->scl_stop_hold);
-    //printf("\tscl_filter_cfg : %08x\n", I2C[priv->i2c_num]->scl_filter_cfg);
-    //printf("\tsda_filter_cfg : %08x\n", I2C[priv->i2c_num]->sda_filter_cfg);
-    //for (int i = 0; i<16; i++) {
-    for (int i = 0; i<6; i++) {
+    printf("\tsda_hold : %08x\n", I2C[priv->i2c_num]->sda_hold);
+    printf("\tsda_sample : %08x\n", I2C[priv->i2c_num]->sda_sample);
+    printf("\tscl_high_period : %08x\n", I2C[priv->i2c_num]->scl_high_period);
+    printf("\tscl_start_hold : %08x\n", I2C[priv->i2c_num]->scl_start_hold);
+    printf("\tscl_stop_hold : %08x\n", I2C[priv->i2c_num]->scl_stop_hold);
+    printf("\tscl_filter_cfg : %08x\n", I2C[priv->i2c_num]->scl_filter_cfg);
+    printf("\tsda_filter_cfg : %08x\n", I2C[priv->i2c_num]->sda_filter_cfg);
+    for (int i = 0; i<16; i++) {
         printf("\tCMD %d : n=%d, acken=%d, ackexp=%d,ackval=%d,opcode=%d, done=%d \n",
             i, I2C[priv->i2c_num]->command[i].byte_num, I2C[priv->i2c_num]->command[i].ack_en,
             I2C[priv->i2c_num]->command[i].ack_exp, I2C[priv->i2c_num]->command[i].ack_val,
@@ -476,11 +428,11 @@ static void i2c_esp32_dump(struct esp32_i2c_priv_s *priv)
     printf("\tramdata[0] : %08x\n", I2C[priv->i2c_num]->ram_data[0]);
     printf("\tramdata[1] : %08x\n", I2C[priv->i2c_num]->ram_data[1]);
 }
-
+#endif
 /*
- * Update msg->length and cmd: 
- *  if I2C_M_TEN, the slave address takes 2bytes; 
- *  if read, add an I2C_ESP32_OP_WRITE command to write addr;
+ * Write slave address to fifo and update cmd pointer: 
+ *   if I2C_M_TEN, the slave address takes 2bytes; 
+ *   if read, add an I2C_ESP32_OP_WRITE command to write addr;
  */
 static volatile struct i2c_esp32_cmd * i2c_esp32_write_addr(struct i2c_dev_s *dev,
              volatile struct i2c_esp32_cmd *cmd, struct i2c_msg_s *msg, uint16_t addr)
@@ -516,43 +468,30 @@ static int i2c_esp32_wait(struct i2c_dev_s *dev, volatile struct i2c_esp32_cmd *
 #if WAIT_ISR
     /*wait for cmd done*/
     if (wait_cmd) {
-        //printf("waitcmd:%d\n", wait_cmd->opcode);
         while (!wait_cmd->done) {
-            //usleep(200);    
             usleep(10);
         }
-        //printf("waitcmd done!\n");
     }
 
     /* Wait for I2C bus to finish its business */
     while (I2C[priv->i2c_num]->status_reg.bus_busy) {
-        //usleep(200);
         usleep(10);
     }
 #else
     int time = 0;
     do{
         if ((wait_cmd && wait_cmd->done) && !I2C[priv->i2c_num]->status_reg.bus_busy) {
-        //if (wait_cmd && wait_cmd->done){
-            //printf("esp32_i2c_%d cmd donw !\n", priv->i2c_num);
             break;
         }
         usleep(10);
         time += 10;
-        
-        /*if (!I2C[priv->i2c_num]->status_reg.bus_busy) {
-            //printf("esp32_i2c_%d not busy !\n", priv->i2c_num);
-            break;
-        }*/
         if (time > priv->timeout) {
-            //printf("esp32_i2c_%d timeout status: %08x !\n", priv->i2c_num, I2C[priv->i2c_num]->status_reg);
             return -ETIMEDOUT;
         }
     } while (!I2C[priv->i2c_num]->int_raw.arbitration_lost &&
         !I2C[priv->i2c_num]->int_raw.time_out &&
-        !I2C[priv->i2c_num]->int_raw.ack_err);///???
+        !I2C[priv->i2c_num]->int_raw.ack_err);///
 #endif
-    //printf("esp32_i2c_%d OK status: %08x !\n", priv->i2c_num, I2C[priv->i2c_num]->status_reg);
 
     return 0;
 }
@@ -566,33 +505,22 @@ static int i2c_esp32_transmit(struct i2c_dev_s *dev)
     /* Start transmission and wait for the ISR to give the semaphore */
     struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev; 
 
-    //printf("esp32_i2c_%d start status: %08x !\n",  priv->i2c_num, I2C[priv->i2c_num]->status_reg);
-
-    //I2C[priv->i2c_num]->ctr.trans_start = 0;
     I2C[priv->i2c_num]->ctr.trans_start = 1;
 
 #if WAIT_ISR
-    //printf("esp32_i2c_%d status: %08x !\n", priv->i2c_num, I2C[priv->i2c_num]->status_reg);
     (void)clock_gettime(CLOCK_REALTIME, &abstime);
     abstime.tv_nsec +=  priv->timeout * NS_COUNT_IN_MS;
     if (abstime.tv_nsec >= NS_COUNT_IN_S) {
         abstime.tv_nsec %= NS_COUNT_IN_S;
         abstime.tv_sec++;
     }
-
-    //printf("esp32_i2c_%d wait time: %ld : %ld \n", priv->i2c_num, abstime.tv_sec, abstime.tv_nsec);
-
     ret = sem_timedwait(&priv->sem_isr, &abstime);
-    //printf("esp32_i2c_%d wait time: %ld : %ld \n", priv->i2c_num, abstime.tv_sec, abstime.tv_nsec);
     if(ret < 0) {
         ret = get_errno();
-        //printf("i2c_esp32_transmit sem_isr timeout; ret = %d! \n", ret);
         return -ETIMEDOUT;
     }
 
     status = I2C[priv->i2c_num]->int_raw.val;
-    //printf("i2c_esp32_transmit int_raw: %d! \n", status);
-    
     if (status & (I2C_ARBITRATION_LOST_INT_RAW | I2C_ACK_ERR_INT_RAW)) {
         return -EIO;
     }
@@ -607,20 +535,12 @@ static int i2c_esp32_transmit(struct i2c_dev_s *dev)
 static int i2c_esp32_transmit_wait(struct i2c_dev_s *dev, volatile struct i2c_esp32_cmd *wait_cmd)
 {
     int ret;
-
     struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev;
-
-    //i2c_esp32_dump(priv);
-    /*if (wait_cmd) {
-        printf("waitcmd:%d\n", wait_cmd->opcode);
-    }*/
 
     ret = i2c_esp32_transmit(dev);
     if (!ret) {
         ret = i2c_esp32_wait(dev, wait_cmd);
     }
-
-    //i2c_esp32_dump(priv);
 
     return ret;
 }
@@ -636,9 +556,9 @@ static int i2c_esp32_read_msg(struct i2c_dev_s *dev, uint16_t addr,struct i2c_ms
     /* Set the R/W bit to R */
     addr |= BIT(0);
 
-    /*Must be the first one; 
-    *if I2C_M_NOSTART, it means the i2c-frame is too long to be handled in one msg!
-    */
+    /* I2C_ESP32_OP_RSTART must be the first one; 
+     * if I2C_M_NOSTART, it means the i2c-frame is too long to be handled in one msg!
+     */
     if ((msg->flags & I2C_M_NOSTART) != I2C_M_NOSTART) {
         *cmd++ = (struct i2c_esp32_cmd) {
             .opcode = I2C_ESP32_OP_RSTART
@@ -646,7 +566,6 @@ static int i2c_esp32_read_msg(struct i2c_dev_s *dev, uint16_t addr,struct i2c_ms
     }
 
     cmd = i2c_esp32_write_addr(dev, cmd, msg, addr);
-    //printf("readmsg: %d\n", msg->length);
     for (; msg->length; cmd = (void *)I2C_COMD0_REG(priv->i2c_num)) {
         volatile struct i2c_esp32_cmd *wait_cmd = NULL;
         uint32_t to_read = min(I2C_ESP32_BUFFER_SIZE, msg->length - 1);
@@ -659,7 +578,6 @@ static int i2c_esp32_read_msg(struct i2c_dev_s *dev, uint16_t addr,struct i2c_ms
                 .opcode = I2C_ESP32_OP_READ,
                 .num_bytes = to_read,
             };
-            //printf("to read: %d\n", to_read);
         }
         /* I2C master won't acknowledge the last byte read from the
          * slave device.  Divide the read command in two segments as
@@ -674,7 +592,6 @@ static int i2c_esp32_read_msg(struct i2c_dev_s *dev, uint16_t addr,struct i2c_ms
                 .num_bytes = 1,
                 .ack_val = true,
             };
-            //printf("to read: %d\n", 1);
 
             /* Account for the `msg.len - 1` when clamping
              * transmission length to FIFO buffer size.
@@ -686,14 +603,12 @@ static int i2c_esp32_read_msg(struct i2c_dev_s *dev, uint16_t addr,struct i2c_ms
                 *cmd++ = (struct i2c_esp32_cmd) {
                     .opcode = I2C_ESP32_OP_STOP
                 };
-                //printf("CMD stop\n", 1);
             }
         }
         if (!wait_cmd) {
             *cmd++ = (struct i2c_esp32_cmd) {
                 .opcode = I2C_ESP32_OP_END
             };
-            //printf("CMD end\n", 1);
         }
 
         ret = i2c_esp32_transmit_wait(dev, wait_cmd);
@@ -701,22 +616,15 @@ static int i2c_esp32_read_msg(struct i2c_dev_s *dev, uint16_t addr,struct i2c_ms
             return ret;
         }
         for (i = 0; i < to_read; i++) {
-#if 0
-            uint32_t v = READ_PERI_REG(I2C_DATA_APB_REG(priv->i2c_num));
-#else
             uint32_t v = I2C[priv->i2c_num]->fifo_data.val;
-#endif
             v = I2C_FIFO_RDATA & v;
-            //printf("data[%d]=%d\n", i, v);
             *msg->buffer++ = v ;
         }
         msg->length -= to_read;
 
         i2c_esp32_reset_txfifo(priv->i2c_num);
-        //printf("cmdnum=%d; to_read=%d; ret=%d\n", cmdnum, to_read, ret);
     }
 
-    //printf("\n");
     return 0;
 }
 
@@ -724,39 +632,39 @@ static int i2c_esp32_write_msg(struct i2c_dev_s *dev, uint16_t addr, struct i2c_
 {
 	struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev;    
     volatile struct i2c_esp32_cmd *cmd = (void *)I2C_COMD0_REG(priv->i2c_num);
-    int addrSent = 0;///
+    int addrSent = 0; ///
 
-    /*Must be the first one;
-    *if I2C_M_NOSTART, it means the i2c-frame is too long to be handled in one msg!
-    */
+    /* I2C_ESP32_OP_RSTART must be the first one;
+     * if I2C_M_NOSTART, it means the i2c-frame is too long to be handled in one msg!
+     */
     if((msg->flags & I2C_M_NOSTART) != I2C_M_NOSTART) {
         *cmd++ = (struct i2c_esp32_cmd) {
             .opcode = I2C_ESP32_OP_RSTART
         };
     }
     cmd = i2c_esp32_write_addr(dev, cmd, msg, addr);
-    //printf("writemsg: %d\n", msg->length);
     for (; msg->length; cmd = (void *)I2C_COMD0_REG(priv->i2c_num)) {
         uint32_t i = 1;
         int ret;
         uint32_t to_send = 0;//data len
 
-        /* Copy data to TX fifo */
+        /* Get datalength in this command */
         if (addrSent){
             ret = 0;
         } else {
-            ret = 1;//1byte addr
+            ret = 1; //address Length
             if ((msg->flags & I2C_M_TEN) == I2C_M_TEN) {
                 ret = 2;
             }
             addrSent = 0;
         }
         to_send = min(I2C_ESP32_BUFFER_SIZE - ret, msg->length);
+        /* Copy data to TX fifo */
         for (i = 0; i < to_send; i++) {
             WRITE_PERI_REG(I2C_DATA_APB_REG(priv->i2c_num), *msg->buffer++);
         }
-        //printf("writemsg %d: alen=%d, dlen=%d,\n", msg->length, ret, to_send);
-        /* set*/
+
+        /* set WRITE command*/
         *cmd++ = (struct i2c_esp32_cmd) {
             .opcode = I2C_ESP32_OP_WRITE,
             .num_bytes = to_send + ret,//total len
@@ -775,8 +683,6 @@ static int i2c_esp32_write_msg(struct i2c_dev_s *dev, uint16_t addr, struct i2c_
             *cmd = (struct i2c_esp32_cmd) {
                 .opcode = I2C_ESP32_OP_END
             };
-            //cmdnum++;
-            //printf("I2C_ESP32_OP_END %d\n", cmdnum);
         }
 
         ret = i2c_esp32_transmit_wait(dev, cmd);
@@ -785,10 +691,8 @@ static int i2c_esp32_write_msg(struct i2c_dev_s *dev, uint16_t addr, struct i2c_
         }
 
         i2c_esp32_reset_txfifo(priv->i2c_num);
-        //printf("cmdnum=%d; to_send=%d; ret=%d\n", cmdnum, to_send, ret);
     }
 
-    //printf("\n");
     return 0;
 }
 
@@ -803,7 +707,6 @@ static int esp32_i2c_initialize(struct esp32_i2c_priv_s *priv)
 	/* Chip level configure*/
 	hsi2c_setup(priv);
 
-    //i2c_hw_clear_bus(priv->config);
     //end of initallize!!
     priv->initialized = 1;
 
@@ -814,6 +717,18 @@ static int esp32_i2c_uninitialize(struct esp32_i2c_priv_s *priv)
 {
 	/* Disable I2C */
     i2c_hw_disable(priv->i2c_num);
+
+    I2C[priv->i2c_num]->ctr.trans_start = 0;
+    i2c_esp32_reset_txfifo(priv->i2c_num);
+    i2c_esp32_reset_rxfifo(priv->i2c_num);
+    i2c_esp32_reset_interrupts(priv->i2c_num);
+    i2c_esp32_clear_commands(priv->i2c_num);
+
+    I2C[priv->i2c_num]->int_ena.val = 0;
+
+    //end of initallize!!
+    priv->initialized = 0;
+
 	return OK;
 }
 
@@ -837,13 +752,14 @@ int esp32_i2c_setaddress(FAR struct i2c_dev_s *dev, int addr, int nbits)
         printf("i2c dev is NULL\n");
         return ERROR;
     }
+    sem_wait(&priv->sem_excl);
     if(addr > 0) {
 	    priv->slave_addr = addr;
-        //printf("i2c slave-addr: %d \n", priv->slave_addr);
     }
     if (nbits > 0 && priv->config != NULL) {
         ;
     }
+    sem_post(&priv->sem_excl);
 	return OK;
 }
 
@@ -859,8 +775,10 @@ uint32_t esp32_i2c_setclock(FAR struct i2c_dev_s *dev, uint32_t frequency)
     struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev;
     int i2c_num = priv->i2c_num;
 
-    if (priv->xfer_speed != frequency)
+    if (priv != NULL && priv->xfer_speed != frequency)
     {
+        sem_wait(&priv->sem_excl);
+
         priv->xfer_speed = frequency;
         int cycle = (I2C_APB_CLK_FREQ / frequency);
         int half_cycle = cycle / 2;
@@ -878,7 +796,7 @@ uint32_t esp32_i2c_setclock(FAR struct i2c_dev_s *dev, uint32_t frequency)
         I2C[i2c_num]->scl_stop_hold.time = half_cycle;
         I2C[i2c_num]->scl_stop_setup.time = half_cycle;
 
-        //printf("i2c frequency:%d, cycle:%d \n", priv->xfer_speed, cycle);
+        sem_post(&priv->sem_excl);
     }
     return OK;
 }
@@ -897,8 +815,8 @@ int esp32_i2c_transfer(struct i2c_dev_s *dev, struct i2c_msg_s *msgs, int msgc)
 	int ret = 0;
     uint8_t i = 0;
     uint16_t addr = msgs->addr;;
-	/* Ensure that address or flags don't change meanwhile */
 
+	/* Ensure that address or flags don't change meanwhile */
     sem_wait(&priv->sem_excl);
 	
 	I2C[priv->i2c_num]->ctr.trans_start = 0;
@@ -916,9 +834,7 @@ int esp32_i2c_transfer(struct i2c_dev_s *dev, struct i2c_msg_s *msgs, int msgc)
         addr &= BIT_MASK(10);
     }
     addr <<= 1;
-#if 0
-    printf("esp32_i2c_transfer: to 0x%04x, %d msgs\n", addr, msgc);
-#endif
+
     for (i = 0; i < msgc; i++) {
 
         if ((msgs[i].flags & I2C_M_READ) != I2C_M_READ) {
@@ -926,10 +842,6 @@ int esp32_i2c_transfer(struct i2c_dev_s *dev, struct i2c_msg_s *msgs, int msgc)
         } else {
             ret = i2c_esp32_read_msg(dev, addr, &msgs[i]);
         }
-#if 0
-        printf("esp32_i2c_transfer %d: 0x%08x, %d: %02x, %02x; ret=%d\n", i,
-            msgs[i].flags, msgs[i].length, msgs[i].buffer[0], msgs[i].buffer[1], ret);
-#endif
 
         if (ret < 0) {
             break;
@@ -1006,35 +918,18 @@ struct i2c_dev_s *up_i2cinitialize(int port)
 	struct esp32_i2c_priv_s *priv = NULL;
 	const i2c_config_t *config;
 
-#if 0
-    printf("up_i2cinitialize(%d) start...\n", port);
-#endif
 	/* check if port is valid */
 	if (port < 0 || port >= I2C_NUM_MAX) {
 		return NULL;
 	}
 
-    if(port == 0) 
-    {
-        printf("port 0 is i2c salve, currently not supported, please config to port 1\n");
-        return NULL;
-    }
-
 	/* Get I2C private structure */
 	if (g_esp32_i2c_priv[port] != NULL) {
 		priv = g_esp32_i2c_priv[port];
 		priv->refs++;
-#if 0
-        printf("up_i2cinitialize(%d): it is already initiallized %d\n", port, priv->refs);
-#endif
-        usleep(100);
 		return (FAR struct i2c_dev_s *)priv;
 	}
 
-#if 0
-    printf("up_i2cinitialize: private data...\n");
-    usleep(100);
-#endif
 	switch (port) {
 	case 0:
 		priv = &esp32_i2c0_priv;
@@ -1062,9 +957,6 @@ struct i2c_dev_s *up_i2cinitialize(int port)
 	 */
     priv->refs++;
 
-#if 0
-    printf("up_i2cinitialize: ref= %d\n", priv->refs);
-#endif
 	if (priv->refs == 1) {
 		/* Initialize the device structure */
 		priv->config = config;
@@ -1077,12 +969,16 @@ struct i2c_dev_s *up_i2cinitialize(int port)
 	}
 
 	g_esp32_i2c_priv[port] = priv;
-#if 0
-    printf("up_i2cinitialize ends!\n");
-#endif
+
 	return (FAR struct i2c_dev_s *)priv;
 }
 
+/**
+ * @brief    Unitialize one I2C bus
+ * @param    struct i2c_master_s *dev :
+ * @return   ==0 : OK
+ * @note
+ */
 int up_i2cuninitialize(FAR struct i2c_dev_s *dev)
 {
 	struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev;
@@ -1102,7 +998,7 @@ int up_i2cuninitialize(FAR struct i2c_dev_s *dev)
 		/* Release unused resources */
         sem_destroy(&priv->sem_excl);
 
-        sem_destroy(&priv->sem_isr);//?
+        sem_destroy(&priv->sem_isr);//
 
 	} else {
 		/* No.. just decrement the number of references to the device */
@@ -1114,16 +1010,9 @@ int up_i2cuninitialize(FAR struct i2c_dev_s *dev)
 }
 
 /**
- * @brief    Unitialize one I2C bus
- * @param    struct i2c_master_s *dev :
- * @return   ==0 : OK
- * @note
- */
-
-/**
- * @brief   Unitialize one I2C bus for the I2C character driver
- * @param   struct i2c_master_s *dev :
- * @return  ==0 : OK
+ * @brief   Register I2C bus into file system as I2C character driver
+ * @param   I2C bus number :
+ * @return  none
  * @note
  */
 void esp32_i2c_register(int bus)
@@ -1133,16 +1022,13 @@ void esp32_i2c_register(int bus)
 
 	i2c = up_i2cinitialize(bus);
 	if (i2c != NULL) {
-        //printf("i2c: %d\n", (i2c->ops==NULL)||(i2c->ops->setaddress == NULL));
 #ifdef CONFIG_I2C_USERIO
 		snprintf(path, 16, "/dev/i2c-%d", bus);
 		if (i2c_uioregister(path, i2c) < 0) {
             up_i2cuninitialize(i2c);
 		}
 #endif
-	} else {
-        //printf("i2c register: %d\n", (i2c==NULL) || (i2c->ops == NULL) || (i2c->ops->setaddress == NULL));
-    }
+	}
 }
 
 /*******************************************The end of file****************************************/
