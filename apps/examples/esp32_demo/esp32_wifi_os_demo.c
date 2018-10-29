@@ -63,6 +63,23 @@ void test_mutex(void)
     mutex_delete_wrapper(mutex);
     printf("====Test mutex sucess====\n");
 }
+
+void test_recursive_mutex(void)
+{
+    void *mutex = recursive_mutex_create_wrapper();
+    if(!mutex)
+        printf("mutex is NULL\n");
+    static int num = 0; 
+    mutex_lock_wrapper(mutex);
+    mutex_lock_wrapper(mutex);
+    num++;
+    mutex_unlock_wrapper(mutex);
+    mutex_unlock_wrapper(mutex);
+    mutex_delete_wrapper(mutex);
+    printf("====Test mutex sucess====\n");
+}
+
+
 void test_sem(void)
 {
     void *sem = semphr_create_wrapper(1, 1);
@@ -378,12 +395,12 @@ void event_group_demo(void)
 
 }
 
-
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
     test_rand();
     test_mutex();
+    test_recursive_mutex();
     test_sem();
     test_time();
     test_task();
