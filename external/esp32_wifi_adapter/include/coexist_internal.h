@@ -40,11 +40,12 @@ extern "C" {
 #endif
 
 typedef enum {
-    COEX_PREFER_WIFI = 0,
-    COEX_PREFER_BT,
-    COEX_PREFER_BALANCE,
-    COEX_PREFER_NUM,
-} coex_prefer_t;
+	COEX_PREFER_WIFI = 0,
+	COEX_PREFER_BT,
+	COEX_PREFER_BALANCE,
+	COEX_PREFER_NUM,
+}
+coex_prefer_t;
 
 /**
  * @brief Init software coexist
@@ -91,5 +92,4 @@ esp_err_t coex_preference_set(coex_prefer_t prefer);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __COEXIST_INTERNAL_H__ */
+#endif							/* __COEXIST_INTERNAL_H__ */

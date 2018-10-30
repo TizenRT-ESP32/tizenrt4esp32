@@ -19,15 +19,12 @@
 #ifndef EVENT_GROUPS_H
 #define EVENT_GROUPS_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
 #include "esp_define.h"
-
-
 
 /**
  * An event group is a collection of bits to which an application can assign a
@@ -55,8 +52,6 @@ extern "C" {
  *
  */
 
-
-
 /**
  * event_groups.h
  *
@@ -66,7 +61,7 @@ extern "C" {
  *
  * \ingroup EventGroup
  */
-typedef void * EventGroupHandle_t;
+typedef void *EventGroupHandle_t;
 
 /*
  * The type that holds event bits always matches TickType_t - therefore the
@@ -124,10 +119,7 @@ typedef TickType_t EventBits_t;
  * \ingroup EventGroup
  */
 
-EventGroupHandle_t xEventGroupCreate( void );
-
-
-
+EventGroupHandle_t xEventGroupCreate(void);
 
 /**
  * [Potentially] block to wait for one or more bits to be set within a
@@ -211,7 +203,7 @@ EventGroupHandle_t xEventGroupCreate( void );
  * @endcode{c}
  * \ingroup EventGroup
  */
-EventBits_t xEventGroupWaitBits( EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToWaitFor, const BaseType_t xClearOnExit, const BaseType_t xWaitForAllBits, TickType_t xTicksToWait );
+EventBits_t xEventGroupWaitBits(EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToWaitFor, const BaseType_t xClearOnExit, const BaseType_t xWaitForAllBits, TickType_t xTicksToWait);
 
 /**
  * Clear bits within an event group.  This function cannot be called from an
@@ -262,8 +254,7 @@ EventBits_t xEventGroupWaitBits( EventGroupHandle_t xEventGroup, const EventBits
  * @endcode
  * \ingroup EventGroup
  */
-EventBits_t xEventGroupClearBits( EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToClear );
-
+EventBits_t xEventGroupClearBits(EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToClear);
 
 /**
  * Set bits within an event group.
@@ -331,9 +322,7 @@ EventBits_t xEventGroupClearBits( EventGroupHandle_t xEventGroup, const EventBit
  * @endcode{c}
  * \ingroup EventGroup
  */
-EventBits_t xEventGroupSetBits( EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToSet );
-
-
+EventBits_t xEventGroupSetBits(EventGroupHandle_t xEventGroup, const EventBits_t uxBitsToSet);
 
 /**
  *
@@ -343,16 +332,11 @@ EventBits_t xEventGroupSetBits( EventGroupHandle_t xEventGroup, const EventBits_
  *
  * @param xEventGroup The event group being deleted.
  */
-void vEventGroupDelete( EventGroupHandle_t xEventGroup );
-
-
+void vEventGroupDelete(EventGroupHandle_t xEventGroup);
 
 /** @endcond */
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* EVENT_GROUPS_H */
-
-
+#endif							/* EVENT_GROUPS_H */

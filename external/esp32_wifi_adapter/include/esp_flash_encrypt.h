@@ -53,17 +53,18 @@
  *
  * @return true if flash encryption is enabled.
  */
-static inline /** @cond */ IRAM_ATTR /** @endcond */ bool esp_flash_encryption_enabled(void) {
-    uint32_t flash_crypt_cnt = REG_GET_FIELD(EFUSE_BLK0_RDATA0_REG, EFUSE_RD_FLASH_CRYPT_CNT);
-    /* __builtin_parity is in flash, so we calculate parity inline */
-    bool enabled = false;
-    while(flash_crypt_cnt) {
-        if (flash_crypt_cnt & 1) {
-            enabled = !enabled;
-        }
-        flash_crypt_cnt >>= 1;
-    }
-    return enabled;
+static inline /** @cond */ IRAM_ATTR /** @endcond */ bool esp_flash_encryption_enabled(void)
+{
+	uint32_t flash_crypt_cnt = REG_GET_FIELD(EFUSE_BLK0_RDATA0_REG, EFUSE_RD_FLASH_CRYPT_CNT);
+	/* __builtin_parity is in flash, so we calculate parity inline */
+	bool enabled = false;
+	while (flash_crypt_cnt) {
+		if (flash_crypt_cnt & 1) {
+			enabled = !enabled;
+		}
+		flash_crypt_cnt >>= 1;
+	}
+	return enabled;
 }
 
 /* @brief Update on-device flash encryption
@@ -107,7 +108,6 @@ static inline /** @cond */ IRAM_ATTR /** @endcond */ bool esp_flash_encryption_e
  * if a fatal error occured during encryption of all partitions.
  */
 esp_err_t esp_flash_encrypt_check_and_update(void);
-
 
 /** @brief Encrypt-in-place a block of flash sectors
  *

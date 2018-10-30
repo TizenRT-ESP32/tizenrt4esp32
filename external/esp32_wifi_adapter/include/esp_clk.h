@@ -80,7 +80,6 @@ int esp_clk_cpu_freq(void);
  */
 int esp_clk_apb_freq(void);
 
-
 /**
  * @brief Read value of RTC counter, converting it to microseconds
  * @attention The value returned by this function may change abruptly when

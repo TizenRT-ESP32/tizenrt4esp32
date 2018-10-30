@@ -46,14 +46,14 @@ extern "C" {
 #define ESP_ERR_FLASH_OP_FAIL    (ESP_ERR_FLASH_BASE + 1)
 #define ESP_ERR_FLASH_OP_TIMEOUT (ESP_ERR_FLASH_BASE + 2)
 
-#define SPI_FLASH_SEC_SIZE  4096    /**< SPI Flash sector size */
+#define SPI_FLASH_SEC_SIZE  4096	/**< SPI Flash sector size */
 
-#define SPI_FLASH_MMU_PAGE_SIZE 0x10000 /**< Flash cache MMU mapping page size */
+#define SPI_FLASH_MMU_PAGE_SIZE 0x10000	/**< Flash cache MMU mapping page size */
 
 /**
  * @brief  Initialize SPI flash access driver
  *
- *  This function must be called exactly once, before any other 
+ *  This function must be called exactly once, before any other
  *  spi_flash_* functions are called.
  *  Currently this function is called from startup code. There is
  *  no need to call it from application code.
@@ -90,7 +90,6 @@ esp_err_t spi_flash_erase_sector(size_t sector);
  */
 esp_err_t spi_flash_erase_range(size_t start_address, size_t size);
 
-
 /**
  * @brief  Write data to Flash.
  *
@@ -108,7 +107,6 @@ esp_err_t spi_flash_erase_range(size_t start_address, size_t size);
  * @return esp_err_t
  */
 esp_err_t spi_flash_write(size_t dest_addr, const void *src, size_t size);
-
 
 /**
  * @brief  Write data encrypted to Flash.
@@ -155,7 +153,6 @@ esp_err_t spi_flash_write_encrypted(size_t dest_addr, const void *src, size_t si
  */
 esp_err_t spi_flash_read(size_t src_addr, void *dest, size_t size);
 
-
 /**
  * @brief  Read data from Encrypted Flash.
  *
@@ -176,8 +173,8 @@ esp_err_t spi_flash_read_encrypted(size_t src, void *dest, size_t size);
  * @brief Enumeration which specifies memory space requested in an mmap call
  */
 typedef enum {
-    SPI_FLASH_MMAP_DATA,    /**< map to data memory (Vaddr0), allows byte-aligned access, 4 MB total */
-    SPI_FLASH_MMAP_INST,    /**< map to instruction memory (Vaddr1-3), allows only 4-byte-aligned access, 11 MB total */
+	SPI_FLASH_MMAP_DATA,/**< map to data memory (Vaddr0), allows byte-aligned access, 4 MB total */
+	SPI_FLASH_MMAP_INST,/**< map to instruction memory (Vaddr1-3), allows only 4-byte-aligned access, 11 MB total */
 } spi_flash_mmap_memory_t;
 
 /**
@@ -207,8 +204,7 @@ typedef uint32_t spi_flash_mmap_handle_t;
  *
  * @return  ESP_OK on success, ESP_ERR_NO_MEM if pages can not be allocated
  */
-esp_err_t spi_flash_mmap(size_t src_addr, size_t size, spi_flash_mmap_memory_t memory,
-                         const void** out_ptr, spi_flash_mmap_handle_t* out_handle);
+esp_err_t spi_flash_mmap(size_t src_addr, size_t size, spi_flash_mmap_memory_t memory, const void **out_ptr, spi_flash_mmap_handle_t *out_handle);
 
 /**
  * @brief Map sequences of pages of flash memory into data or instruction address space
@@ -233,9 +229,7 @@ esp_err_t spi_flash_mmap(size_t src_addr, size_t size, spi_flash_mmap_memory_t m
  *      - ESP_ERR_INVALID_ARG if pagecount is zero or pages array is not in
  *        internal memory
  */
-esp_err_t spi_flash_mmap_pages(const int *pages, size_t page_count, spi_flash_mmap_memory_t memory,
-                         const void** out_ptr, spi_flash_mmap_handle_t* out_handle);
-
+esp_err_t spi_flash_mmap_pages(const int *pages, size_t page_count, spi_flash_mmap_memory_t memory, const void **out_ptr, spi_flash_mmap_handle_t *out_handle);
 
 /**
  * @brief Release region previously obtained using spi_flash_mmap
@@ -273,8 +267,7 @@ void spi_flash_mmap_dump(void);
  */
 uint32_t spi_flash_mmap_get_free_pages(spi_flash_mmap_memory_t memory);
 
-
-#define SPI_FLASH_CACHE2PHYS_FAIL UINT32_MAX /*<! Result from spi_flash_cache2phys() if flash cache address is invalid */
+#define SPI_FLASH_CACHE2PHYS_FAIL UINT32_MAX	/*<! Result from spi_flash_cache2phys() if flash cache address is invalid */
 
 /**
  * @brief Given a memory address where flash is mapped, return the corresponding physical flash offset.
@@ -362,10 +355,10 @@ typedef void (*spi_flash_op_unlock_func_t)(void);
  *       For example structure can be placed in DRAM and functions in IRAM sections.
  */
 typedef struct {
-    spi_flash_guard_start_func_t    start;      /**< critical section start function. */
-    spi_flash_guard_end_func_t      end;        /**< critical section end function. */
-    spi_flash_op_lock_func_t        op_lock;    /**< flash access API lock function.*/
-    spi_flash_op_unlock_func_t      op_unlock;  /**< flash access API unlock function.*/
+	spi_flash_guard_start_func_t start;		/**< critical section start function. */
+	spi_flash_guard_end_func_t end;			/**< critical section end function. */
+	spi_flash_op_lock_func_t op_lock;		/**< flash access API lock function.*/
+	spi_flash_op_unlock_func_t op_unlock;	/**< flash access API unlock function.*/
 } spi_flash_guard_funcs_t;
 
 /**
@@ -376,8 +369,7 @@ typedef struct {
  *
  * @param funcs pointer to structure holding flash access guard functions.
  */
-void spi_flash_guard_set(const spi_flash_guard_funcs_t* funcs);
-
+void spi_flash_guard_set(const spi_flash_guard_funcs_t *funcs);
 
 /**
  * @brief Get the guard functions used for flash access
@@ -406,15 +398,15 @@ extern const spi_flash_guard_funcs_t g_flash_guard_no_os_ops;
  * Structure holding statistics for one type of operation
  */
 typedef struct {
-    uint32_t count;     // number of times operation was executed
-    uint32_t time;      // total time taken, in microseconds
-    uint32_t bytes;     // total number of bytes
+	uint32_t count;			// number of times operation was executed
+	uint32_t time;			// total time taken, in microseconds
+	uint32_t bytes;			// total number of bytes
 } spi_flash_counter_t;
 
 typedef struct {
-    spi_flash_counter_t read;
-    spi_flash_counter_t write;
-    spi_flash_counter_t erase;
+	spi_flash_counter_t read;
+	spi_flash_counter_t write;
+	spi_flash_counter_t erase;
 } spi_flash_counters_t;
 
 /**
@@ -433,14 +425,11 @@ void spi_flash_dump_counters(void);
  * @return  pointer to the spi_flash_counters_t structure holding values
  *          of the operation counters
  */
-const spi_flash_counters_t* spi_flash_get_counters(void);
+const spi_flash_counters_t *spi_flash_get_counters(void);
 
-#endif //CONFIG_SPI_FLASH_ENABLE_COUNTERS
+#endif							//CONFIG_SPI_FLASH_ENABLE_COUNTERS
 
 #ifdef __cplusplus
 }
 #endif
-
-
-#endif /* ESP_SPI_FLASH_H */
-
+#endif							/* ESP_SPI_FLASH_H */

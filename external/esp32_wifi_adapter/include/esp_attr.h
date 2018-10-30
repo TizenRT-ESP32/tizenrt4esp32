@@ -73,4 +73,4 @@
 // after restart or during a deep sleep / wake cycle.
 #define RTC_NOINIT_ATTR  __attribute__((section(".rtc_noinit")))
 
-#endif /* __ESP_ATTR_H__ */
+#endif							/* __ESP_ATTR_H__ */

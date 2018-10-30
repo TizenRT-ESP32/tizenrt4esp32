@@ -32,7 +32,6 @@
 #ifndef __SPI_REG_H__
 #define __SPI_REG_H__
 
-
 #include "chip/esp32_soc.h"
 #define REG_SPI_BASE(i)     (DR_REG_SPI1_BASE + (((i)>1) ? (((i)* 0x1000) + 0x20000) : (((~(i)) & 1)* 0x1000 )))
 
@@ -893,7 +892,7 @@
 
 #define SPI_CACHE_FCTRL_REG(i)          (REG_SPI_BASE(i) + 0x50)
 /* SPI_CACHE_FLASH_PES_EN : R/W ;bitpos:[3] ;default: 1'b0 ; */
-/*description: For SPI0  spi1 send suspend command before cache read flash 
+/*description: For SPI0  spi1 send suspend command before cache read flash
  1: enable  0:disable.*/
 #define SPI_CACHE_FLASH_PES_EN  (BIT(3))
 #define SPI_CACHE_FLASH_PES_EN_M  (BIT(3))
@@ -1723,9 +1722,4 @@
 #define SPI_DATE_V  0xFFFFFFF
 #define SPI_DATE_S  0
 
-
-
-
 #endif /*__SPI_REG_H__ */
-
-

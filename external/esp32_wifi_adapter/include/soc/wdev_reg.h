@@ -34,5 +34,5 @@
 
 #include "chip/esp32_soc.h"
 
-/* Hardware random number generator register */ 
+/* Hardware random number generator register */
 #define WDEV_RND_REG 0x60035144

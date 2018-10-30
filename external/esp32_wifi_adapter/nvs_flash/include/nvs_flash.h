@@ -89,7 +89,7 @@ esp_err_t nvs_flash_deinit(void);
  *      - ESP_ERR_NVS_NOT_INITIALIZED if the storage for given partition was not
  *        initialized prior to this call
  */
-esp_err_t nvs_flash_deinit_partition(const char* partition_label);
+esp_err_t nvs_flash_deinit_partition(const char *partition_label);
 
 /**
  * @brief Erase the default NVS partition
@@ -120,6 +120,4 @@ esp_err_t nvs_flash_erase_partition(const char *part_name);
 #ifdef __cplusplus
 }
 #endif
-
-
-#endif /* nvs_flash_h */
+#endif							/* nvs_flash_h */
