@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  *
  * Copyright 2017 Samsung Electronics All Rights Reserved.
@@ -172,11 +190,11 @@
 struct s5j_buffer_s {
 	struct s5j_buffer_s *flink;	/* Supports a singly linked list */
 	i2s_callback_t callback;	/* Function to call when the transfer completes */
-	dma_task *dmatask;		/* DMA transfer task structure */
-	uint32_t timeout;		/* The timeout value to use with DMA transfers */
-	void *arg;			/* The argument to be returned with the callback */
+	dma_task *dmatask;			/* DMA transfer task structure */
+	uint32_t timeout;			/* The timeout value to use with DMA transfers */
+	void *arg;					/* The argument to be returned with the callback */
 	struct ap_buffer_s *apb;	/* The audio buffer */
-	int result;			/* The result of the transfer */
+	int result;					/* The result of the transfer */
 };
 
 /* This structure describes the state of one receiver or transmitter transport */
@@ -188,40 +206,40 @@ struct s5j_transport_s {
 	sq_queue_t act;				/* A queue of active transfers */
 	sq_queue_t done;			/* A queue of completed transfers */
 	struct work_s work;			/* Supports worker thread operations */
-	int error_state;			/* Channel error state, 0 - OK*/
+	int error_state;			/* Channel error state, 0 - OK */
 };
 
 /* The state of the one I2S peripheral */
 
 struct s5j_i2s_s {
-	struct i2s_dev_s dev;			/* Externally visible I2S interface */
+	struct i2s_dev_s dev;		/* Externally visible I2S interface */
 	uintptr_t base;				/* I2S controller register base address */
 	int isr_num;				/* isr number */
 	xcpt_t isr_handler;			/* irs handler */
 
-	i2s_err_cb_t err_cb;			/* registered error callback function */
+	i2s_err_cb_t err_cb;		/* registered error callback function */
 	void *err_cb_arg;			/* argiment to return with err cb call */
 
 	sem_t exclsem;				/* Assures mutually exclusive acess to I2S */
 	uint8_t datalen;			/* Data width (8, 16, or 32) */
 	uint8_t rx_datalen;			/* Data width (8, 16, or 32) */
-	uint8_t txp_datalen;			/* Data width (8, 16, or 32) */
-	uint8_t txs_datalen;			/* Data width (8, 16, or 32) */
+	uint8_t txp_datalen;		/* Data width (8, 16, or 32) */
+	uint8_t txs_datalen;		/* Data width (8, 16, or 32) */
 
-	uint8_t rxenab:1;			/* True: RX transfers enabled */
-	uint8_t txpenab:1;			/* True: TX primary transfers enabled */
-	uint8_t txsenab:1;			/* True: TX secondary transfers enabled */
+	uint8_t rxenab: 1;			/* True: RX transfers enabled */
+	uint8_t txpenab: 1;			/* True: TX primary transfers enabled */
+	uint8_t txsenab: 1;			/* True: TX secondary transfers enabled */
 
-	uint32_t samplerate;			/* Not actually needed in slave mode */
+	uint32_t samplerate;		/* Not actually needed in slave mode */
 
 #ifdef I2S_HAVE_RX
-	struct s5j_transport_s rx;		/* RX transport state */
+	struct s5j_transport_s rx;	/* RX transport state */
 #endif
 #ifdef I2S_HAVE_TX_P
-	struct s5j_transport_s txp;		/* TX primary transport state */
+	struct s5j_transport_s txp;	/* TX primary transport state */
 #endif
 #ifdef I2S_HAVE_TX_S
-	struct s5j_transport_s txs;		/* TX secodary transport state */
+	struct s5j_transport_s txs;	/* TX secodary transport state */
 #endif
 
 	/* Pre-allocated pool of buffer containers */
@@ -301,9 +319,7 @@ static int i2s_stop(struct i2s_dev_s *dev, i2s_ch_dir_t dir);
 static int i2s_pause(struct i2s_dev_s *dev, i2s_ch_dir_t dir);
 static int i2s_resume(struct i2s_dev_s *dev, i2s_ch_dir_t dir);
 
-
-static int i2s_err_cb_register(struct i2s_dev_s *dev, i2s_err_cb_t cb, void *arg);	
-
+static int i2s_err_cb_register(struct i2s_dev_s *dev, i2s_err_cb_t cb, void *arg);
 
 /* Initialization */
 
@@ -670,8 +686,6 @@ static int i2s_rxdma_prep(struct s5j_i2s_s *priv, struct s5j_buffer_s *bfcontain
 	return 0;
 }
 
-
-
 static int i2s_rx_start(struct s5j_i2s_s *priv)
 {
 	struct s5j_buffer_s *bfcontainer;
@@ -692,11 +706,11 @@ static int i2s_rx_start(struct s5j_i2s_s *priv)
 	}
 
 	/* If I2S RX DMA is active, pend buffers will be fetched and processed */
-	reg = getreg32(priv->base + S5J_I2S_CON);	
+	reg = getreg32(priv->base + S5J_I2S_CON);
 	if (reg & I2S_CR_RXDMACTIVE) {
 		return OK;
 	}
-		
+
 	/* Here is no DMA activity, We do not care about IRQ, just initate first transfer */
 	i2sinfo("RX Initiate first RX\n");
 
@@ -707,7 +721,6 @@ static int i2s_rx_start(struct s5j_i2s_s *priv)
 	bfcontainer = (struct s5j_buffer_s *)sq_remfirst(&priv->rx.pend);
 
 	DEBUGASSERT(bfcontainer && bfcontainer->apb);
-
 
 	/* Increment the DMA timeout */
 
@@ -734,7 +747,6 @@ static int i2s_rx_start(struct s5j_i2s_s *priv)
 	modifyreg32(priv->base + S5J_I2S_CON, 0, I2S_CR_I2SACTIVE);
 	modifyreg32(priv->base + S5J_I2S_CON, 0, I2S_CR_FRXOFINTEN);
 	irqrestore(flags);
-
 
 	/* Start a watchdog to catch DMA timeouts */
 	if (!notimeout) {
@@ -790,7 +802,6 @@ static void i2s_rx_worker(void *arg)
 	 */
 
 	i2sinfo("rx.act.head=%p rx.done.head=%p\n", priv->rx.act.head, priv->rx.done.head);
-
 
 	/* Process each buffer in the rx.done queue */
 	while (sq_peek(&priv->rx.done) != NULL) {
@@ -894,8 +905,6 @@ static void i2s_rx_schedule(struct s5j_i2s_s *priv, int result)
 		s5j_dmastart(priv->rx.dma, bfcontainer->dmatask);
 	}
 
-
-
 	/* If the worker has completed running, then reschedule the working thread.
 	 * REVISIT:  There may be a race condition here.  So we do nothing is the
 	 * worker is not available.
@@ -936,7 +945,6 @@ static void i2s_rxdma_callback(DMA_HANDLE handle, void *arg, int result)
 	/* Cancel the watchdog timeout */
 
 	(void)wd_cancel(priv->rx.dog);
-
 
 	/* Then schedule completion of the transfer to occur on the worker thread */
 
@@ -998,12 +1006,10 @@ static void i2s_txpdma_timeout(int argc, uint32_t arg)
 
 #ifdef I2S_HAVE_TX_P
 
-
 static int i2s_txpdma_prep(struct s5j_i2s_s *priv, struct s5j_buffer_s *bfcontainer)
 {
-struct ap_buffer_s *apb;
-dma_task *dmatask;
-
+	struct ap_buffer_s *apb;
+	dma_task *dmatask;
 
 	apb = bfcontainer->apb;
 	dmatask = bfcontainer->dmatask;
@@ -1021,7 +1027,6 @@ dma_task *dmatask;
 	return 0;
 }
 
-
 static int i2s_txp_start(struct s5j_i2s_s *priv)
 {
 	struct s5j_buffer_s *bfcontainer;
@@ -1032,7 +1037,7 @@ static int i2s_txp_start(struct s5j_i2s_s *priv)
 	volatile u32 reg;
 
 	/* Check if the DMA is IDLE */
-	if (!sq_empty(&priv->txp.act)) { 
+	if (!sq_empty(&priv->txp.act)) {
 		return OK;
 	}
 
@@ -1042,7 +1047,7 @@ static int i2s_txp_start(struct s5j_i2s_s *priv)
 	}
 
 	/* If I2S TX DMA is active, pend buffers will be fetched and processed */
-	reg = getreg32(priv->base + S5J_I2S_CON);	
+	reg = getreg32(priv->base + S5J_I2S_CON);
 	if (reg & I2S_CR_TXDMACTIVE) {
 		return OK;
 	}
@@ -1135,7 +1140,6 @@ static void i2s_txp_worker(void *arg)
 
 	i2sinfo("txp.act.head=%p txp.done.head=%p\n", priv->txp.act.head, priv->txp.done.head);
 
-
 	/* Process each buffer in the tx.done queue */
 	while (sq_peek(&priv->txp.done) != NULL) {
 		/* Remove the buffer container from the tx.done queue.  NOTE that
@@ -1217,7 +1221,6 @@ static void i2s_txp_schedule(struct s5j_i2s_s *priv, int result)
 		sq_addlast((sq_entry_t *) bfcontainer, &priv->txp.done);
 	}
 
-
 	if (!sq_empty(&priv->txp.pend)) {
 		/* Remove the next buffer container from the tx.pend list */
 		bfcontainer = (struct s5j_buffer_s *)sq_remfirst(&priv->txp.pend);
@@ -1271,7 +1274,6 @@ static void i2s_txpdma_callback(DMA_HANDLE handle, void *arg, int result)
 	/* Cancel the watchdog timeout */
 
 	(void)wd_cancel(priv->txp.dog);
-
 
 	/* Then schedule completion of the transfer to occur on the worker thread */
 
@@ -1506,7 +1508,7 @@ static int i2s_receive(struct i2s_dev_s *dev, struct ap_buffer_s *apb, i2s_callb
 
 	/* Then start the next transfer through.
 	 * If ther is no active transfer, then one except us can start the process.
-	 * Perform it smooth, without scheduling.	
+	 * Perform it smooth, without scheduling.
 	 */
 	i2s_rx_start(priv);
 
@@ -1625,13 +1627,13 @@ static int i2s_resume(struct i2s_dev_s *dev, i2s_ch_dir_t dir)
 
 	reg = getreg32(priv->base + S5J_I2S_CON);
 #ifdef I2S_HAVE_TX_P
-	if (dir == I2S_TX && priv->txpenab  && (reg & I2S_CR_TXDMACTIVE)) {
+	if (dir == I2S_TX && priv->txpenab && (reg & I2S_CR_TXDMACTIVE)) {
 		modifyreg32(priv->base + S5J_I2S_CON, I2S_CR_TXCHPAUSE, 0);
 	}
 #endif
 
 #ifdef I2S_HAVE_RX
-	if (dir == I2S_RX && priv->rxenab  && (reg & I2S_CR_RXDMACTIVE)) {
+	if (dir == I2S_RX && priv->rxenab && (reg & I2S_CR_RXDMACTIVE)) {
 		modifyreg32(priv->base + S5J_I2S_CON, I2S_CR_RXCHPAUSE, 0);
 	}
 #endif
@@ -1711,7 +1713,6 @@ static int i2s_stop(struct i2s_dev_s *dev, i2s_ch_dir_t dir)
 	}
 #endif
 
-
 	reg = getreg32(priv->base + S5J_I2S_CON);
 
 	if ((reg & (I2S_CR_TXDMACTIVE | I2S_CR_RXDMACTIVE)) == 0) {
@@ -1771,9 +1772,7 @@ static int i2s_send(struct i2s_dev_s *dev, struct ap_buffer_s *apb, i2s_callback
 	/* Flush the data cache so that everything is in the physical memory
 	 * before starting the DMA.
 	 */
-	arch_clean_dcache((uintptr_t)&apb->samp[apb->curbyte], 
-			(uintptr_t)((void *)&apb->samp[apb->curbyte] + (apb->nbytes - apb->curbyte)));
-
+	arch_clean_dcache((uintptr_t) & apb->samp[apb->curbyte], (uintptr_t)((void *)&apb->samp[apb->curbyte] + (apb->nbytes - apb->curbyte)));
 
 	/* Allocate a buffer container in advance */
 
@@ -1809,7 +1808,6 @@ static int i2s_send(struct i2s_dev_s *dev, struct ap_buffer_s *apb, i2s_callback
 	/* Prepare DMA microcode */
 	i2s_txpdma_prep(priv, bfcontainer);
 
-
 	/* Add the buffer container to the end of the TX pending queue */
 
 	flags = irqsave();
@@ -1839,7 +1837,6 @@ errout_with_exclsem:
 #endif
 }
 
-
 static int i2s_err_cb_register(struct i2s_dev_s *dev, i2s_err_cb_t cb, void *arg)
 {
 	struct s5j_i2s_s *priv = (struct s5j_i2s_s *)dev;
@@ -1859,7 +1856,7 @@ static int i2s_err_cb_register(struct i2s_dev_s *dev, i2s_err_cb_t cb, void *arg
 	priv->txs.error_state = -1;
 #endif
 
-return 0;
+	return 0;
 }
 
 /****************************************************************************
@@ -2164,10 +2161,10 @@ static int i2s_irq_handler(int irq, FAR void *context, FAR void *arg)
 	reg = getreg32(priv->base + S5J_I2S_CON);
 
 #ifdef I2S_HAVE_RX
-	/* This is the case, when there is a new transfer series 
-	 * is initiated right before RX FIFO OVF 
+	/* This is the case, when there is a new transfer series
+	 * is initiated right before RX FIFO OVF
 	 * It can be a new series or delay/lag in users application receiver.
-	*/	
+	 */
 
 	if (!sq_empty(&priv->rx.pend) && sq_empty(&priv->rx.act)) {
 		/* Remove the next buffer container from the tx.pend list */
@@ -2178,7 +2175,7 @@ static int i2s_irq_handler(int irq, FAR void *context, FAR void *arg)
 
 		/* Start next DMA transfer */
 		s5j_dmastart(priv->rx.dma, bfcontainer->dmatask);
-		
+
 		/* We don't stop I2S operation, report anyways about OVF */
 		if (reg & I2S_CR_FRXOFSTATUS) {
 			if (priv->err_cb) {
@@ -2199,10 +2196,10 @@ static int i2s_irq_handler(int irq, FAR void *context, FAR void *arg)
 #endif
 
 #ifdef I2S_HAVE_TX_P
-	/* This is the case, when there is a new transfer series 
-	 * is initiated right before TX FIFO UNF 
+	/* This is the case, when there is a new transfer series
+	 * is initiated right before TX FIFO UNF
 	 * It can be a new series or delay/lag in users application receiver.
-	*/	
+	 */
 	if (!sq_empty(&priv->txp.pend) && sq_empty(&priv->txp.act)) {
 		/* Remove the next buffer container from the tx.pend list */
 		bfcontainer = (struct s5j_buffer_s *)sq_remfirst(&priv->txp.pend);
@@ -2213,7 +2210,6 @@ static int i2s_irq_handler(int irq, FAR void *context, FAR void *arg)
 		/* Start next DMA transfer */
 		s5j_dmastart(priv->txp.dma, bfcontainer->dmatask);
 
-	
 		/* We don't stop I2S operation, report anyways about UNF */
 		if (reg & I2S_CR_FTXURSTATUS) {
 			if (priv->err_cb) {
@@ -2233,13 +2229,11 @@ static int i2s_irq_handler(int irq, FAR void *context, FAR void *arg)
 	}
 #endif
 
-
 	reg = getreg32(priv->base + S5J_I2S_CON);
 
 	if ((reg & (I2S_CR_TXDMACTIVE | I2S_CR_RXDMACTIVE)) == 0) {
 		modifyreg32(priv->base + S5J_I2S_CON, I2S_CR_I2SACTIVE, 0);
 	}
-
 
 	return 0;
 }

@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  *
  * Copyright 2016 Samsung Electronics All Rights Reserved.
@@ -78,12 +96,12 @@
 struct s5j_dev_s {
 	FAR const struct adc_callback_s *cb;
 
-	struct adc_dev_s *dev;	/* A reference to the outer (parent) */
-	uint8_t nchannels;	/* Number of channels */
-	uint8_t cchannels;	/* Number of configured channels */
-	uint8_t current;	/* Current ADC channel being converted */
+	struct adc_dev_s *dev;		/* A reference to the outer (parent) */
+	uint8_t nchannels;			/* Number of channels */
+	uint8_t cchannels;			/* Number of configured channels */
+	uint8_t current;			/* Current ADC channel being converted */
 
-	struct work_s work;	/* Supports the IRQ handling */
+	struct work_s work;			/* Supports the IRQ handling */
 	uint8_t chanlist[S5J_ADC_MAX_CHANNELS];
 };
 
@@ -117,19 +135,18 @@ static void adc_conversion(void *arg)
 
 	if (priv->cb != NULL) {
 		DEBUGASSERT(priv->cb->au_receive != NULL);
-		priv->cb->au_receive(priv->dev,
-				priv->chanlist[priv->current], sample);
+		priv->cb->au_receive(priv->dev, priv->chanlist[priv->current], sample);
 	}
 
 	/* Set the next channel to be sampled */
 	priv->current++;
 
-	if (priv->current >= priv->nchannels)
+	if (priv->current >= priv->nchannels) {
 		priv->current = 0;
+	}
 
 	/* Change to the next channel */
-	modifyreg32(S5J_ADC_CON2, ADC_CON2_ACHSEL_MASK,
-				priv->chanlist[priv->current]);
+	modifyreg32(S5J_ADC_CON2, ADC_CON2_ACHSEL_MASK, priv->chanlist[priv->current]);
 
 	/* Exit, start a new conversion */
 	modifyreg32(S5J_ADC_CON1, 0, ADC_CON1_STCEN_ENABLE);
@@ -161,8 +178,7 @@ static int adc_interrupt(int irq, FAR void *context, void *arg)
 		 * pipeline and we need to do nothing more.
 		 */
 		if (work_available(&priv->work)) {
-			ret = work_queue(LPWORK, &priv->work, adc_conversion,
-							priv, 0);
+			ret = work_queue(LPWORK, &priv->work, adc_conversion, priv, 0);
 			if (ret != 0) {
 				lldbg("ERROR: failed to queue work: %d\n", ret);
 			}
@@ -239,19 +255,17 @@ static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
 	} else {
 		/* REVISIT: changing channel is not supported for now */
 
-		for (i = 0; i < priv->cchannels &&
-					priv->chanlist[i] != ch - 1; i++);
+		for (i = 0; i < priv->cchannels && priv->chanlist[i] != ch - 1; i++) ;
 
 		if (i >= priv->cchannels) {
 			return -ENODEV;
 		}
 
-		priv->current   = i;
+		priv->current = i;
 		priv->nchannels = 1;
 	}
 
-	modifyreg32(S5J_ADC_CON2, ADC_CON2_ACHSEL_MASK,
-				priv->chanlist[priv->current]);
+	modifyreg32(S5J_ADC_CON2, ADC_CON2_ACHSEL_MASK, priv->chanlist[priv->current]);
 
 	return OK;
 }
@@ -264,8 +278,7 @@ static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
  *   This must be called early in order to receive ADC event notifications.
  *
  ****************************************************************************/
-static int adc_bind(FAR struct adc_dev_s *dev,
-		    FAR const struct adc_callback_s *callback)
+static int adc_bind(FAR struct adc_dev_s *dev, FAR const struct adc_callback_s *callback)
 {
 	FAR struct s5j_dev_s *priv = (FAR struct s5j_dev_s *)dev->ad_priv;
 
@@ -421,17 +434,17 @@ static int adc_ioctl(FAR struct adc_dev_s *dev, int cmd, unsigned long arg)
  * Private Data
  ****************************************************************************/
 static const struct adc_ops_s g_adcops = {
-	.ao_bind	= adc_bind,
-	.ao_reset	= adc_reset,
-	.ao_setup	= adc_setup,
-	.ao_shutdown	= adc_shutdown,
-	.ao_rxint	= adc_rxint,
-	.ao_ioctl	= adc_ioctl,
+	.ao_bind = adc_bind,
+	.ao_reset = adc_reset,
+	.ao_setup = adc_setup,
+	.ao_shutdown = adc_shutdown,
+	.ao_rxint = adc_rxint,
+	.ao_ioctl = adc_ioctl,
 };
 
 static struct s5j_dev_s g_adcpriv = {
-	.cb		= NULL,
-	.current	= 0,
+	.cb = NULL,
+	.current = 0,
 };
 
 static struct adc_dev_s g_adcdev;
@@ -456,23 +469,21 @@ static struct adc_dev_s g_adcdev;
  *   Valid ADC device structure reference on succcess; a NULL on failure
  *
  ****************************************************************************/
-struct adc_dev_s *s5j_adc_initialize(FAR const uint8_t *chanlist,
-				     int cchannels)
+struct adc_dev_s *s5j_adc_initialize(FAR const uint8_t *chanlist, int cchannels)
 {
 	FAR struct s5j_dev_s *priv = &g_adcpriv;
 
 	/* Initialize the public ADC device data structure */
-	g_adcdev.ad_ops  = &g_adcops;
+	g_adcdev.ad_ops = &g_adcops;
 	g_adcdev.ad_priv = priv;
 
 	/* Initialize the private ADC device data structure */
-	priv->cb         = NULL;
-	priv->dev        = &g_adcdev;
-	priv->cchannels  = cchannels;
+	priv->cb = NULL;
+	priv->dev = &g_adcdev;
+	priv->cchannels = cchannels;
 
 	if (cchannels > S5J_ADC_MAX_CHANNELS) {
-		lldbg("S5J has maximum %d ADC channels.\n",
-						S5J_ADC_MAX_CHANNELS);
+		lldbg("S5J has maximum %d ADC channels.\n", S5J_ADC_MAX_CHANNELS);
 		return NULL;
 	}
 
@@ -480,4 +491,4 @@ struct adc_dev_s *s5j_adc_initialize(FAR const uint8_t *chanlist,
 
 	return &g_adcdev;
 }
-#endif /* CONFIG_S5J_ADC */
+#endif							/* CONFIG_S5J_ADC */

@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 // Copyright 2015-2018 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +36,6 @@
 #include "chip/esp32_dport.h"
 #include "chip/periph_defs.h"
 #include "chip/dport_access.h"
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,9 +79,7 @@ void periph_module_disable(periph_module_t periph);
  */
 void periph_module_reset(periph_module_t periph);
 
-
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* _DRIVER_PERIPH_CTRL_H_ */
+#endif							/* _DRIVER_PERIPH_CTRL_H_ */
