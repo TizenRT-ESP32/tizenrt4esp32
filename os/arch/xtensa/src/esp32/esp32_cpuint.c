@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/esp32_irq.c
  *
@@ -186,13 +204,12 @@ static uint32_t g_cpu1_freeints = EPS32_CPUINT_PERIPHSET;
 
 /* Bitsets for each interrupt priority 1-5 */
 
-static const uint32_t g_priority[5] =
-{
-  ESP32_INTPRI1_MASK,
-  ESP32_INTPRI2_MASK,
-  ESP32_INTPRI3_MASK,
-  ESP32_INTPRI4_MASK,
-  ESP32_INTPRI5_MASK
+static const uint32_t g_priority[5] = {
+	ESP32_INTPRI1_MASK,
+	ESP32_INTPRI2_MASK,
+	ESP32_INTPRI3_MASK,
+	ESP32_INTPRI4_MASK,
+	ESP32_INTPRI5_MASK
 };
 
 /****************************************************************************
@@ -205,12 +222,7 @@ static const uint32_t g_priority[5] =
 
 static inline void xtensa_disable_all(void)
 {
-  __asm__ __volatile__
-  (
-    "movi a2, 0\n"
-    "xsr a2, INTENABLE\n"
-    : : : "a2"
-  );
+	__asm__ __volatile__("movi a2, 0\n" "xsr a2, INTENABLE\n":::"a2");
 }
 
 /****************************************************************************
@@ -235,65 +247,49 @@ static inline void xtensa_disable_all(void)
 
 int esp32_alloc_cpuint(uint32_t intmask)
 {
-  irqstate_t flags;
-  uint32_t *freeints;
-  uint32_t bitmask;
-  uint32_t intset;
-  int cpuint;
-  int ret = -ENOMEM;
+	irqstate_t flags;
+	uint32_t *freeints;
+	uint32_t bitmask;
+	uint32_t intset;
+	int cpuint;
+	int ret = -ENOMEM;
 
-  /* Check if there are is CPU interrupts with the requrested properties
-   * available.
-   */
+	/* Check if there are is CPU interrupts with the requrested properties
+	 * available.
+	 */
 
-  flags = up_irq_save();
+	flags = up_irq_save();
 
 #ifdef CONFIG_SMP
-  if (this_cpu() != 0)
-    {
-      freeints = &g_cpu1_freeints;
-    }
-  else
+	if (this_cpu() != 0) {
+		freeints = &g_cpu1_freeints;
+	} else
 #endif
-    {
-      freeints = &g_cpu0_freeints;
-    }
+	{
+		freeints = &g_cpu0_freeints;
+	}
 
-  intset = *freeints & intmask;
-  if (intset != 0)
-    {
-      /* Skip over initial unavailable CPU interrupts quickly in groups
-       * of 8 interrupt.
-       */
+	intset = *freeints & intmask;
+	if (intset != 0) {
+		/* Skip over initial unavailable CPU interrupts quickly in groups of 8 interrupt. */
+		for (cpuint = 0, bitmask = 0xff; cpuint <= ESP32_CPUINT_MAX && (intset & bitmask) == 0; cpuint += 8, bitmask <<= 8) ;
+		/* Search for an unallocated CPU interrupt number in the remaining intset. */
+		for (; cpuint <= ESP32_CPUINT_MAX; cpuint++) {
+			/* If the bit corresponding to the CPU interrupt is '1', then
+			 * that CPU interrupt is available.
+			 */
+			bitmask = (1ul << cpuint);
+			if ((intset & bitmask) != 0) {
+				/* Got it! */
+				*freeints &= ~bitmask;
+				ret = cpuint;
+				break;
+			}
+		}
+	}
 
-      for (cpuint = 0, bitmask = 0xff;
-           cpuint <= ESP32_CPUINT_MAX && (intset & bitmask) == 0;
-           cpuint += 8, bitmask <<= 8);
-
-      /* Search for an unallocated CPU interrupt number in the remaining
-       * intset.
-       */
-
-      for (; cpuint <= ESP32_CPUINT_MAX; cpuint++)
-        {
-          /* If the bit corresponding to the CPU interrupt is '1', then
-           * that CPU interrupt is available.
-           */
-
-          bitmask = (1ul << cpuint);
-          if ((intset & bitmask) != 0)
-            {
-              /* Got it! */
-
-              *freeints &= ~bitmask;
-              ret = cpuint;
-              break;
-            }
-        }
-    }
-
-  up_irq_restore(flags);
-  return ret;
+	up_irq_restore(flags);
+	return ret;
 }
 
 /****************************************************************************
@@ -317,75 +313,70 @@ int esp32_alloc_cpuint(uint32_t intmask)
 
 int esp32_cpuint_initialize(void)
 {
-  uintptr_t regaddr;
-  uint8_t *intmap;
+	uintptr_t regaddr;
+	uint8_t *intmap;
 #ifdef CONFIG_SMP
-  int cpu;
+	int cpu;
 #endif
-  int i;
-
-#ifdef CONFIG_SMP
-  /* Which CPU are we initializing */
-
-  cpu = up_cpu_index();
-  DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS);
-#endif
-
-  /* Disable all CPU interrupts on this CPU */
-
-  xtensa_disable_all();
-
-  /* Detach all peripheral sources PRO CPU interrupts */
-
-  for (i = 0; i < ESP32_NPERIPHERALS; i++)
-    {
-#ifdef CONFIG_SMP
-      if (cpu != 0)
-        {
-          regaddr = DPORT_APP_MAP_REGADDR(i);
-        }
-      else
-#endif
-        {
-          regaddr = DPORT_PRO_MAP_REGADDR(i);
-        }
-
-      putreg32(NO_CPUINT, regaddr);
-    }
-
-  /* Initialize CPU interrupt-to-IRQ mapping table */
+	int i;
 
 #ifdef CONFIG_SMP
-  if (cpu != 0)
-    {
-      intmap = g_cpu1_intmap;
-    }
-  else
+	/* Which CPU are we initializing */
+
+	cpu = up_cpu_index();
+	DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS);
 #endif
-    {
-      intmap = g_cpu0_intmap;
-    }
 
-  /* Indiate that no peripheral interrupts are assigned to CPU interrupts */
+	/* Disable all CPU interrupts on this CPU */
 
-  memset(intmap, CPUINT_UNASSIGNED, ESP32_NCPUINTS);
+	xtensa_disable_all();
 
-  /* Special case the 6 internal interrupts.
-   *
-   *   CPU interrupt bit           IRQ number
-   *   --------------------------- ---------------------
-   *   ESP32_CPUINT_TIMER0      6  XTENSA_IRQ_TIMER0  0
-   *   SP32_CPUINT_SOFTWARE0    7  Not yet defined
-   *   ESP32_CPUINT_PROFILING  11  Not yet defined
-   *   ESP32_CPUINT_TIMER1     15  XTENSA_IRQ_TIMER1  1
-   *   ESP32_CPUINT_TIMER2     16  XTENSA_IRQ_TIMER2  2
-   *   ESP32_CPUINT_SOFTWARE1  29  Not yet defined
-   */
+	/* Detach all peripheral sources PRO CPU interrupts */
 
-  intmap[ESP32_CPUINT_TIMER0] = XTENSA_IRQ_TIMER0;
-  intmap[ESP32_CPUINT_TIMER1] = XTENSA_IRQ_TIMER1;
-  intmap[ESP32_CPUINT_TIMER2] = XTENSA_IRQ_TIMER2;
-  return OK;
+	for (i = 0; i < ESP32_NPERIPHERALS; i++) {
+#ifdef CONFIG_SMP
+		if (cpu != 0) {
+			regaddr = DPORT_APP_MAP_REGADDR(i);
+		} else
+#endif
+		{
+			regaddr = DPORT_PRO_MAP_REGADDR(i);
+		}
+
+		putreg32(NO_CPUINT, regaddr);
+	}
+
+	/* Initialize CPU interrupt-to-IRQ mapping table */
+
+#ifdef CONFIG_SMP
+	if (cpu != 0) {
+		intmap = g_cpu1_intmap;
+	} else
+#endif
+	{
+		intmap = g_cpu0_intmap;
+	}
+
+	/* Indiate that no peripheral interrupts are assigned to CPU interrupts */
+
+	memset(intmap, CPUINT_UNASSIGNED, ESP32_NCPUINTS);
+
+	/* Special case the 6 internal interrupts.
+	 *
+	 *   CPU interrupt bit           IRQ number
+	 *   --------------------------- ---------------------
+	 *   ESP32_CPUINT_TIMER0      6  XTENSA_IRQ_TIMER0  0
+	 *   SP32_CPUINT_SOFTWARE0    7  Not yet defined
+	 *   ESP32_CPUINT_PROFILING  11  Not yet defined
+	 *   ESP32_CPUINT_TIMER1     15  XTENSA_IRQ_TIMER1  1
+	 *   ESP32_CPUINT_TIMER2     16  XTENSA_IRQ_TIMER2  2
+	 *   ESP32_CPUINT_SOFTWARE1  29  Not yet defined
+	 */
+
+	intmap[ESP32_CPUINT_TIMER0] = XTENSA_IRQ_TIMER0;
+	intmap[ESP32_CPUINT_TIMER1] = XTENSA_IRQ_TIMER1;
+	intmap[ESP32_CPUINT_TIMER2] = XTENSA_IRQ_TIMER2;
+	return OK;
 }
 
 /****************************************************************************
@@ -399,16 +390,16 @@ int esp32_cpuint_initialize(void)
 void up_disable_irq(int cpuint)
 {
 #ifdef CONFIG_SMP
-  int cpu;
+	int cpu;
 #endif
 
-  DEBUGASSERT(cpuint >= 0 && cpuint <= ESP32_CPUINT_MAX);
+	DEBUGASSERT(cpuint >= 0 && cpuint <= ESP32_CPUINT_MAX);
 
 #ifdef CONFIG_SMP
-  cpu = up_cpu_index();
-  (void)xtensa_disable_cpuint(&g_intenable[cpu], (1ul << cpuint));
+	cpu = up_cpu_index();
+	(void)xtensa_disable_cpuint(&g_intenable[cpu], (1ul << cpuint));
 #else
-  (void)xtensa_disable_cpuint(&g_intenable[0], (1ul << cpuint));
+	(void)xtensa_disable_cpuint(&g_intenable[0], (1ul << cpuint));
 #endif
 }
 
@@ -423,16 +414,16 @@ void up_disable_irq(int cpuint)
 void up_enable_irq(int cpuint)
 {
 #ifdef CONFIG_SMP
-  int cpu;
+	int cpu;
 #endif
 
-  DEBUGASSERT(cpuint >= 0 && cpuint <= ESP32_CPUINT_MAX);
+	DEBUGASSERT(cpuint >= 0 && cpuint <= ESP32_CPUINT_MAX);
 
 #ifdef CONFIG_SMP
-  cpu = up_cpu_index();
-  (void)xtensa_enable_cpuint(&g_intenable[cpu], (1ul << cpuint));
+	cpu = up_cpu_index();
+	(void)xtensa_enable_cpuint(&g_intenable[cpu], (1ul << cpuint));
 #else
-  (void)xtensa_enable_cpuint(&g_intenable[0], (1ul << cpuint));
+	(void)xtensa_enable_cpuint(&g_intenable[0], (1ul << cpuint));
 #endif
 }
 
@@ -455,17 +446,16 @@ void up_enable_irq(int cpuint)
 
 int esp32_alloc_levelint(int priority)
 {
-  uint32_t intmask;
+	uint32_t intmask;
 
-  DEBUGASSERT(priority >= ESP32_MIN_PRIORITY &&
-              priority <= ESP32_MAX_PRIORITY);
+	DEBUGASSERT(priority >= ESP32_MIN_PRIORITY && priority <= ESP32_MAX_PRIORITY);
 
-  /* Check if there are any level CPU interrupts available at the requested
-   * interrupt priority.
-   */
+	/* Check if there are any level CPU interrupts available at the requested
+	 * interrupt priority.
+	 */
 
-  intmask = g_priority[ESP32_PRIO_INDEX(priority)] & EPS32_CPUINT_LEVELSET;
-  return esp32_alloc_cpuint(intmask);
+	intmask = g_priority[ESP32_PRIO_INDEX(priority)] & EPS32_CPUINT_LEVELSET;
+	return esp32_alloc_cpuint(intmask);
 }
 
 /****************************************************************************
@@ -487,17 +477,16 @@ int esp32_alloc_levelint(int priority)
 
 int esp32_alloc_edgeint(int priority)
 {
-  uint32_t intmask;
+	uint32_t intmask;
 
-  DEBUGASSERT(priority >= ESP32_MIN_PRIORITY &&
-              priority <= ESP32_MAX_PRIORITY);
+	DEBUGASSERT(priority >= ESP32_MIN_PRIORITY && priority <= ESP32_MAX_PRIORITY);
 
-  /* Check if there are any edge CPU interrupts available at the requested
-   * interrupt priority.
-   */
+	/* Check if there are any edge CPU interrupts available at the requested
+	 * interrupt priority.
+	 */
 
-  intmask = g_priority[ESP32_PRIO_INDEX(priority)] & EPS32_CPUINT_EDGESET;
-  return esp32_alloc_cpuint(intmask);
+	intmask = g_priority[ESP32_PRIO_INDEX(priority)] & EPS32_CPUINT_EDGESET;
+	return esp32_alloc_cpuint(intmask);
 }
 
 /****************************************************************************
@@ -516,31 +505,29 @@ int esp32_alloc_edgeint(int priority)
 
 void esp32_free_cpuint(int cpuint)
 {
-  irqstate_t flags;
-  uint32_t *freeints;
-  uint32_t bitmask;
+	irqstate_t flags;
+	uint32_t *freeints;
+	uint32_t bitmask;
 
-  DEBUGASSERT(cpuint >= 0 && cpuint < ESP32_CPUINT_NEDGEPERIPHS);
+	DEBUGASSERT(cpuint >= 0 && cpuint < ESP32_CPUINT_NEDGEPERIPHS);
 
-  /* Mark the CPU interrupt as available */
+	/* Mark the CPU interrupt as available */
 
-  bitmask  = (1ul << cpuint);
-  flags = up_irq_save();
+	bitmask = (1ul << cpuint);
+	flags = up_irq_save();
 
 #ifdef CONFIG_SMP
-  if (this_cpu() != 0)
-    {
-      freeints = &g_cpu1_freeints;
-    }
-  else
+	if (this_cpu() != 0) {
+		freeints = &g_cpu1_freeints;
+	} else
 #endif
-    {
-      freeints = &g_cpu0_freeints;
-    }
+	{
+		freeints = &g_cpu0_freeints;
+	}
 
-  DEBUGASSERT((*freeints & bitmask) == 0);
-  *freeints |= bitmask;
-  up_irq_restore(flags);
+	DEBUGASSERT((*freeints & bitmask) == 0);
+	*freeints |= bitmask;
+	up_irq_restore(flags);
 }
 
 /****************************************************************************
@@ -563,30 +550,28 @@ void esp32_free_cpuint(int cpuint)
 
 void esp32_attach_peripheral(int cpu, int periphid, int cpuint)
 {
-  uintptr_t regaddr;
-  uint8_t *intmap;
+	uintptr_t regaddr;
+	uint8_t *intmap;
 
-  DEBUGASSERT(periphid >= 0 && periphid < ESP32_NPERIPHERALS);
-  DEBUGASSERT(cpuint >= 0 && cpuint <= ESP32_CPUINT_MAX);
+	DEBUGASSERT(periphid >= 0 && periphid < ESP32_NPERIPHERALS);
+	DEBUGASSERT(cpuint >= 0 && cpuint <= ESP32_CPUINT_MAX);
 #ifdef CONFIG_SMP
-  DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS);
+	DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS);
 
-  if (cpu != 0)
-    {
-      regaddr = DPORT_APP_MAP_REGADDR(periphid);
-      intmap  = g_cpu1_intmap;
-    }
-  else
+	if (cpu != 0) {
+		regaddr = DPORT_APP_MAP_REGADDR(periphid);
+		intmap = g_cpu1_intmap;
+	} else
 #endif
-    {
-      regaddr = DPORT_PRO_MAP_REGADDR(periphid);
-      intmap  = g_cpu0_intmap;
-    }
+	{
+		regaddr = DPORT_PRO_MAP_REGADDR(periphid);
+		intmap = g_cpu0_intmap;
+	}
 
-  DEBUGASSERT(intmap[cpuint] == CPUINT_UNASSIGNED);
-  intmap[cpuint] = periphid + XTENSA_IRQ_FIRSTPERIPH;
+	DEBUGASSERT(intmap[cpuint] == CPUINT_UNASSIGNED);
+	intmap[cpuint] = periphid + XTENSA_IRQ_FIRSTPERIPH;
 
-  putreg32(cpuint, regaddr);
+	putreg32(cpuint, regaddr);
 }
 
 /****************************************************************************
@@ -609,27 +594,25 @@ void esp32_attach_peripheral(int cpu, int periphid, int cpuint)
 
 void esp32_detach_peripheral(int cpu, int periphid, int cpuint)
 {
-  uintptr_t regaddr;
-  uint8_t *intmap;
+	uintptr_t regaddr;
+	uint8_t *intmap;
 
-  DEBUGASSERT(periphid >= 0 && periphid < ESP32_NPERIPHERALS);
+	DEBUGASSERT(periphid >= 0 && periphid < ESP32_NPERIPHERALS);
 #ifdef CONFIG_SMP
-  DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS);
+	DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS);
 
-  if (cpu != 0)
-    {
-      regaddr = DPORT_APP_MAP_REGADDR(periphid);
-      intmap  = g_cpu1_intmap;
-    }
-  else
+	if (cpu != 0) {
+		regaddr = DPORT_APP_MAP_REGADDR(periphid);
+		intmap = g_cpu1_intmap;
+	} else
 #endif
-    {
-      regaddr = DPORT_PRO_MAP_REGADDR(periphid);
-      intmap  = g_cpu0_intmap;
-    }
+	{
+		regaddr = DPORT_PRO_MAP_REGADDR(periphid);
+		intmap = g_cpu0_intmap;
+	}
 
-  DEBUGASSERT(intmap[cpuint] != CPUINT_UNASSIGNED);
-  intmap[cpuint] = CPUINT_UNASSIGNED;
+	DEBUGASSERT(intmap[cpuint] != CPUINT_UNASSIGNED);
+	intmap[cpuint] = CPUINT_UNASSIGNED;
 
-  putreg32(NO_CPUINT, regaddr);
+	putreg32(NO_CPUINT, regaddr);
 }

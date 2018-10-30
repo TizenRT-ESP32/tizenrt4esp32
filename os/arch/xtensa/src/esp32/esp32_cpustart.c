@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/esp32_cpustart.c
  *
@@ -82,16 +100,16 @@ void ets_set_appcpu_boot_addr(uint32_t start);
  * Name: xtensa_registerdump
  ****************************************************************************/
 
-#if 0 /* Was useful in solving some startup problems */
+#if 0							/* Was useful in solving some startup problems */
 static inline void xtensa_registerdump(FAR struct tcb_s *tcb)
 {
-  _info("CPU%d:\n", up_cpu_index());
+	_info("CPU%d:\n", up_cpu_index());
 
-  /* Dump the startup registers */
-  /* To be provided */
+	/* Dump the startup registers */
+	/* To be provided */
 }
 #else
-# define xtensa_registerdump(tcb)
+#define xtensa_registerdump(tcb)
 #endif
 
 /****************************************************************************
@@ -101,25 +119,25 @@ static inline void xtensa_registerdump(FAR struct tcb_s *tcb)
 #ifdef CONFIG_SMP
 static inline void xtensa_attach_fromcpu0_interrupt(void)
 {
-  int cpuint;
+	int cpuint;
 
-  /* Allocate a level-sensitive, priority 1 CPU interrupt for the UART */
+	/* Allocate a level-sensitive, priority 1 CPU interrupt for the UART */
 
-  cpuint = esp32_alloc_levelint(1);
-  DEBUGASSERT(cpuint >= 0);
+	cpuint = esp32_alloc_levelint(1);
+	DEBUGASSERT(cpuint >= 0);
 
-  /* Connect all CPU peripheral source to allocated CPU interrupt */
+	/* Connect all CPU peripheral source to allocated CPU interrupt */
 
-  up_disable_irq(cpuint);
-  esp32_attach_peripheral(1, ESP32_PERIPH_CPU_CPU0, cpuint);
+	up_disable_irq(cpuint);
+	esp32_attach_peripheral(1, ESP32_PERIPH_CPU_CPU0, cpuint);
 
-  /* Attach the inter-CPU interrupt. */
+	/* Attach the inter-CPU interrupt. */
 
-  (void)irq_attach(ESP32_IRQ_CPU_CPU0, (xcpt_t)esp32_fromcpu0_interrupt, NULL);
+	(void)irq_attach(ESP32_IRQ_CPU_CPU0, (xcpt_t) esp32_fromcpu0_interrupt, NULL);
 
-  /* Enable the inter 0 CPU interrupts. */
+	/* Enable the inter 0 CPU interrupts. */
 
-  up_enable_irq(cpuint);
+	up_enable_irq(cpuint);
 }
 #endif
 
@@ -145,97 +163,94 @@ static inline void xtensa_attach_fromcpu0_interrupt(void)
 
 void xtensa_appcpu_start(void)
 {
-  FAR struct tcb_s *tcb = this_task();
-  register uint32_t sp;
+	FAR struct tcb_s *tcb = this_task();
+	register uint32_t sp;
 
 #ifdef CONFIG_STACK_COLORATION
-  {
-    register uint32_t *ptr;
-    register int i;
+	{
+		register uint32_t *ptr;
+		register int i;
 
-      /* If stack debug is enabled, then fill the stack with a recognizable value
-       * that we can use later to test for high water marks.
-       */
+		/* If stack debug is enabled, then fill the stack with a recognizable value
+		 * that we can use later to test for high water marks.
+		 */
 
-      for (i = 0, ptr = (uint32_t *)tcb->stack_alloc_ptr;
-           i < tcb->adj_stack_size;
-           i += sizeof(uint32_t))
-        {
-          *ptr++ = STACK_COLOR;
-        }
-  }
+		for (i = 0, ptr = (uint32_t *) tcb->stack_alloc_ptr; i < tcb->adj_stack_size; i += sizeof(uint32_t)) {
+			*ptr++ = STACK_COLOR;
+		}
+	}
 #endif
 
-  /* Move to the stack assigned to us by up_smp_start immediately.  Although
-   * we were give a stack pointer at start-up, we don't know where that stack
-   * pointer is positioned respect to our memory map.  The only safe option
-   * is to switch to a well-known IDLE thread stack.
-   */
+	/* Move to the stack assigned to us by up_smp_start immediately.  Although
+	 * we were give a stack pointer at start-up, we don't know where that stack
+	 * pointer is positioned respect to our memory map.  The only safe option
+	 * is to switch to a well-known IDLE thread stack.
+	 */
 
-  sp = (uint32_t)tcb->adj_stack_ptr;
-  __asm__ __volatile__("mov sp, %0\n" : : "r"(sp));
+	sp = (uint32_t) tcb->adj_stack_ptr;
+	__asm__ __volatile__("mov sp, %0\n"::"r"(sp));
 
-  sinfo("CPU%d Started\n", up_cpu_index());
+	sinfo("CPU%d Started\n", up_cpu_index());
 
 #ifdef CONFIG_SCHED_INSTRUMENTATION
-  /* Notify that this CPU has started */
+	/* Notify that this CPU has started */
 
-  sched_note_cpu_started(tcb);
+	sched_note_cpu_started(tcb);
 #endif
 
-  /* Handle interlock*/
+	/* Handle interlock */
 
-  g_appcpu_started = true;
-  spin_unlock(&g_appcpu_interlock);
+	g_appcpu_started = true;
+	spin_unlock(&g_appcpu_interlock);
 
-  /* Reset scheduler parameters */
+	/* Reset scheduler parameters */
 
-  sched_resume_scheduler(tcb);
+	sched_resume_scheduler(tcb);
 
-  /* Move CPU0 exception vectors to IRAM */
+	/* Move CPU0 exception vectors to IRAM */
 
-  asm volatile ("wsr %0, vecbase\n"::"r" (&_init_start));
+	asm volatile("wsr %0, vecbase\n"::"r"(&_init_start));
 
-  /* Make page 0 access raise an exception */
+	/* Make page 0 access raise an exception */
 
-  esp32_region_protection();
+	esp32_region_protection();
 
-  /* Initialize CPU interrupts */
+	/* Initialize CPU interrupts */
 
-  (void)esp32_cpuint_initialize();
+	(void)esp32_cpuint_initialize();
 
-  /* Attach and emable internal interrupts */
+	/* Attach and emable internal interrupts */
 
 #ifdef CONFIG_SMP
-  /* Attach and enable the inter-CPU interrupt */
+	/* Attach and enable the inter-CPU interrupt */
 
-  xtensa_attach_fromcpu0_interrupt();
+	xtensa_attach_fromcpu0_interrupt();
 #endif
 
-#if 0 /* Does it make since to have co-processors enabled on the IDLE thread? */
+#if 0							/* Does it make since to have co-processors enabled on the IDLE thread? */
 #if XTENSA_CP_ALLSET != 0
-  /* Set initial co-processor state */
+	/* Set initial co-processor state */
 
-  xtensa_coproc_enable(struct xtensa_cpstate_s *cpstate, int cpset);
+	xtensa_coproc_enable(struct xtensa_cpstate_s * cpstate, int cpset);
 #endif
 #endif
 
-  /* Dump registers so that we can see what is going to happen on return */
+	/* Dump registers so that we can see what is going to happen on return */
 
-  xtensa_registerdump(tcb);
+	xtensa_registerdump(tcb);
 
 #ifndef CONFIG_SUPPRESS_INTERRUPTS
-  /* And Enable interrupts */
+	/* And Enable interrupts */
 
-  up_irq_enable();
+	up_irq_enable();
 #endif
 
-  /* Then switch contexts. This instantiates the exception context of the
-   * tcb at the head of the assigned task list.  In this case, this should
-   * be the CPUs NULL task.
-   */
+	/* Then switch contexts. This instantiates the exception context of the
+	 * tcb at the head of the assigned task list.  In this case, this should
+	 * be the CPUs NULL task.
+	 */
 
-  xtensa_context_restore(tcb->xcp.regs);
+	xtensa_context_restore(tcb->xcp.regs);
 }
 
 /****************************************************************************
@@ -267,74 +282,73 @@ void xtensa_appcpu_start(void)
 
 int up_cpu_start(int cpu)
 {
-  DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS && cpu != this_cpu());
+	DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS && cpu != this_cpu());
 
-  if (!g_appcpu_started)
-    {
-      uint32_t regval;
+	if (!g_appcpu_started) {
+		uint32_t regval;
 
-      /* Start CPU1 */
+		/* Start CPU1 */
 
-      sinfo("Starting CPU%d\n", cpu);
+		sinfo("Starting CPU%d\n", cpu);
 
 #ifdef CONFIG_SCHED_INSTRUMENTATION
-      /* Notify of the start event */
+		/* Notify of the start event */
 
-      sched_note_cpu_start(this_task(), cpu);
+		sched_note_cpu_start(this_task(), cpu);
 #endif
 
-      /* The waitsem semaphore is used for signaling and, hence, should not
-       * have priority inheritance enabled.
-       */
+		/* The waitsem semaphore is used for signaling and, hence, should not
+		 * have priority inheritance enabled.
+		 */
 
-      spin_initialize(&g_appcpu_interlock, SP_LOCKED);
+		spin_initialize(&g_appcpu_interlock, SP_LOCKED);
 
-      /* Flush and enable I-cache for APP CPU */
+		/* Flush and enable I-cache for APP CPU */
 
-      Cache_Flush(cpu);
-      Cache_Read_Enable(cpu);
+		Cache_Flush(cpu);
+		Cache_Read_Enable(cpu);
 
-      /* Unstall the APP CPU */
+		/* Unstall the APP CPU */
 
-      regval  = getreg32(RTC_CNTL_SW_CPU_STALL_REG);
-      regval &= ~RTC_CNTL_SW_STALL_APPCPU_C1_M;
-      putreg32(regval, RTC_CNTL_SW_CPU_STALL_REG);
+		regval = getreg32(RTC_CNTL_SW_CPU_STALL_REG);
+		regval &= ~RTC_CNTL_SW_STALL_APPCPU_C1_M;
+		putreg32(regval, RTC_CNTL_SW_CPU_STALL_REG);
 
-      regval  = getreg32(RTC_CNTL_OPTIONS0_REG);
-      regval &= ~RTC_CNTL_SW_STALL_APPCPU_C0_M;
-      putreg32(regval, RTC_CNTL_OPTIONS0_REG);
+		regval = getreg32(RTC_CNTL_OPTIONS0_REG);
+		regval &= ~RTC_CNTL_SW_STALL_APPCPU_C0_M;
+		putreg32(regval, RTC_CNTL_OPTIONS0_REG);
 
-      /* Enable clock gating for the APP CPU */
+		/* Enable clock gating for the APP CPU */
 
-      regval  = getreg32(DPORT_APPCPU_CTRL_B_REG);
-      regval |= DPORT_APPCPU_CLKGATE_EN;
-      putreg32(regval, DPORT_APPCPU_CTRL_B_REG);
+		regval = getreg32(DPORT_APPCPU_CTRL_B_REG);
+		regval |= DPORT_APPCPU_CLKGATE_EN;
+		putreg32(regval, DPORT_APPCPU_CTRL_B_REG);
 
-      regval  = getreg32(DPORT_APPCPU_CTRL_C_REG);
-      regval &= ~DPORT_APPCPU_RUNSTALL;
-      putreg32(regval, DPORT_APPCPU_CTRL_C_REG);
+		regval = getreg32(DPORT_APPCPU_CTRL_C_REG);
+		regval &= ~DPORT_APPCPU_RUNSTALL;
+		putreg32(regval, DPORT_APPCPU_CTRL_C_REG);
 
-      /* Reset the APP CPU */
+		/* Reset the APP CPU */
 
-      regval  = getreg32(DPORT_APPCPU_CTRL_A_REG);
-      regval |= DPORT_APPCPU_RESETTING;
-      putreg32(regval, DPORT_APPCPU_CTRL_A_REG);
+		regval = getreg32(DPORT_APPCPU_CTRL_A_REG);
+		regval |= DPORT_APPCPU_RESETTING;
+		putreg32(regval, DPORT_APPCPU_CTRL_A_REG);
 
-      regval  = getreg32(DPORT_APPCPU_CTRL_A_REG);
-      regval &= ~DPORT_APPCPU_RESETTING;
-      putreg32(regval, DPORT_APPCPU_CTRL_A_REG);
+		regval = getreg32(DPORT_APPCPU_CTRL_A_REG);
+		regval &= ~DPORT_APPCPU_RESETTING;
+		putreg32(regval, DPORT_APPCPU_CTRL_A_REG);
 
-      /* Set the CPU1 start address */
+		/* Set the CPU1 start address */
 
-      ets_set_appcpu_boot_addr((uint32_t)xtensa_appcpu_start);
+		ets_set_appcpu_boot_addr((uint32_t) xtensa_appcpu_start);
 
-      /* And wait for the initial task to run on CPU1 */
+		/* And wait for the initial task to run on CPU1 */
 
-      spin_lock(&g_appcpu_interlock);
-      DEBUGASSERT(g_appcpu_started);
-    }
+		spin_lock(&g_appcpu_interlock);
+		DEBUGASSERT(g_appcpu_started);
+	}
 
-  return OK;
+	return OK;
 }
 
-#endif /* CONFIG_SMP */
+#endif							/* CONFIG_SMP */

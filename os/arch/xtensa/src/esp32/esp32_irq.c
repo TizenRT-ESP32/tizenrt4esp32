@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/esp32_irq.c
  *
@@ -88,14 +106,14 @@ volatile uint32_t *g_current_regs[1];
 #if defined(CONFIG_DEBUG_IRQ_INFO)
 static void esp32_irq_dump(const char *msg, int irq)
 {
-  irqstate_t flags;
+	irqstate_t flags;
 
-  flags = up_irq_save();
+	flags = up_irq_save();
 #warning Missing logic
-  up_irq_restore(flags);
+	up_irq_restore(flags);
 }
 #else
-#  define esp32_irq_dump(msg, irq)
+#define esp32_irq_dump(msg, irq)
 #endif
 
 /****************************************************************************
@@ -105,25 +123,25 @@ static void esp32_irq_dump(const char *msg, int irq)
 #ifdef CONFIG_SMP
 static inline void xtensa_attach_fromcpu1_interrupt(void)
 {
-  int cpuint;
+	int cpuint;
 
-  /* Allocate a level-sensitive, priority 1 CPU interrupt for the UART */
+	/* Allocate a level-sensitive, priority 1 CPU interrupt for the UART */
 
-  cpuint = esp32_alloc_levelint(1);
-  DEBUGASSERT(cpuint >= 0);
+	cpuint = esp32_alloc_levelint(1);
+	DEBUGASSERT(cpuint >= 0);
 
-  /* Connect all CPU peripheral source to allocated CPU interrupt */
+	/* Connect all CPU peripheral source to allocated CPU interrupt */
 
-  up_disable_irq(cpuint);
-  esp32_attach_peripheral(0, ESP32_PERIPH_CPU_CPU1, cpuint);
+	up_disable_irq(cpuint);
+	esp32_attach_peripheral(0, ESP32_PERIPH_CPU_CPU1, cpuint);
 
-  /* Attach the inter-CPU interrupt. */
+	/* Attach the inter-CPU interrupt. */
 
-  (void)irq_attach(ESP32_IRQ_CPU_CPU1, (xcpt_t)esp32_fromcpu1_interrupt, NULL);
+	(void)irq_attach(ESP32_IRQ_CPU_CPU1, (xcpt_t) esp32_fromcpu1_interrupt, NULL);
 
-  /* Enable the inter 0 CPU interrupt. */
+	/* Enable the inter 0 CPU interrupt. */
 
-  up_enable_irq(cpuint);
+	up_enable_irq(cpuint);
 }
 #endif
 
@@ -137,35 +155,35 @@ static inline void xtensa_attach_fromcpu1_interrupt(void)
 
 void xtensa_irq_initialize(void)
 {
-  /* Initialize CPU interrupts */
+	/* Initialize CPU interrupts */
 
-  (void)esp32_cpuint_initialize();
+	(void)esp32_cpuint_initialize();
 
 #if defined(CONFIG_STACK_COLORATION) && defined(HAVE_INTERRUPTSTACK)
-  /* Colorize the interrupt stack for debug purposes */
+	/* Colorize the interrupt stack for debug purposes */
 
 #warning Missing logic
 #endif
 
-  /* Attach and emable internal interrupts */
+	/* Attach and emable internal interrupts */
 
 #ifdef CONFIG_SMP
-  /* Attach and enable the inter-CPU interrupt */
+	/* Attach and enable the inter-CPU interrupt */
 
-  xtensa_attach_fromcpu1_interrupt();
+	xtensa_attach_fromcpu1_interrupt();
 #endif
 
-  esp32_irq_dump("initial", NR_IRQS);
+	esp32_irq_dump("initial", NR_IRQS);
 
 #ifdef CONFIG_ESP32_GPIO_IRQ
-  /* Initialize GPIO interrupt support */
+	/* Initialize GPIO interrupt support */
 
-  esp32_gpioirqinitialize();
+	esp32_gpioirqinitialize();
 #endif
 
 #ifndef CONFIG_SUPPRESS_INTERRUPTS
-  /* And finally, enable interrupts.  Also clears PS.EXCM */
+	/* And finally, enable interrupts.  Also clears PS.EXCM */
 
-  up_irq_enable();
+	up_irq_enable();
 #endif
 }

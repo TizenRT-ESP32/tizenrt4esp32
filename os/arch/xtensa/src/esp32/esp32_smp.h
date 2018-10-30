@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/esp32_smp.h
  *
@@ -51,9 +69,9 @@
 /* An IDLE thread stack size for CPU0 must be defined */
 
 #if !defined(CONFIG_SMP_IDLETHREAD_STACKSIZE)
-#  error CONFIG_SMP_IDLETHREAD_STACKSIZE is not defined
+#error CONFIG_SMP_IDLETHREAD_STACKSIZE is not defined
 #elif CONFIG_SMP_IDLETHREAD_STACKSIZE < 16
-#  error CONFIG_SMP_IDLETHREAD_STACKSIZE is to small
+#error CONFIG_SMP_IDLETHREAD_STACKSIZE is to small
 #endif
 
 #define CPU1_IDLETHREAD_STACKSIZE ((CONFIG_SMP_IDLETHREAD_STACKSIZE + 15) & ~15)
@@ -82,5 +100,5 @@ extern uint32_t g_cpu1_idlestack[CPU1_IDLETHREAD_STACKWORDS];
 int esp32_fromcpu0_interrupt(int irq, FAR void *context, FAR void *arg);
 int esp32_fromcpu1_interrupt(int irq, FAR void *context, FAR void *arg);
 
-#endif /* CONFIG_SMP */
-#endif /* __ARCH_XTENSA_SRC_ESP32_ESP32_SMP_H */
+#endif							/* CONFIG_SMP */
+#endif							/* __ARCH_XTENSA_SRC_ESP32_ESP32_SMP_H */
