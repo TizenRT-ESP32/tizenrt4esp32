@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/include/esp32/tie-asm.h
  * Compile-time assembler definitions dependent on CORE & TIE
@@ -40,26 +58,26 @@
 /* Option vs. TIE:
  */
 
-#define XTHAL_SAS_TIE		0x0001		/* custom extension or coprocessor */
-#define XTHAL_SAS_OPT		0x0002		/* optional (and not a coprocessor) */
-#define XTHAL_SAS_ANYOT		0x0003		/* both of the above */
+#define XTHAL_SAS_TIE		0x0001	/* custom extension or coprocessor */
+#define XTHAL_SAS_OPT		0x0002	/* optional (and not a coprocessor) */
+#define XTHAL_SAS_ANYOT		0x0003	/* both of the above */
 
 /* Whether used automatically by compiler: */
 
-#define XTHAL_SAS_NOCC		0x0004		/* not used by compiler w/o special opts/code */
-#define XTHAL_SAS_CC		0x0008		/* used by compiler without special opts/code */
-#define XTHAL_SAS_ANYCC		0x000c		/* both of the above */
+#define XTHAL_SAS_NOCC		0x0004	/* not used by compiler w/o special opts/code */
+#define XTHAL_SAS_CC		0x0008	/* used by compiler without special opts/code */
+#define XTHAL_SAS_ANYCC		0x000c	/* both of the above */
 
 /* ABI handling across function calls: */
 
-#define XTHAL_SAS_CALR		0x0010		/* caller-saved */
-#define XTHAL_SAS_CALE		0x0020		/* callee-saved */
-#define XTHAL_SAS_GLOB		0x0040		/* global across function calls (in thread) */
-#define XTHAL_SAS_ANYABI	0x0070		/* all of the above three */
+#define XTHAL_SAS_CALR		0x0010	/* caller-saved */
+#define XTHAL_SAS_CALE		0x0020	/* callee-saved */
+#define XTHAL_SAS_GLOB		0x0040	/* global across function calls (in thread) */
+#define XTHAL_SAS_ANYABI	0x0070	/* all of the above three */
 
 /* Misc */
 
-#define XTHAL_SAS_ALL		0xffff		/* include all default NCP contents */
+#define XTHAL_SAS_ALL		0xffff	/* include all default NCP contents */
 #define XTHAL_SAS3(optie,ccuse,abi)	(((optie) & XTHAL_SAS_ANYOT) |  \
 									 ((ccuse) & XTHAL_SAS_ANYCC) | \
 									 ((abi)   & XTHAL_SAS_ANYABI))
@@ -109,25 +127,7 @@
 
 	.endif
 
-	/* Optional caller-saved registers used by default by the compiler: */
-
-	.ifeq (XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_CALR) & ~(\select)
-
-	xchal_sa_align	\ptr, 0, 1012, 4, 4
-	rsr.ACCLO	\at1		/* MAC16 option */
-	s32i	\at1, \ptr, .Lxchal_ofs_+0
-	rsr.ACCHI	\at1		/* MAC16 option */
-	s32i	\at1, \ptr, .Lxchal_ofs_+4
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 8
-
-	.elseif ((XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
-
-	xchal_sa_align	\ptr, 0, 1012, 4, 4
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 8
-
-	.endif
-
-	/* Optional caller-saved registers not used by default by the compiler: */
+	/* Optional global registers used by default by the compiler: */
 
 	.ifeq (XTHAL_SAS_OPT | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
 
@@ -158,9 +158,9 @@
 	.ifeq (XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
 
 	xchal_sa_align	\ptr, 0, 1008, 4, 4
-	rur.F64R_LO	\at1		/* ureg 234 */
+	rur.F64R_LO \at1		/* ureg 234 */
 	s32i	\at1, \ptr, .Lxchal_ofs_+0
-	rur.F64R_HI	\at1		/* ureg 235 */
+	rur.F64R_HI \at1		/* ureg 235 */
 	s32i	\at1, \ptr, .Lxchal_ofs_+4
 	rur.F64S	\at1		/* ureg 236 */
 	s32i	\at1, \ptr, .Lxchal_ofs_+8
@@ -195,90 +195,89 @@
  *                 category is selected here that is not in <select>, space for
  *                 the corresponding registers is skipped without doing any load.
  */
+	.macro xchal_ncp_load  ptr at1 at2 at3 at4	continue=0 ofs=-1 select=XTHAL_SAS_ALL alloc=0
+		xchal_sa_start	\continue, \ofs
 
-	.macro xchal_ncp_load  ptr at1 at2 at3 at4  continue=0 ofs=-1 select=XTHAL_SAS_ALL alloc=0
-	xchal_sa_start	\continue, \ofs
+		/* Optional global registers used by default by the compiler: */
 
-	/* Optional global registers used by default by the compiler: */
+		.ifeq (XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_GLOB) & ~(\select)
 
-	.ifeq (XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_GLOB) & ~(\select)
+		xchal_sa_align	\ptr, 0, 1016, 4, 4
+		l32i	\at1, \ptr, .Lxchal_ofs_+0
+		wur.THREADPTR	\at1		/* threadptr option */
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 4
 
-	xchal_sa_align	\ptr, 0, 1016, 4, 4
-	l32i	\at1, \ptr, .Lxchal_ofs_+0
-	wur.THREADPTR	\at1		/* threadptr option */
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 4
+		.elseif ((XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_GLOB) & ~(\alloc)) == 0
 
-	.elseif ((XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_GLOB) & ~(\alloc)) == 0
+		xchal_sa_align	\ptr, 0, 1016, 4, 4
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 4
 
-	xchal_sa_align	\ptr, 0, 1016, 4, 4
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 4
+		.endif
 
-	.endif
+		/* Optional caller-saved registers used by default by the compiler: */
 
-	/* Optional caller-saved registers used by default by the compiler: */
+		.ifeq (XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_CALR) & ~(\select)
 
-	.ifeq (XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_CALR) & ~(\select)
+		xchal_sa_align	\ptr, 0, 1012, 4, 4
+		l32i	\at1, \ptr, .Lxchal_ofs_+0
+		wsr.ACCLO	\at1		/* MAC16 option */
+		l32i	\at1, \ptr, .Lxchal_ofs_+4
+		wsr.ACCHI	\at1		/* MAC16 option */
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 8
 
-	xchal_sa_align	\ptr, 0, 1012, 4, 4
-	l32i	\at1, \ptr, .Lxchal_ofs_+0
-	wsr.ACCLO	\at1		/* MAC16 option */
-	l32i	\at1, \ptr, .Lxchal_ofs_+4
-	wsr.ACCHI	\at1		/* MAC16 option */
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 8
+		.elseif ((XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
 
-	.elseif ((XTHAL_SAS_OPT | XTHAL_SAS_CC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
+		xchal_sa_align	\ptr, 0, 1012, 4, 4
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 8
 
-	xchal_sa_align	\ptr, 0, 1012, 4, 4
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 8
+		.endif
 
-	.endif
+		/* Optional caller-saved registers not used by default by the compiler: */
 
-	/* Optional caller-saved registers not used by default by the compiler: */
+		.ifeq (XTHAL_SAS_OPT | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
 
-	.ifeq (XTHAL_SAS_OPT | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
+		xchal_sa_align	\ptr, 0, 996, 4, 4
+		l32i	\at1, \ptr, .Lxchal_ofs_+0
+		wsr.BR	\at1		/* boolean option */
+		l32i	\at1, \ptr, .Lxchal_ofs_+4
+		wsr.SCOMPARE1	\at1		/* conditional store option */
+		l32i	\at1, \ptr, .Lxchal_ofs_+8
+		wsr.M0	\at1		/* MAC16 option */
+		l32i	\at1, \ptr, .Lxchal_ofs_+12
+		wsr.M1	\at1		/* MAC16 option */
+		l32i	\at1, \ptr, .Lxchal_ofs_+16
+		wsr.M2	\at1		/* MAC16 option */
+		l32i	\at1, \ptr, .Lxchal_ofs_+20
+		wsr.M3	\at1		/* MAC16 option */
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 24
 
-	xchal_sa_align	\ptr, 0, 996, 4, 4
-	l32i	\at1, \ptr, .Lxchal_ofs_+0
-	wsr.BR	\at1		/* boolean option */
-	l32i	\at1, \ptr, .Lxchal_ofs_+4
-	wsr.SCOMPARE1	\at1		/* conditional store option */
-	l32i	\at1, \ptr, .Lxchal_ofs_+8
-	wsr.M0	\at1		/* MAC16 option */
-	l32i	\at1, \ptr, .Lxchal_ofs_+12
-	wsr.M1	\at1		/* MAC16 option */
-	l32i	\at1, \ptr, .Lxchal_ofs_+16
-	wsr.M2	\at1		/* MAC16 option */
-	l32i	\at1, \ptr, .Lxchal_ofs_+20
-	wsr.M3	\at1		/* MAC16 option */
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 24
+		.elseif ((XTHAL_SAS_OPT | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
 
-	.elseif ((XTHAL_SAS_OPT | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
+		xchal_sa_align	\ptr, 0, 996, 4, 4
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 24
 
-	xchal_sa_align	\ptr, 0, 996, 4, 4
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 24
+		.endif
 
-	.endif
+		/* Custom caller-saved registers not used by default by the compiler: */
 
-	/* Custom caller-saved registers not used by default by the compiler: */
+		.ifeq (XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
 
-	.ifeq (XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
+		xchal_sa_align	\ptr, 0, 1008, 4, 4
+		l32i	\at1, \ptr, .Lxchal_ofs_+0
+		wur.F64R_LO \at1		/* ureg 234 */
+		l32i	\at1, \ptr, .Lxchal_ofs_+4
+		wur.F64R_HI \at1		/* ureg 235 */
+		l32i	\at1, \ptr, .Lxchal_ofs_+8
+		wur.F64S	\at1		/* ureg 236 */
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 12
 
-	xchal_sa_align	\ptr, 0, 1008, 4, 4
-	l32i	\at1, \ptr, .Lxchal_ofs_+0
-	wur.F64R_LO	\at1		/* ureg 234 */
-	l32i	\at1, \ptr, .Lxchal_ofs_+4
-	wur.F64R_HI	\at1		/* ureg 235 */
-	l32i	\at1, \ptr, .Lxchal_ofs_+8
-	wur.F64S	\at1		/* ureg 236 */
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 12
+		.elseif ((XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
 
-	.elseif ((XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
+		xchal_sa_align	\ptr, 0, 1008, 4, 4
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 12
 
-	xchal_sa_align	\ptr, 0, 1008, 4, 4
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 12
-
-	.endif
-	.endm	/* xchal_ncp_load */
+		.endif
+		.endm	/* xchal_ncp_load */
 
 #define XTENSA_NCP_NUM_ATMPS	1
 
@@ -290,45 +289,44 @@
  *                 registers are clobbered, the remaining are unused).
  * Optional parameters are the same as for xchal_ncp_store.
  */
-
 #define xchal_cp_FPU_store	xchal_cp0_store
-	.macro	xchal_cp0_store  ptr at1 at2 at3 at4  continue=0 ofs=-1 select=XTHAL_SAS_ALL alloc=0
-	xchal_sa_start \continue, \ofs
+		.macro	xchal_cp0_store  ptr at1 at2 at3 at4  continue=0 ofs=-1 select=XTHAL_SAS_ALL alloc=0
+		xchal_sa_start \continue, \ofs
 
-	/* Custom caller-saved registers not used by default by the compiler: */
+		/* Custom caller-saved registers not used by default by the compiler: */
 
-	.ifeq (XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
+		.ifeq (XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
 
-	xchal_sa_align	\ptr, 0, 948, 4, 4
-	rur.FCR	\at1		/* ureg 232 */
-	s32i	\at1, \ptr, .Lxchal_ofs_+0
-	rur.FSR	\at1		/* ureg 233 */
-	s32i	\at1, \ptr, .Lxchal_ofs_+4
-	ssi	f0, \ptr, .Lxchal_ofs_+8
-	ssi	f1, \ptr, .Lxchal_ofs_+12
-	ssi	f2, \ptr, .Lxchal_ofs_+16
-	ssi	f3, \ptr, .Lxchal_ofs_+20
-	ssi	f4, \ptr, .Lxchal_ofs_+24
-	ssi	f5, \ptr, .Lxchal_ofs_+28
-	ssi	f6, \ptr, .Lxchal_ofs_+32
-	ssi	f7, \ptr, .Lxchal_ofs_+36
-	ssi	f8, \ptr, .Lxchal_ofs_+40
-	ssi	f9, \ptr, .Lxchal_ofs_+44
-	ssi	f10, \ptr, .Lxchal_ofs_+48
-	ssi	f11, \ptr, .Lxchal_ofs_+52
-	ssi	f12, \ptr, .Lxchal_ofs_+56
-	ssi	f13, \ptr, .Lxchal_ofs_+60
-	ssi	f14, \ptr, .Lxchal_ofs_+64
-	ssi	f15, \ptr, .Lxchal_ofs_+68
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 72
+		xchal_sa_align	\ptr, 0, 948, 4, 4
+		rur.FCR \at1		/* ureg 232 */
+		s32i	\at1, \ptr, .Lxchal_ofs_+0
+		rur.FSR \at1		/* ureg 233 */
+		s32i	\at1, \ptr, .Lxchal_ofs_+4
+		ssi f0, \ptr, .Lxchal_ofs_+8
+		ssi f1, \ptr, .Lxchal_ofs_+12
+		ssi f2, \ptr, .Lxchal_ofs_+16
+		ssi f3, \ptr, .Lxchal_ofs_+20
+		ssi f4, \ptr, .Lxchal_ofs_+24
+		ssi f5, \ptr, .Lxchal_ofs_+28
+		ssi f6, \ptr, .Lxchal_ofs_+32
+		ssi f7, \ptr, .Lxchal_ofs_+36
+		ssi f8, \ptr, .Lxchal_ofs_+40
+		ssi f9, \ptr, .Lxchal_ofs_+44
+		ssi f10, \ptr, .Lxchal_ofs_+48
+		ssi f11, \ptr, .Lxchal_ofs_+52
+		ssi f12, \ptr, .Lxchal_ofs_+56
+		ssi f13, \ptr, .Lxchal_ofs_+60
+		ssi f14, \ptr, .Lxchal_ofs_+64
+		ssi f15, \ptr, .Lxchal_ofs_+68
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 72
 
-	.elseif ((XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
+		.elseif ((XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
 
-	xchal_sa_align	\ptr, 0, 948, 4, 4
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 72
+		xchal_sa_align	\ptr, 0, 948, 4, 4
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 72
 
-	.endif
-	.endm	/* xchal_cp0_store */
+		.endif
+		.endm	/* xchal_cp0_store */
 
 /* Macro to load the state of TIE coprocessor FPU.
  * Required parameters:
@@ -338,64 +336,63 @@
  *                 registers are clobbered, the remaining are unused).
  * Optional parameters are the same as for xchal_ncp_load.
  */
-
 #define xchal_cp_FPU_load	xchal_cp0_load
-	.macro	xchal_cp0_load  ptr at1 at2 at3 at4  continue=0 ofs=-1 select=XTHAL_SAS_ALL alloc=0
-	xchal_sa_start \continue, \ofs
+		.macro	xchal_cp0_load	ptr at1 at2 at3 at4  continue=0 ofs=-1 select=XTHAL_SAS_ALL alloc=0
+		xchal_sa_start \continue, \ofs
 
-	/* Custom caller-saved registers not used by default by the compiler: */
+		/* Custom caller-saved registers not used by default by the compiler: */
 
-	.ifeq (XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
+		.ifeq (XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\select)
 
-	xchal_sa_align	\ptr, 0, 948, 4, 4
-	l32i	\at1, \ptr, .Lxchal_ofs_+0
-	wur.FCR	\at1		/* ureg 232 */
-	l32i	\at1, \ptr, .Lxchal_ofs_+4
-	wur.FSR	\at1		/* ureg 233 */
-	lsi	f0, \ptr, .Lxchal_ofs_+8
-	lsi	f1, \ptr, .Lxchal_ofs_+12
-	lsi	f2, \ptr, .Lxchal_ofs_+16
-	lsi	f3, \ptr, .Lxchal_ofs_+20
-	lsi	f4, \ptr, .Lxchal_ofs_+24
-	lsi	f5, \ptr, .Lxchal_ofs_+28
-	lsi	f6, \ptr, .Lxchal_ofs_+32
-	lsi	f7, \ptr, .Lxchal_ofs_+36
-	lsi	f8, \ptr, .Lxchal_ofs_+40
-	lsi	f9, \ptr, .Lxchal_ofs_+44
-	lsi	f10, \ptr, .Lxchal_ofs_+48
-	lsi	f11, \ptr, .Lxchal_ofs_+52
-	lsi	f12, \ptr, .Lxchal_ofs_+56
-	lsi	f13, \ptr, .Lxchal_ofs_+60
-	lsi	f14, \ptr, .Lxchal_ofs_+64
-	lsi	f15, \ptr, .Lxchal_ofs_+68
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 72
+		xchal_sa_align	\ptr, 0, 948, 4, 4
+		l32i	\at1, \ptr, .Lxchal_ofs_+0
+		wur.FCR \at1		/* ureg 232 */
+		l32i	\at1, \ptr, .Lxchal_ofs_+4
+		wur.FSR \at1		/* ureg 233 */
+		lsi f0, \ptr, .Lxchal_ofs_+8
+		lsi f1, \ptr, .Lxchal_ofs_+12
+		lsi f2, \ptr, .Lxchal_ofs_+16
+		lsi f3, \ptr, .Lxchal_ofs_+20
+		lsi f4, \ptr, .Lxchal_ofs_+24
+		lsi f5, \ptr, .Lxchal_ofs_+28
+		lsi f6, \ptr, .Lxchal_ofs_+32
+		lsi f7, \ptr, .Lxchal_ofs_+36
+		lsi f8, \ptr, .Lxchal_ofs_+40
+		lsi f9, \ptr, .Lxchal_ofs_+44
+		lsi f10, \ptr, .Lxchal_ofs_+48
+		lsi f11, \ptr, .Lxchal_ofs_+52
+		lsi f12, \ptr, .Lxchal_ofs_+56
+		lsi f13, \ptr, .Lxchal_ofs_+60
+		lsi f14, \ptr, .Lxchal_ofs_+64
+		lsi f15, \ptr, .Lxchal_ofs_+68
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 72
 
-	.elseif ((XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
+		.elseif ((XTHAL_SAS_TIE | XTHAL_SAS_NOCC | XTHAL_SAS_CALR) & ~(\alloc)) == 0
 
-	xchal_sa_align	\ptr, 0, 948, 4, 4
-	.set	.Lxchal_ofs_, .Lxchal_ofs_ + 72
+		xchal_sa_align	\ptr, 0, 948, 4, 4
+		.set	.Lxchal_ofs_, .Lxchal_ofs_ + 72
 
-	.endif
-	.endm	/* xchal_cp0_load */
+		.endif
+		.endm	/* xchal_cp0_load */
 
 #define XTENSA_CP0_NUM_ATMPS	1
 #define XTENSA_SA_NUM_ATMPS		1
 
-	/* Empty macros for unconfigured coprocessors: */
+		/* Empty macros for unconfigured coprocessors: */
 
-	.macro xchal_cp1_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp1_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp2_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp2_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp3_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp3_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp4_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp4_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp5_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp5_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp6_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp6_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp7_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
-	.macro xchal_cp7_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp1_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp1_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp2_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp2_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp3_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp3_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp4_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp4_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp5_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp5_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp6_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp6_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp7_store	p a b c d continue=0 ofs=-1 select=-1 ; .endm
+		.macro xchal_cp7_load	p a b c d continue=0 ofs=-1 select=-1 ; .endm
 
 #endif /*__ARCH_XTENSA_INCLUDE_ESP32_TIE_ASM_H*/

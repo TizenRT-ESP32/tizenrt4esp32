@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/include/esp32/tie.h
  * Compile-time HAL definitions dependent on CORE & TIE configuration
@@ -38,18 +56,18 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define XCHAL_CP_NUM               1       /* number of coprocessors */
-#define XCHAL_CP_MAX               1       /* max CP ID + 1 (0 if none) */
-#define XCHAL_CP_MASK              0x01    /* bitmask of all CPs by ID */
-#define XCHAL_CP_PORT_MASK         0x00    /* bitmask of only port CPs */
+#define XCHAL_CP_NUM               1	/* number of coprocessors */
+#define XCHAL_CP_MAX               1	/* max CP ID + 1 (0 if none) */
+#define XCHAL_CP_MASK              0x01	/* bitmask of all CPs by ID */
+#define XCHAL_CP_PORT_MASK         0x00	/* bitmask of only port CPs */
 
 /* Basic parameters of each coprocessor: */
 
 #define XCHAL_CP0_NAME             "FPU"
 #define XCHAL_CP0_IDENT            FPU
-#define XCHAL_CP0_SA_SIZE          72      /* size of state save area */
-#define XCHAL_CP0_SA_ALIGN         4       /* min alignment of save area */
-#define XCHAL_CP_ID_FPU            0       /* coprocessor ID (0..7) */
+#define XCHAL_CP0_SA_SIZE          72	/* size of state save area */
+#define XCHAL_CP0_SA_ALIGN         4	/* min alignment of save area */
+#define XCHAL_CP_ID_FPU            0	/* coprocessor ID (0..7) */
 
 /* Filler info for unassigned coprocessors, to simplify arrays etc: */
 
@@ -75,8 +93,8 @@
 
 /* Total save area for optional and custom state (NCP + CPn): */
 
-#define XCHAL_TOTAL_SA_SIZE        128     /* With 16-byte align padding */
-#define XCHAL_TOTAL_SA_ALIGN       4       /* Actual minimum alignment */
+#define XCHAL_TOTAL_SA_SIZE        128	/* With 16-byte align padding */
+#define XCHAL_TOTAL_SA_ALIGN       4	/* Actual minimum alignment */
 
 /* Detailed contents of save areas.
  * NOTE:  caller must define the XCHAL_SA_REG macro (not defined here)
@@ -154,25 +172,25 @@
  XCHAL_SA_REG(s,0,0,2,0,            f15, 4, 4, 4,0x003F,   f,15 , 32,0,0,0)
 
 #define XCHAL_CP1_SA_NUM            0
-#define XCHAL_CP1_SA_LIST(s)               /* empty */
+#define XCHAL_CP1_SA_LIST(s)	/* empty */
 
 #define XCHAL_CP2_SA_NUM            0
-#define XCHAL_CP2_SA_LIST(s)               /* empty */
+#define XCHAL_CP2_SA_LIST(s)	/* empty */
 
 #define XCHAL_CP3_SA_NUM            0
-#define XCHAL_CP3_SA_LIST(s)               /* empty */
+#define XCHAL_CP3_SA_LIST(s)	/* empty */
 
 #define XCHAL_CP4_SA_NUM            0
-#define XCHAL_CP4_SA_LIST(s)               /* empty */
+#define XCHAL_CP4_SA_LIST(s)	/* empty */
 
 #define XCHAL_CP5_SA_NUM            0
-#define XCHAL_CP5_SA_LIST(s)               /* empty */
+#define XCHAL_CP5_SA_LIST(s)	/* empty */
 
 #define XCHAL_CP6_SA_NUM            0
-#define XCHAL_CP6_SA_LIST(s)               /* empty */
+#define XCHAL_CP6_SA_LIST(s)	/* empty */
 
 #define XCHAL_CP7_SA_NUM            0
-#define XCHAL_CP7_SA_LIST(s)               /* empty */
+#define XCHAL_CP7_SA_LIST(s)	/* empty */
 
 /* Byte length of instruction from its first nibble (op0 field), per FLIX. */
 

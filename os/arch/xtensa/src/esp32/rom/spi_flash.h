@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 // Copyright 2010-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -120,36 +138,37 @@ extern "C" {
 #define FLASH_ID_GD25LQ32C  0xC86016
 
 typedef enum {
-    ESP_ROM_SPIFLASH_QIO_MODE = 0,
-    ESP_ROM_SPIFLASH_QOUT_MODE,
-    ESP_ROM_SPIFLASH_DIO_MODE,
-    ESP_ROM_SPIFLASH_DOUT_MODE,
-    ESP_ROM_SPIFLASH_FASTRD_MODE,
-    ESP_ROM_SPIFLASH_SLOWRD_MODE
-} esp_rom_spiflash_read_mode_t;
+	ESP_ROM_SPIFLASH_QIO_MODE = 0,
+	ESP_ROM_SPIFLASH_QOUT_MODE,
+	ESP_ROM_SPIFLASH_DIO_MODE,
+	ESP_ROM_SPIFLASH_DOUT_MODE,
+	ESP_ROM_SPIFLASH_FASTRD_MODE,
+	ESP_ROM_SPIFLASH_SLOWRD_MODE
+}
+esp_rom_spiflash_read_mode_t;
 
 typedef enum {
-    ESP_ROM_SPIFLASH_RESULT_OK,
-    ESP_ROM_SPIFLASH_RESULT_ERR,
-    ESP_ROM_SPIFLASH_RESULT_TIMEOUT
+	ESP_ROM_SPIFLASH_RESULT_OK,
+	ESP_ROM_SPIFLASH_RESULT_ERR,
+	ESP_ROM_SPIFLASH_RESULT_TIMEOUT
 } esp_rom_spiflash_result_t;
 
 typedef struct {
-    uint32_t device_id;
-    uint32_t chip_size;    // chip size in bytes
-    uint32_t block_size;
-    uint32_t sector_size;
-    uint32_t page_size;
-    uint32_t status_mask;
+	uint32_t device_id;
+	uint32_t chip_size;		// chip size in bytes
+	uint32_t block_size;
+	uint32_t sector_size;
+	uint32_t page_size;
+	uint32_t status_mask;
 } esp_rom_spiflash_chip_t;
 
 typedef struct {
-    uint8_t  data_length;
-    uint8_t  read_cmd0;
-    uint8_t  read_cmd1;
-    uint8_t  write_cmd;
-    uint16_t data_mask;
-    uint16_t data;
+	uint8_t data_length;
+	uint8_t read_cmd0;
+	uint8_t read_cmd1;
+	uint8_t write_cmd;
+	uint16_t data_mask;
+	uint16_t data;
 } esp_rom_spiflash_common_cmd_t;
 
 /**
@@ -359,8 +378,7 @@ esp_rom_spiflash_result_t esp_rom_spiflash_lock(void);
   *         ESP_ROM_SPIFLASH_RESULT_ERR : Update error.
   *         ESP_ROM_SPIFLASH_RESULT_TIMEOUT : Update timeout.
   */
-esp_rom_spiflash_result_t esp_rom_spiflash_config_param(uint32_t deviceId, uint32_t chip_size, uint32_t block_size, 
-                                                        uint32_t sector_size, uint32_t page_size, uint32_t status_mask);
+esp_rom_spiflash_result_t esp_rom_spiflash_config_param(uint32_t deviceId, uint32_t chip_size, uint32_t block_size, uint32_t sector_size, uint32_t page_size, uint32_t status_mask);
 
 /**
   * @brief Erase whole flash chip.
@@ -500,7 +518,6 @@ void esp_rom_spiflash_write_encrypted_disable(void);
   */
 esp_rom_spiflash_result_t esp_rom_spiflash_write_encrypted(uint32_t flash_addr, uint32_t *data, uint32_t len);
 
-
 /** @brief Wait until SPI flash write operation is complete
  *
  * @note Please do not call this function in SDK.
@@ -512,7 +529,6 @@ esp_rom_spiflash_result_t esp_rom_spiflash_write_encrypted(uint32_t flash_addr, 
  *         ESP_ROM_SPIFLASH_RESULT_ERR : Error while reading status.
  */
 esp_rom_spiflash_result_t esp_rom_spiflash_wait_idle(esp_rom_spiflash_chip_t *spi);
-
 
 /** @brief Enable Quad I/O pin functions
  *
@@ -544,5 +560,4 @@ extern esp_rom_spiflash_chip_t g_rom_flashchip;
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* _ROM_SPI_FLASH_H_ */
+#endif							/* _ROM_SPI_FLASH_H_ */

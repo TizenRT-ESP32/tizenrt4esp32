@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_stackframe.c
  *
@@ -56,9 +74,9 @@
  */
 
 #ifdef CONFIG_LIBC_FLOATINGPOINT
-#  define STACK_ALIGNMENT   8
+#define STACK_ALIGNMENT   8
 #else
-#  define STACK_ALIGNMENT   4
+#define STACK_ALIGNMENT   4
 #endif
 
 /* Stack alignment macros */
@@ -105,30 +123,29 @@
 
 FAR void *up_stack_frame(FAR struct tcb_s *tcb, size_t frame_size)
 {
-  uintptr_t topaddr;
+	uintptr_t topaddr;
 
-  /* Align the frame_size */
+	/* Align the frame_size */
 
-  frame_size = STACK_ALIGN_UP(frame_size);
+	frame_size = STACK_ALIGN_UP(frame_size);
 
-  /* Is there already a stack allocated? Is it big enough? */
+	/* Is there already a stack allocated? Is it big enough? */
 
-  if (!tcb->stack_alloc_ptr || tcb->adj_stack_size <= frame_size)
-    {
-      return NULL;
-    }
+	if (!tcb->stack_alloc_ptr || tcb->adj_stack_size <= frame_size) {
+		return NULL;
+	}
 
-  /* Save the adjusted stack values in the struct tcb_s */
+	/* Save the adjusted stack values in the struct tcb_s */
 
-  topaddr               = (uintptr_t)tcb->adj_stack_ptr - frame_size;
-  tcb->adj_stack_ptr    = (FAR void *)topaddr;
-  tcb->adj_stack_size  -= frame_size;
+	topaddr = (uintptr_t) tcb->adj_stack_ptr - frame_size;
+	tcb->adj_stack_ptr = (FAR void *)topaddr;
+	tcb->adj_stack_size -= frame_size;
 
-  /* Reset the initial stack pointer (A1) */
+	/* Reset the initial stack pointer (A1) */
 
-  tcb->xcp.regs[REG_A1] = (uint32_t)tcb->adj_stack_ptr;
+	tcb->xcp.regs[REG_A1] = (uint32_t) tcb->adj_stack_ptr;
 
-  /* And return the pointer to the allocated region */
+	/* And return the pointer to the allocated region */
 
-  return (FAR void *)(topaddr + sizeof(uint32_t));
+	return (FAR void *)(topaddr + sizeof(uint32_t));
 }

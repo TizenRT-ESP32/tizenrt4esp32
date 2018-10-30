@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 // Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +38,7 @@
 #ifndef __ASSEMBLER__
 #include "dport_access.h"
 #endif
-   
+
 /* Registers defined in this header file must be accessed using special macros,
  * prefixed with DPORT_. See soc/dport_access.h file for details.
  */
@@ -970,7 +988,7 @@
 #define DPORT_RMT_CLK_EN   (BIT(9))
 #define DPORT_UHCI0_CLK_EN   (BIT(8))
 #define DPORT_I2C_EXT0_CLK_EN   (BIT(7))
-#define DPORT_SPI_CLK_EN   (BIT(6)) /** Deprecated, please use DPORT_SPI2_CLK_EN **/
+#define DPORT_SPI_CLK_EN   (BIT(6))	/** Deprecated, please use DPORT_SPI2_CLK_EN **/
 #define DPORT_SPI2_CLK_EN   (BIT(6))
 #define DPORT_UART1_CLK_EN   (BIT(5))
 #define DPORT_I2S0_CLK_EN   (BIT(4))
@@ -996,7 +1014,7 @@
 #define DPORT_CAN_RST   (BIT(19))
 #define DPORT_I2C_EXT1_RST   (BIT(18))
 #define DPORT_PWM0_RST   (BIT(17))
-#define DPORT_SPI_RST_2   (BIT(16)) /** Deprecated, please use DPORT_SPI3_RST **/
+#define DPORT_SPI_RST_2   (BIT(16))	/** Deprecated, please use DPORT_SPI3_RST **/
 #define DPORT_SPI3_RST   (BIT(16))
 #define DPORT_TIMERGROUP1_RST   (BIT(15))
 #define DPORT_EFUSE_RST   (BIT(14))
@@ -1088,7 +1106,7 @@
 #define DPORT_BT_RST (BIT(3))
 #define DPORT_MAC_RST (BIT(2))
 #define DPORT_FE_RST (BIT(1))
-#define DPORT_BB_RST (BIT(0))  
+#define DPORT_BB_RST (BIT(0))
 
 #define DPORT_BT_LPCK_DIV_INT_REG          (DR_REG_DPORT_BASE + 0x0D4)
 /* DPORT_BTEXTWAKEUP_REQ : R/W ;bitpos:[12] ;default: 1'b0 ; */
@@ -3191,12 +3209,12 @@
 #define DPORT_RECORD_PDEBUGINST_ISRC_V  	0x07
 #define DPORT_RECORD_PDEBUGINST_ISRC_S  	12
 #define DPORT_RECORD_PDEBUGINST_ISRC(_r_)	(((_r_)>>DPORT_RECORD_PDEBUGINST_ISRC_S) & DPORT_RECORD_PDEBUGINST_ISRC_V)
-// #define DPORT_RECORD_PDEBUGINST_LOOP_M  	((DPORT_RECORD_PDEBUGINST_LOOP_V)<<(DPORT_RECORD_PDEBUGINST_LOOP_S))
-// #define DPORT_RECORD_PDEBUGINST_LOOP_V  	0x0F
-// #define DPORT_RECORD_PDEBUGINST_LOOP_S  	20
-// #define DPORT_RECORD_PDEBUGINST_LOOP(_r_)	(((_r_)>>DPORT_RECORD_PDEBUGINST_LOOP_S) & DPORT_RECORD_PDEBUGINST_LOOP_V)
-#define DPORT_RECORD_PDEBUGINST_LOOP_REP 	(BIT(20)) /* loopback will occur */
-#define DPORT_RECORD_PDEBUGINST_LOOP		(BIT(21)) /* last inst of loop */
+// #define DPORT_RECORD_PDEBUGINST_LOOP_M   ((DPORT_RECORD_PDEBUGINST_LOOP_V)<<(DPORT_RECORD_PDEBUGINST_LOOP_S))
+// #define DPORT_RECORD_PDEBUGINST_LOOP_V   0x0F
+// #define DPORT_RECORD_PDEBUGINST_LOOP_S   20
+// #define DPORT_RECORD_PDEBUGINST_LOOP(_r_)    (((_r_)>>DPORT_RECORD_PDEBUGINST_LOOP_S) & DPORT_RECORD_PDEBUGINST_LOOP_V)
+#define DPORT_RECORD_PDEBUGINST_LOOP_REP 	(BIT(20))	/* loopback will occur */
+#define DPORT_RECORD_PDEBUGINST_LOOP		(BIT(21))	/* last inst of loop */
 #define DPORT_RECORD_PDEBUGINST_CINTL_M  	((DPORT_RECORD_PDEBUGINST_CINTL_V)<<(DPORT_RECORD_PDEBUGINST_CINTL_S))
 #define DPORT_RECORD_PDEBUGINST_CINTL_V  	0x0F
 #define DPORT_RECORD_PDEBUGINST_CINTL_S  	24
@@ -3217,44 +3235,44 @@
 #define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_V  		0x3F
 #define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_S  		0
 #define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE(_r_)		(((_r_)>>DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_S) & DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_V)
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_PSO		0x00 /* Power shut off */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_DEP		0x02 /* Register dependency or resource conflict. See DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG for extra info. */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_CTL		0x04 /* Control transfer bubble */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_ICM		0x08 /* I-cache miss (incl uncached miss) */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_DCM		0x0C /* D-cache miss (excl uncached miss) */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_EXC0		0x10 /* Exception or interrupt (W stage). See DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG for extra info.
-															The virtual address of the instruction that was killed appears on DPORT_PRO_CPU_RECORD_PDEBUGPC_REG[31:0] */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_EXC1		0x11 /* Exception or interrupt (W+1 stage). See DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG for extra info. */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_RPL		0x14 /* Instruction replay (other). DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG has the PC of the replaying instruction. */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_ITLB		0x18 /* HW ITLB refill. The refill address and data are available on
-															DPORT_PRO_CPU_RECORD_PDEBUGLS0ADDR_REG and DPORT_PRO_CPU_RECORD_PDEBUGLS0DATA_REG. */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_ITLBM		0x1A /* ITLB miss */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_DTLB		0x1C /* HW DTLB refill. The refill address and data are available on
-															DPORT_PRO_CPU_RECORD_PDEBUGLS0ADDR_REG and DPORT_PRO_CPU_RECORD_PDEBUGLS0DATA_REG. */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_DTLBM		0x1E /* DTLB miss */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_STALL		0x20 /* Stall . The cause of the global stall is further classified in the DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG. */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_HWMEC		0x24 /* HW-corrected memory error */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_WAITI		0x28 /* WAITI mode */
-#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_OTHER		0x3C /* all other bubbles */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_PSO		0x00	/* Power shut off */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_DEP		0x02	/* Register dependency or resource conflict. See DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG for extra info. */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_CTL		0x04	/* Control transfer bubble */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_ICM		0x08	/* I-cache miss (incl uncached miss) */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_DCM		0x0C	/* D-cache miss (excl uncached miss) */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_EXC0		0x10	/* Exception or interrupt (W stage). See DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG for extra info.
+															   The virtual address of the instruction that was killed appears on DPORT_PRO_CPU_RECORD_PDEBUGPC_REG[31:0] */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_EXC1		0x11	/* Exception or interrupt (W+1 stage). See DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG for extra info. */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_RPL		0x14	/* Instruction replay (other). DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG has the PC of the replaying instruction. */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_ITLB		0x18	/* HW ITLB refill. The refill address and data are available on
+															   DPORT_PRO_CPU_RECORD_PDEBUGLS0ADDR_REG and DPORT_PRO_CPU_RECORD_PDEBUGLS0DATA_REG. */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_ITLBM		0x1A	/* ITLB miss */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_DTLB		0x1C	/* HW DTLB refill. The refill address and data are available on
+															   DPORT_PRO_CPU_RECORD_PDEBUGLS0ADDR_REG and DPORT_PRO_CPU_RECORD_PDEBUGLS0DATA_REG. */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_DTLBM		0x1E	/* DTLB miss */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_STALL		0x20	/* Stall . The cause of the global stall is further classified in the DPORT_XXX_CPU_RECORD_PDEBUGDATA_REG. */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_HWMEC		0x24	/* HW-corrected memory error */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_WAITI		0x28	/* WAITI mode */
+#define DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_OTHER		0x3C	/* all other bubbles */
 #define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_M  		((DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_V)<<(DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_S))
 #define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_V  		0x3F
 #define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_S  		0
 #define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE(_r_)		(((_r_)>>DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_S) & DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_V)
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_JX		0x00 /* JX */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_CALLX	0x04 /* CALLX */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_CRET		0x08 /* All call returns */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_ERET		0x0C /* All exception returns */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_B		0x10 /* Branch taken or loop not taken */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_J		0x14 /* J */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_CALL		0x18 /* CALL */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_BN		0x1C /* Branch not taken */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_LOOP		0x20 /* Loop instruction (taken) */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_S32C1I	0x24 /* S32C1I. The address and load data (before the conditional store) are available on the LS signals*/
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_WXSR2LB	0x28 /* WSR/XSR to LBEGIN */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_WSR2MMID	0x2C /* WSR to MMID */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_RWXSR	0x30 /* RSR or WSR (except MMID and LBEGIN) or XSR (except LBEGIN) */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_RWER		0x34 /* RER or WER */
-#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_DEF		0x3C /* Default */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_JX		0x00	/* JX */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_CALLX	0x04	/* CALLX */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_CRET		0x08	/* All call returns */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_ERET		0x0C	/* All exception returns */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_B		0x10	/* Branch taken or loop not taken */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_J		0x14	/* J */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_CALL		0x18	/* CALL */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_BN		0x1C	/* Branch not taken */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_LOOP		0x20	/* Loop instruction (taken) */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_S32C1I	0x24	/* S32C1I. The address and load data (before the conditional store) are available on the LS signals */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_WXSR2LB	0x28	/* WSR/XSR to LBEGIN */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_WSR2MMID	0x2C	/* WSR to MMID */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_RWXSR	0x30	/* RSR or WSR (except MMID and LBEGIN) or XSR (except LBEGIN) */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_RWER		0x34	/* RER or WER */
+#define DPORT_RECORD_PDEBUGSTATUS_INSNTYPE_DEF		0x3C	/* Default */
 
 #define DPORT_PRO_CPU_RECORD_PDEBUGDATA_REG          (DR_REG_DPORT_BASE + 0x454)
 /* DPORT_RECORD_PRO_PDEBUGDATA : RO ;bitpos:[31:0] ;default: 32'b0 ; */
@@ -3291,25 +3309,25 @@
 #define DPORT_RECORD_PDEBUGDATA_EXCVEC_V  		0x1F
 #define DPORT_RECORD_PDEBUGDATA_EXCVEC_S  		0
 #define DPORT_RECORD_PDEBUGDATA_EXCVEC(_r_)		(((_r_)>>DPORT_RECORD_PDEBUGDATA_EXCCAUSE_S) & DPORT_RECORD_PDEBUGDATA_EXCCAUSE_V)
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_NONE		0x00 /* no vector */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_RST		0x01 /* Reset */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_DBG		0x02 /* Debug (repl corresp level “n”) */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_NMI		0x03 /* NMI (repl corresp level “n”) */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_USR		0x04 /* User */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_KRNL		0x05 /* Kernel */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_DBL		0x06 /* Double */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_EMEM		0x07 /* Memory Error */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_OVF4		0x0A /* Window Overflow 4 */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_UNF4		0x0B /* Window Underflow 4 */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_OVF8		0x0C /* Window Overflow 8 */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_UNF8		0x0D /* Window Underflow 8 */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_OVF12	0x0E /* Window Overflow 12 */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_UNF12	0x0F /* Window Underflow 12 */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT2		0x10 /* Int Level 2 (n/a if debug/NMI) */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT3		0x11 /* Int Level 3 (n/a if debug/NMI) */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT4		0x12 /* Int Level 4 (n/a if debug/NMI) */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT5		0x13 /* Int Level 5 (n/a if debug/NMI) */
-#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT6		0x14 /* Int Level 6 (n/a if debug/NMI) */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_NONE		0x00	/* no vector */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_RST		0x01	/* Reset */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_DBG		0x02	/* Debug (repl corresp level “n”) */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_NMI		0x03	/* NMI (repl corresp level “n”) */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_USR		0x04	/* User */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_KRNL		0x05	/* Kernel */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_DBL		0x06	/* Double */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_EMEM		0x07	/* Memory Error */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_OVF4		0x0A	/* Window Overflow 4 */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_UNF4		0x0B	/* Window Underflow 4 */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_OVF8		0x0C	/* Window Overflow 8 */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_UNF8		0x0D	/* Window Underflow 8 */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_OVF12	0x0E	/* Window Overflow 12 */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_UNF12	0x0F	/* Window Underflow 12 */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT2		0x10	/* Int Level 2 (n/a if debug/NMI) */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT3		0x11	/* Int Level 3 (n/a if debug/NMI) */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT4		0x12	/* Int Level 4 (n/a if debug/NMI) */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT5		0x13	/* Int Level 5 (n/a if debug/NMI) */
+#define DPORT_RECORD_PDEBUGDATA_EXCVEC_INT6		0x14	/* Int Level 6 (n/a if debug/NMI) */
 /* register layout when bubble cycke cause is DPORT_RECORD_PDEBUGSTATUS_BBCAUSE_STALL:
  *
  * ITERDIV[19]  : Iterative divide stall.
@@ -3372,7 +3390,6 @@
 #define DPORT_RECORD_PDEBUGDATA_INSNTYPE_WER		(BIT(1))
 #define DPORT_RECORD_PDEBUGDATA_INSNTYPE_RER		(BIT(0))
 
-
 #define DPORT_PRO_CPU_RECORD_PDEBUGPC_REG          (DR_REG_DPORT_BASE + 0x458)
 /* DPORT_RECORD_PRO_PDEBUGPC : RO ;bitpos:[31:0] ;default: 32'b0 ; */
 /*description: */
@@ -3404,21 +3421,21 @@
 #define DPORT_RECORD_PDEBUGLS0STAT_TYPE_V  		0x0F
 #define DPORT_RECORD_PDEBUGLS0STAT_TYPE_S  		0
 #define DPORT_RECORD_PDEBUGLS0STAT_TYPE(_r_)	(((_r_)>>DPORT_RECORD_PDEBUGLS0STAT_TYPE_S) & DPORT_RECORD_PDEBUGLS0STAT_TYPE_V)
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_NONE	0x00 /* neither */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_ITLBR	0x01 /* hw itlb refill */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_DTLBR	0x02 /* hw dtlb refill */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_LD		0x05 /* load */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_STR		0x06 /* store */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_L32R	0x08 /* l32r */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_S32CLI1	0x0A /* s32ci1 */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_CTI		0x0C /* cache test inst */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_RWXSR	0x0E /* rsr/wsr/xsr */
-#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_RWER	0x0F /* rer/wer */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_NONE	0x00	/* neither */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_ITLBR	0x01	/* hw itlb refill */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_DTLBR	0x02	/* hw dtlb refill */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_LD		0x05	/* load */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_STR		0x06	/* store */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_L32R	0x08	/* l32r */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_S32CLI1	0x0A	/* s32ci1 */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_CTI		0x0C	/* cache test inst */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_RWXSR	0x0E	/* rsr/wsr/xsr */
+#define DPORT_RECORD_PDEBUGLS0STAT_TYPE_RWER	0x0F	/* rer/wer */
 #define DPORT_RECORD_PDEBUGLS0STAT_SZ_M  		((DPORT_RECORD_PDEBUGLS0STAT_SZ_V)<<(DPORT_RECORD_PDEBUGLS0STAT_SZ_S))
 #define DPORT_RECORD_PDEBUGLS0STAT_SZ_V  		0x0F
 #define DPORT_RECORD_PDEBUGLS0STAT_SZ_S  		4
 #define DPORT_RECORD_PDEBUGLS0STAT_SZ(_r_)		(((_r_)>>DPORT_RECORD_PDEBUGLS0STAT_SZ_S) & DPORT_RECORD_PDEBUGLS0STAT_SZ_V)
-#define DPORT_RECORD_PDEBUGLS0STAT_SZB(_r_)		((8<<DPORT_RECORD_PDEBUGLS0STAT_SZ(_r_))/8) // in bytes
+#define DPORT_RECORD_PDEBUGLS0STAT_SZB(_r_)		((8<<DPORT_RECORD_PDEBUGLS0STAT_SZ(_r_))/8)	// in bytes
 #define DPORT_RECORD_PDEBUGLS0STAT_DTLBM		(BIT(8))
 #define DPORT_RECORD_PDEBUGLS0STAT_DCM			(BIT(9))
 #define DPORT_RECORD_PDEBUGLS0STAT_DCH			(BIT(10))
@@ -3429,27 +3446,27 @@
 #define DPORT_RECORD_PDEBUGLS0STAT_STCOH_V  	0x03
 #define DPORT_RECORD_PDEBUGLS0STAT_STCOH_S  	17
 #define DPORT_RECORD_PDEBUGLS0STAT_STCOH(_r_)	(((_r_)>>DPORT_RECORD_PDEBUGLS0STAT_STCOH_S) & DPORT_RECORD_PDEBUGLS0STAT_STCOH_V)
-#define DPORT_RECORD_PDEBUGLS0STAT_STCOH_NONE  	0x0 /* neither shared nor exclusive nor modified */
-#define DPORT_RECORD_PDEBUGLS0STAT_STCOH_SHARED	0x1 /* shared */
-#define DPORT_RECORD_PDEBUGLS0STAT_STCOH_EXCL  	0x2 /* exclusive */
-#define DPORT_RECORD_PDEBUGLS0STAT_STCOH_MOD  	0x3 /* modified */
+#define DPORT_RECORD_PDEBUGLS0STAT_STCOH_NONE  	0x0	/* neither shared nor exclusive nor modified */
+#define DPORT_RECORD_PDEBUGLS0STAT_STCOH_SHARED	0x1	/* shared */
+#define DPORT_RECORD_PDEBUGLS0STAT_STCOH_EXCL  	0x2	/* exclusive */
+#define DPORT_RECORD_PDEBUGLS0STAT_STCOH_MOD  	0x3	/* modified */
 #define DPORT_RECORD_PDEBUGLS0STAT_TGT_M  		((DPORT_RECORD_PDEBUGLS0STAT_TGT_V)<<(DPORT_RECORD_PDEBUGLS0STAT_TGT_S))
 #define DPORT_RECORD_PDEBUGLS0STAT_TGT_V  		0x0F
 #define DPORT_RECORD_PDEBUGLS0STAT_TGT_S  		20
 #define DPORT_RECORD_PDEBUGLS0STAT_TGT(_r_)		(((_r_)>>DPORT_RECORD_PDEBUGLS0STAT_TGT_S) & DPORT_RECORD_PDEBUGLS0STAT_TGT_V)
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_EXT  	0x0 /* not to local memory */
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_IRAM0	0x2 /* 001x: InstRAM (0/1) */
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_IRAM1	0x3 /* 001x: InstRAM (0/1) */
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_IROM0  	0x4 /* 010x: InstROM (0/1) */
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_IROM1  	0x5 /* 010x: InstROM (0/1) */
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_DRAM0  	0x0A /* 101x: DataRAM (0/1) */
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_DRAM1  	0x0B /* 101x: DataRAM (0/1) */
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_DROM0  	0xE /* 111x: DataROM (0/1) */
-#define DPORT_RECORD_PDEBUGLS0STAT_TGT_DROM1  	0xF /* 111x: DataROM (0/1) */
-// #define DPORT_RECORD_PDEBUGLS0STAT_TGT_IRAM(_t_)	(((_t_)&0xE)=0x2) /* 001x: InstRAM (0/1) */
-// #define DPORT_RECORD_PDEBUGLS0STAT_TGT_IROM(_t_)  	(((_t_)&0xE)=0x4) /* 010x: InstROM (0/1) */
-// #define DPORT_RECORD_PDEBUGLS0STAT_TGT_DRAM(_t_)  	(((_t_)&0xE)=0x2) /* 101x: DataRAM (0/1) */
-// #define DPORT_RECORD_PDEBUGLS0STAT_TGT_DROM(_t_)  	(((_t_)&0xE)=0x2) /* 111x: DataROM (0/1) */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_EXT  	0x0	/* not to local memory */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_IRAM0	0x2	/* 001x: InstRAM (0/1) */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_IRAM1	0x3	/* 001x: InstRAM (0/1) */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_IROM0  	0x4	/* 010x: InstROM (0/1) */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_IROM1  	0x5	/* 010x: InstROM (0/1) */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_DRAM0  	0x0A	/* 101x: DataRAM (0/1) */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_DRAM1  	0x0B	/* 101x: DataRAM (0/1) */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_DROM0  	0xE	/* 111x: DataROM (0/1) */
+#define DPORT_RECORD_PDEBUGLS0STAT_TGT_DROM1  	0xF	/* 111x: DataROM (0/1) */
+// #define DPORT_RECORD_PDEBUGLS0STAT_TGT_IRAM(_t_) (((_t_)&0xE)=0x2) /* 001x: InstRAM (0/1) */
+// #define DPORT_RECORD_PDEBUGLS0STAT_TGT_IROM(_t_)     (((_t_)&0xE)=0x4) /* 010x: InstROM (0/1) */
+// #define DPORT_RECORD_PDEBUGLS0STAT_TGT_DRAM(_t_)     (((_t_)&0xE)=0x2) /* 101x: DataRAM (0/1) */
+// #define DPORT_RECORD_PDEBUGLS0STAT_TGT_DROM(_t_)     (((_t_)&0xE)=0x2) /* 111x: DataROM (0/1) */
 
 #define DPORT_PRO_CPU_RECORD_PDEBUGLS0ADDR_REG          (DR_REG_DPORT_BASE + 0x460)
 /* DPORT_RECORD_PRO_PDEBUGLS0ADDR : RO ;bitpos:[31:0] ;default: 32'b0 ; */
@@ -4282,5 +4299,3 @@
 #define DPORT_FLASH_MMU_TABLE_INVALID_VAL 0x100
 
 #endif /*_SOC_DPORT_REG_H_ */
-
-

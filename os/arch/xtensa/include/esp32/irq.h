@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/include/esp32/irq.h
  *
@@ -79,87 +97,87 @@
 
 /* PRO_INTR_STATUS_REG_0 / APP_INTR_STATUS_REG_0 */
 
-#define ESP32_PERIPH_MAC            0  /* INTR_STATUS_REG_0, bit 0 */
-#define ESP32_PERIPH_MAC_NMI        1  /* INTR_STATUS_REG_0, bit 1 */
-#define ESP32_PERIPH_BB             2  /* INTR_STATUS_REG_0, bit 2 */
-#define ESP32_PERIPH_BB_MAC         3  /* INTR_STATUS_REG_0, bit 3 */
-#define ESP32_PERIPH_BT_BB          4  /* INTR_STATUS_REG_0, bit 4 */
-#define ESP32_PERIPH_BT_BB_NMI      5  /* INTR_STATUS_REG_0, bit 5 */
-#define ESP32_PERIPH_RWBT_IRQ       6  /* INTR_STATUS_REG_0, bit 6 */
-#define ESP32_PERIPH_RWBLE_IRQ      7  /* INTR_STATUS_REG_0, bit 7 */
-#define ESP32_PERIPH_RWBT_NMI       8  /* INTR_STATUS_REG_0, bit 8 */
-#define ESP32_PERIPH_RWBLE_NMI      9  /* INTR_STATUS_REG_0, bit 9 */
+#define ESP32_PERIPH_MAC            0	/* INTR_STATUS_REG_0, bit 0 */
+#define ESP32_PERIPH_MAC_NMI        1	/* INTR_STATUS_REG_0, bit 1 */
+#define ESP32_PERIPH_BB             2	/* INTR_STATUS_REG_0, bit 2 */
+#define ESP32_PERIPH_BB_MAC         3	/* INTR_STATUS_REG_0, bit 3 */
+#define ESP32_PERIPH_BT_BB          4	/* INTR_STATUS_REG_0, bit 4 */
+#define ESP32_PERIPH_BT_BB_NMI      5	/* INTR_STATUS_REG_0, bit 5 */
+#define ESP32_PERIPH_RWBT_IRQ       6	/* INTR_STATUS_REG_0, bit 6 */
+#define ESP32_PERIPH_RWBLE_IRQ      7	/* INTR_STATUS_REG_0, bit 7 */
+#define ESP32_PERIPH_RWBT_NMI       8	/* INTR_STATUS_REG_0, bit 8 */
+#define ESP32_PERIPH_RWBLE_NMI      9	/* INTR_STATUS_REG_0, bit 9 */
 
-#define ESP32_PERIPH_SLC0           10 /* INTR_STATUS_REG_0, bit 10 */
-#define ESP32_PERIPH_SLC1           11 /* INTR_STATUS_REG_0, bit 11 */
-#define ESP32_PERIPH_UHCI0          12 /* INTR_STATUS_REG_0, bit 12 */
-#define ESP32_PERIPH_UHCI1          13 /* INTR_STATUS_REG_0, bit 13 */
-#define ESP32_PERIPH_TG_T0_LEVEL    14 /* INTR_STATUS_REG_0, bit 14 */
-#define ESP32_PERIPH_TG_T1_LEVEL    15 /* INTR_STATUS_REG_0, bit 15 */
-#define ESP32_PERIPH_TG_WDT_LEVEL   16 /* INTR_STATUS_REG_0, bit 16 */
-#define ESP32_PERIPH_TG_LACT_LEVEL  17 /* INTR_STATUS_REG_0, bit 17 */
-#define ESP32_PERIPH_TG1_T0_LEVEL   18 /* INTR_STATUS_REG_0, bit 18 */
-#define ESP32_PERIPH_TG1_T1_LEVEL   19 /* INTR_STATUS_REG_0, bit 19 */
+#define ESP32_PERIPH_SLC0           10	/* INTR_STATUS_REG_0, bit 10 */
+#define ESP32_PERIPH_SLC1           11	/* INTR_STATUS_REG_0, bit 11 */
+#define ESP32_PERIPH_UHCI0          12	/* INTR_STATUS_REG_0, bit 12 */
+#define ESP32_PERIPH_UHCI1          13	/* INTR_STATUS_REG_0, bit 13 */
+#define ESP32_PERIPH_TG_T0_LEVEL    14	/* INTR_STATUS_REG_0, bit 14 */
+#define ESP32_PERIPH_TG_T1_LEVEL    15	/* INTR_STATUS_REG_0, bit 15 */
+#define ESP32_PERIPH_TG_WDT_LEVEL   16	/* INTR_STATUS_REG_0, bit 16 */
+#define ESP32_PERIPH_TG_LACT_LEVEL  17	/* INTR_STATUS_REG_0, bit 17 */
+#define ESP32_PERIPH_TG1_T0_LEVEL   18	/* INTR_STATUS_REG_0, bit 18 */
+#define ESP32_PERIPH_TG1_T1_LEVEL   19	/* INTR_STATUS_REG_0, bit 19 */
 
-#define ESP32_PERIPH_TG1_WDT_LEVEL  20 /* INTR_STATUS_REG_0, bit 20 */
-#define ESP32_PERIPH_G1_LACT_LEVEL  21 /* INTR_STATUS_REG_0, bit 21 */
-#define ESP32_PERIPH_CPU_GPIO       22 /* INTR_STATUS_REG_0, bit 22 */
-#define ESP32_PERIPH_CPU_NMI        23 /* INTR_STATUS_REG_0, bit 23 */
-#define ESP32_PERIPH_CPU_CPU0       24 /* INTR_STATUS_REG_0, bit 24 */
-#define ESP32_PERIPH_CPU_CPU1       25 /* INTR_STATUS_REG_0, bit 25 */
-#define ESP32_PERIPH_CPU_CPU2       26 /* INTR_STATUS_REG_0, bit 26 */
-#define ESP32_PERIPH_CPU_CPU3       27 /* INTR_STATUS_REG_0, bit 27 */
-#define ESP32_PERIPH_SPI0           28 /* INTR_STATUS_REG_0, bit 28 */
-#define ESP32_PERIPH_SPI1           29 /* INTR_STATUS_REG_0, bit 29 */
+#define ESP32_PERIPH_TG1_WDT_LEVEL  20	/* INTR_STATUS_REG_0, bit 20 */
+#define ESP32_PERIPH_G1_LACT_LEVEL  21	/* INTR_STATUS_REG_0, bit 21 */
+#define ESP32_PERIPH_CPU_GPIO       22	/* INTR_STATUS_REG_0, bit 22 */
+#define ESP32_PERIPH_CPU_NMI        23	/* INTR_STATUS_REG_0, bit 23 */
+#define ESP32_PERIPH_CPU_CPU0       24	/* INTR_STATUS_REG_0, bit 24 */
+#define ESP32_PERIPH_CPU_CPU1       25	/* INTR_STATUS_REG_0, bit 25 */
+#define ESP32_PERIPH_CPU_CPU2       26	/* INTR_STATUS_REG_0, bit 26 */
+#define ESP32_PERIPH_CPU_CPU3       27	/* INTR_STATUS_REG_0, bit 27 */
+#define ESP32_PERIPH_SPI0           28	/* INTR_STATUS_REG_0, bit 28 */
+#define ESP32_PERIPH_SPI1           29	/* INTR_STATUS_REG_0, bit 29 */
 
-#define ESP32_PERIPH_SPI2           30 /* INTR_STATUS_REG_0, bit 30 */
-#define ESP32_PERIPH_SPI3           31 /* INTR_STATUS_REG_0, bit 31 */
+#define ESP32_PERIPH_SPI2           30	/* INTR_STATUS_REG_0, bit 30 */
+#define ESP32_PERIPH_SPI3           31	/* INTR_STATUS_REG_0, bit 31 */
 
 /* PRO_INTR_STATUS_REG_1 / APP_INTR_STATUS_REG_1 */
 
-#define ESP32_PERIPH_I2S0           32 /* INTR_STATUS_REG_1, bit 0 */
-#define ESP32_PERIPH_I2S1           33 /* INTR_STATUS_REG_1, bit 1 */
-#define ESP32_PERIPH_UART           34 /* INTR_STATUS_REG_1, bit 2 */
-#define ESP32_PERIPH_UART1          35 /* INTR_STATUS_REG_1, bit 3 */
-#define ESP32_PERIPH_UART2          36 /* INTR_STATUS_REG_1, bit 4 */
-#define ESP32_PERIPH_SDIO_HOST      37 /* INTR_STATUS_REG_1, bit 5 */
-#define ESP32_PERIPH_EMAC           38 /* INTR_STATUS_REG_1, bit 6 */
-#define ESP32_PERIPH_PWM0           39 /* INTR_STATUS_REG_1, bit 7 */
-#define ESP32_PERIPH_PWM1           40 /* INTR_STATUS_REG_1, bit 8 */
-#define ESP32_PERIPH_PWM2           41 /* INTR_STATUS_REG_1, bit 9 */
+#define ESP32_PERIPH_I2S0           32	/* INTR_STATUS_REG_1, bit 0 */
+#define ESP32_PERIPH_I2S1           33	/* INTR_STATUS_REG_1, bit 1 */
+#define ESP32_PERIPH_UART           34	/* INTR_STATUS_REG_1, bit 2 */
+#define ESP32_PERIPH_UART1          35	/* INTR_STATUS_REG_1, bit 3 */
+#define ESP32_PERIPH_UART2          36	/* INTR_STATUS_REG_1, bit 4 */
+#define ESP32_PERIPH_SDIO_HOST      37	/* INTR_STATUS_REG_1, bit 5 */
+#define ESP32_PERIPH_EMAC           38	/* INTR_STATUS_REG_1, bit 6 */
+#define ESP32_PERIPH_PWM0           39	/* INTR_STATUS_REG_1, bit 7 */
+#define ESP32_PERIPH_PWM1           40	/* INTR_STATUS_REG_1, bit 8 */
+#define ESP32_PERIPH_PWM2           41	/* INTR_STATUS_REG_1, bit 9 */
 
-#define ESP32_PERIPH_PWM3           42 /* INTR_STATUS_REG_1, bit 10 */
-#define ESP32_PERIPH_LEDC           43 /* INTR_STATUS_REG_1, bit 11 */
-#define ESP32_PERIPH_EFUSE          44 /* INTR_STATUS_REG_1, bit 12 */
-#define ESP32_PERIPH_CAN            45 /* INTR_STATUS_REG_1, bit 13 */
-#define ESP32_PERIPH_RTC_CORE       46 /* INTR_STATUS_REG_1, bit 14 */
-#define ESP32_PERIPH_RMT            47 /* INTR_STATUS_REG_1, bit 15 */
-#define ESP32_PERIPH_PCNT           48 /* INTR_STATUS_REG_1, bit 16 */
-#define ESP32_PERIPH_I2C_EXT0       49 /* INTR_STATUS_REG_1, bit 17 */
-#define ESP32_PERIPH_I2C_EXT1       50 /* INTR_STATUS_REG_1, bit 18 */
-#define ESP32_PERIPH_RSA            51 /* INTR_STATUS_REG_1, bit 19 */
+#define ESP32_PERIPH_PWM3           42	/* INTR_STATUS_REG_1, bit 10 */
+#define ESP32_PERIPH_LEDC           43	/* INTR_STATUS_REG_1, bit 11 */
+#define ESP32_PERIPH_EFUSE          44	/* INTR_STATUS_REG_1, bit 12 */
+#define ESP32_PERIPH_CAN            45	/* INTR_STATUS_REG_1, bit 13 */
+#define ESP32_PERIPH_RTC_CORE       46	/* INTR_STATUS_REG_1, bit 14 */
+#define ESP32_PERIPH_RMT            47	/* INTR_STATUS_REG_1, bit 15 */
+#define ESP32_PERIPH_PCNT           48	/* INTR_STATUS_REG_1, bit 16 */
+#define ESP32_PERIPH_I2C_EXT0       49	/* INTR_STATUS_REG_1, bit 17 */
+#define ESP32_PERIPH_I2C_EXT1       50	/* INTR_STATUS_REG_1, bit 18 */
+#define ESP32_PERIPH_RSA            51	/* INTR_STATUS_REG_1, bit 19 */
 
-#define ESP32_PERIPH_SPI1_DMA       52 /* INTR_STATUS_REG_1, bit 20 */
-#define ESP32_PERIPH_SPI2_DMA       53 /* INTR_STATUS_REG_1, bit 21 */
-#define ESP32_PERIPH_SPI3_DMA       54 /* INTR_STATUS_REG_1, bit 22 */
-#define ESP32_PERIPH_WDG            55 /* INTR_STATUS_REG_1, bit 23 */
-#define ESP32_PERIPH_TIMER1         56 /* INTR_STATUS_REG_1, bit 24 */
-#define ESP32_PERIPH_TIMER2         57 /* INTR_STATUS_REG_1, bit 25 */
-#define ESP32_PERIPH_TG_T0_EDGE     58 /* INTR_STATUS_REG_1, bit 26 */
-#define ESP32_PERIPH_TG_T1_EDGE     59 /* INTR_STATUS_REG_1, bit 27 */
-#define ESP32_PERIPH_TG_WDT_EDGE    60 /* INTR_STATUS_REG_1, bit 28 */
-#define ESP32_PERIPH_TG_LACT_EDGE   61 /* INTR_STATUS_REG_1, bit 29 */
+#define ESP32_PERIPH_SPI1_DMA       52	/* INTR_STATUS_REG_1, bit 20 */
+#define ESP32_PERIPH_SPI2_DMA       53	/* INTR_STATUS_REG_1, bit 21 */
+#define ESP32_PERIPH_SPI3_DMA       54	/* INTR_STATUS_REG_1, bit 22 */
+#define ESP32_PERIPH_WDG            55	/* INTR_STATUS_REG_1, bit 23 */
+#define ESP32_PERIPH_TIMER1         56	/* INTR_STATUS_REG_1, bit 24 */
+#define ESP32_PERIPH_TIMER2         57	/* INTR_STATUS_REG_1, bit 25 */
+#define ESP32_PERIPH_TG_T0_EDGE     58	/* INTR_STATUS_REG_1, bit 26 */
+#define ESP32_PERIPH_TG_T1_EDGE     59	/* INTR_STATUS_REG_1, bit 27 */
+#define ESP32_PERIPH_TG_WDT_EDGE    60	/* INTR_STATUS_REG_1, bit 28 */
+#define ESP32_PERIPH_TG_LACT_EDGE   61	/* INTR_STATUS_REG_1, bit 29 */
 
-#define ESP32_PERIPH_TG1_T0_EDGE    62 /* INTR_STATUS_REG_1, bit 30 */
-#define ESP32_PERIPH_TG1_T1_EDGE    63 /* INTR_STATUS_REG_1, bit 31 */
+#define ESP32_PERIPH_TG1_T0_EDGE    62	/* INTR_STATUS_REG_1, bit 30 */
+#define ESP32_PERIPH_TG1_T1_EDGE    63	/* INTR_STATUS_REG_1, bit 31 */
 
 /* PRO_INTR_STATUS_REG_2 / APP_INTR_STATUS_REG_2 */
 
-#define ESP32_PERIPH_TG1_WDT_EDGE   64 /* INTR_STATUS_REG_2, bit 0 */
-#define ESP32_PERIPH_TG1_LACT_EDGE  65 /* INTR_STATUS_REG_2, bit 1 */
-#define ESP32_PERIPH_MMU_IA         66 /* INTR_STATUS_REG_2, bit 2 */
-#define ESP32_PERIPH_MPU_IA         67 /* INTR_STATUS_REG_2, bit 3 */
-#define ESP32_PERIPH_CACHE_IA       68 /* INTR_STATUS_REG_2, bit 4 */
+#define ESP32_PERIPH_TG1_WDT_EDGE   64	/* INTR_STATUS_REG_2, bit 0 */
+#define ESP32_PERIPH_TG1_LACT_EDGE  65	/* INTR_STATUS_REG_2, bit 1 */
+#define ESP32_PERIPH_MMU_IA         66	/* INTR_STATUS_REG_2, bit 2 */
+#define ESP32_PERIPH_MPU_IA         67	/* INTR_STATUS_REG_2, bit 3 */
+#define ESP32_PERIPH_CACHE_IA       68	/* INTR_STATUS_REG_2, bit 4 */
 
 /* Total number of peripherals */
 
@@ -188,13 +206,13 @@
  * interrupts
  */
 
-#define XTENSA_IRQ_TIMER0           0  /* INTERRUPT, bit 6 */
-#define XTENSA_IRQ_TIMER1           1  /* INTERRUPT, bit 15 */
-#define XTENSA_IRQ_TIMER2           2  /* INTERRUPT, bit 16 */
-#define XTENSA_IRQ_SYSCALL          3  /* User interrupt w/EXCCAUSE=syscall */
+#define XTENSA_IRQ_TIMER0           0	/* INTERRUPT, bit 6 */
+#define XTENSA_IRQ_TIMER1           1	/* INTERRUPT, bit 15 */
+#define XTENSA_IRQ_TIMER2           2	/* INTERRUPT, bit 16 */
+#define XTENSA_IRQ_SYSCALL          3	/* User interrupt w/EXCCAUSE=syscall */
 
-#define XTENSA_NIRQ_INTERNAL        4  /* Number of dispatch internal interrupts */
-#define XTENSA_IRQ_FIRSTPERIPH      4  /* First peripheral IRQ number */
+#define XTENSA_NIRQ_INTERNAL        4	/* Number of dispatch internal interrupts */
+#define XTENSA_IRQ_FIRSTPERIPH      4	/* First peripheral IRQ number */
 
 /* IRQ numbers for peripheral interrupts coming throught the Interrupt
  * Matrix.
@@ -297,13 +315,13 @@
  */
 
 #ifdef CONFIG_ESP32_GPIO_IRQ
-#  define ESP32_NIRQ_GPIO           40
-#  define ESP32_FIRST_GPIOIRQ       (XTENSA_NIRQ_INTERNAL+ESP32_NIRQ_PERIPH)
-#  define ESP32_LAST_GPIOIRQ        (ESP32_FIRST_GPIOIRQ+ESP32_NIRQ_GPIO-1)
-#  define ESP32_PIN2IRQ(p)          ((p) + ESP32_FIRST_GPIOIRQ)
-#  define ESP32_IRQ2PIN(i)          ((i) - ESP32_FIRST_GPIOIRQ)
+#define ESP32_NIRQ_GPIO           40
+#define ESP32_FIRST_GPIOIRQ       (XTENSA_NIRQ_INTERNAL+ESP32_NIRQ_PERIPH)
+#define ESP32_LAST_GPIOIRQ        (ESP32_FIRST_GPIOIRQ+ESP32_NIRQ_GPIO-1)
+#define ESP32_PIN2IRQ(p)          ((p) + ESP32_FIRST_GPIOIRQ)
+#define ESP32_IRQ2PIN(i)          ((i) - ESP32_FIRST_GPIOIRQ)
 #else
-#  define ESP32_NIRQ_GPIO           0
+#define ESP32_NIRQ_GPIO           0
 #endif
 
 /* Total number of interrupts */
@@ -430,8 +448,7 @@
 
 #ifdef __cplusplus
 #define EXTERN extern "C"
-extern "C"
-{
+extern "C" {
 #else
 #define EXTERN extern
 #endif
@@ -441,5 +458,5 @@ extern "C"
 }
 #endif
 
-#endif /* __ASSEMBLY__ */
-#endif /* __ARCH_XTENSA_INCLUDE_ESP32_IRQ_H */
+#endif							/* __ASSEMBLY__ */
+#endif							/* __ARCH_XTENSA_INCLUDE_ESP32_IRQ_H */

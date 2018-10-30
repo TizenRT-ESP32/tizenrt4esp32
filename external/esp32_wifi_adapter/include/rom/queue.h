@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /*-
  * Copyright (c) 1991, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -108,9 +126,9 @@ extern "C" {
 #ifdef QUEUE_MACRO_DEBUG
 /* Store the last 2 places the queue element or head was altered */
 struct qm_trace {
-	char * lastfile;
+	char *lastfile;
 	int lastline;
-	char * prevfile;
+	char *prevfile;
 	int prevline;
 };
 
@@ -138,7 +156,7 @@ struct qm_trace {
 #define	QMD_SAVELINK(name, link)
 #define	TRACEBUF
 #define	TRASHIT(x)
-#endif	/* QUEUE_MACRO_DEBUG */
+#endif							/* QUEUE_MACRO_DEBUG */
 
 /*
  * Singly-linked List declarations.
@@ -254,7 +272,6 @@ struct {								\
 	   (var);							\
 	   (var) = STAILQ_NEXT((var), field))
 
-
 #define	STAILQ_FOREACH_SAFE(var, head, field, tvar)			\
 	for ((var) = STAILQ_FIRST((head));				\
 	    (var) && ((tvar) = STAILQ_NEXT((var), field), 1);		\
@@ -337,7 +354,6 @@ struct {								\
     STAILQ_FIRST(head) = (elm_chead);                                    \
 } while (0)
 
-
 /*
  * List declarations.
  */
@@ -382,7 +398,7 @@ struct {								\
 #define	QMD_LIST_CHECK_HEAD(head, field)
 #define	QMD_LIST_CHECK_NEXT(elm, field)
 #define	QMD_LIST_CHECK_PREV(elm, field)
-#endif /* (_KERNEL && INVARIANTS) */
+#endif							/* (_KERNEL && INVARIANTS) */
 
 #define	LIST_EMPTY(head)	((head)->lh_first == NULL)
 
@@ -504,7 +520,7 @@ struct {								\
 #define	QMD_TAILQ_CHECK_TAIL(head, headname)
 #define	QMD_TAILQ_CHECK_NEXT(elm, field)
 #define	QMD_TAILQ_CHECK_PREV(elm, field)
-#endif /* (_KERNEL && INVARIANTS) */
+#endif							/* (_KERNEL && INVARIANTS) */
 
 #define	TAILQ_CONCAT(head1, head2, field) do {				\
 	if (!TAILQ_EMPTY(head2)) {					\
@@ -641,5 +657,4 @@ struct {								\
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* !_SYS_QUEUE_H_ */
+#endif							/* !_SYS_QUEUE_H_ */

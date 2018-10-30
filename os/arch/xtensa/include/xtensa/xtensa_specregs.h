@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/include/xtensa/xtensa_specregs.h
  * Xtensa Special Register symbolic names
@@ -98,8 +116,8 @@
 #define EXCSAVE_7     215
 #define CPENABLE      224
 #define INTERRUPT     226
-#define INTREAD       INTERRUPT  /* Alternate name for backward compatibility */
-#define INTSET        INTERRUPT  /* Alternate name for backward compatibility */
+#define INTREAD       INTERRUPT	/* Alternate name for backward compatibility */
+#define INTSET        INTERRUPT	/* Alternate name for backward compatibility */
 #define INTCLEAR      227
 #define INTENABLE     228
 #define PS            230
@@ -134,21 +152,21 @@
 /*  Tensilica-defined user registers:  */
 
 #if 0
-/*#define ...     21..24 */  /* (545CK) */
-/*#define ...    140..143 */ /* (545CK) */
-#define EXPSTATE      230    /* Diamond */
-#define THREADPTR     231    /* threadptr option */
-#define FCR           232    /* FPU */
-#define FSR           233    /* FPU */
-#define AE_OVF_SAR    240    /* HiFi2 */
-#define AE_BITHEAD    241    /* HiFi2 */
-#define AE_TS_FTS_BU_BP 242 /* HiFi2 */
-#define AE_SD_NO      243    /* HiFi2 */
-#define VSAR          240    /* VectraLX */
-#define ROUND_LO      242    /* VectraLX */
-#define ROUND_HI      243    /* VectraLX */
-#define CBEGIN        246    /* VectraLX */
-#define CEND          247    /* VectraLX */
+							 /*#define ...     21..24 *//* (545CK) */
+							 /*#define ...    140..143 *//* (545CK) */
+#define EXPSTATE      230		/* Diamond */
+#define THREADPTR     231		/* threadptr option */
+#define FCR           232		/* FPU */
+#define FSR           233		/* FPU */
+#define AE_OVF_SAR    240		/* HiFi2 */
+#define AE_BITHEAD    241		/* HiFi2 */
+#define AE_TS_FTS_BU_BP 242		/* HiFi2 */
+#define AE_SD_NO      243		/* HiFi2 */
+#define VSAR          240		/* VectraLX */
+#define ROUND_LO      242		/* VectraLX */
+#define ROUND_HI      243		/* VectraLX */
+#define CBEGIN        246		/* VectraLX */
+#define CEND          247		/* VectraLX */
 #endif
 
-#endif /* __ARCH_XTENSA_INCLUDE_XTENSA_XTENSA_SPECREGS_H */
+#endif							/* __ARCH_XTENSA_INCLUDE_XTENSA_XTENSA_SPECREGS_H */

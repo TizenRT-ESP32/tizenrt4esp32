@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 // Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,11 +43,12 @@ extern "C" {
 #endif
 
 typedef enum {
-    ESP_MAC_WIFI_STA,
-    ESP_MAC_WIFI_SOFTAP,
-    ESP_MAC_BT,
-    ESP_MAC_ETH,
-} esp_mac_type_t;
+	ESP_MAC_WIFI_STA,
+	ESP_MAC_WIFI_SOFTAP,
+	ESP_MAC_BT,
+	ESP_MAC_ETH,
+}
+esp_mac_type_t;
 
 #define TWO_UNIVERSAL_MAC_ADDR 2
 #define FOUR_UNIVERSAL_MAC_ADDR 4
@@ -44,7 +63,7 @@ uint32_t IRAM_ATTR esp_log_timestamp(void);
   * @attention  application don't need to call this function anymore. It do nothing and will
   *             be removed in future version.
   */
-void system_init(void) __attribute__ ((deprecated));
+void system_init(void) __attribute__((deprecated));
 
 /**
   * @brief  Reset to default settings.
@@ -52,7 +71,7 @@ void system_init(void) __attribute__ ((deprecated));
   * Function has been deprecated, please use esp_wifi_restore instead.
   * This name will be removed in a future release.
   */
-void system_restore(void) __attribute__ ((deprecated));
+void system_restore(void) __attribute__((deprecated));
 
 typedef void (*shutdown_handler_t)(void);
 /**
@@ -71,7 +90,7 @@ esp_err_t esp_register_shutdown_handler(shutdown_handler_t handle);
   * Peripherals (except for WiFi, BT, UART0, SPI1, and legacy timers) are not reset.
   * This function does not return.
   */
-void esp_restart(void) __attribute__ ((noreturn));
+void esp_restart(void) __attribute__((noreturn));
 
 /**
   * @brief  Internal function to restart PRO and APP CPUs.
@@ -82,7 +101,7 @@ void esp_restart(void) __attribute__ ((noreturn));
   * This is an internal function called by esp_restart. It is called directly
   * by the panic handler and brownout detector interrupt.
   */
-void esp_restart_noos(void) __attribute__ ((noreturn));
+void esp_restart_noos(void) __attribute__((noreturn));
 
 /**
   * @brief  Restart system.
@@ -90,7 +109,7 @@ void esp_restart_noos(void) __attribute__ ((noreturn));
   * Function has been renamed to esp_restart.
   * This name will be removed in a future release.
   */
-void system_restart(void) __attribute__ ((deprecated, noreturn));
+void system_restart(void) __attribute__((deprecated, noreturn));
 
 /**
   * @brief  Get system time, unit: microsecond.
@@ -98,7 +117,7 @@ void system_restart(void) __attribute__ ((deprecated, noreturn));
   * This function is deprecated. Use 'gettimeofday' function for 64-bit precision.
   * This definition will be removed in a future release.
   */
-uint32_t system_get_time(void)  __attribute__ ((deprecated));
+uint32_t system_get_time(void) __attribute__((deprecated));
 
 /**
   * @brief  Get the size of available heap.
@@ -118,14 +137,14 @@ uint32_t esp_get_free_heap_size(void);
   *
   * @return Available heap size, in bytes.
   */
-uint32_t system_get_free_heap_size(void)  __attribute__ ((deprecated));
+uint32_t system_get_free_heap_size(void) __attribute__((deprecated));
 
 /**
   * @brief Get the minimum heap that has ever been available
   *
   * @return Minimum free heap ever available
   */
-uint32_t esp_get_minimum_free_heap_size( void );
+uint32_t esp_get_minimum_free_heap_size(void);
 
 /**
  * @brief  Get one random 32-bit word from hardware RNG
@@ -202,7 +221,7 @@ esp_err_t esp_efuse_mac_get_default(uint8_t *mac);
   *
   * @return ESP_OK on success
   */
-esp_err_t esp_efuse_read_mac(uint8_t *mac) __attribute__ ((deprecated));
+esp_err_t esp_efuse_read_mac(uint8_t *mac) __attribute__((deprecated));
 
 /**
   * @brief  Read hardware MAC address.
@@ -213,7 +232,7 @@ esp_err_t esp_efuse_read_mac(uint8_t *mac) __attribute__ ((deprecated));
   * @param  mac  hardware MAC address, length: 6 bytes.
   * @return ESP_OK on success
   */
-esp_err_t system_efuse_read_mac(uint8_t *mac) __attribute__ ((deprecated));
+esp_err_t system_efuse_read_mac(uint8_t *mac) __attribute__((deprecated));
 
 /**
   * @brief  Read base MAC address and set MAC address of the interface.
@@ -227,7 +246,7 @@ esp_err_t system_efuse_read_mac(uint8_t *mac) __attribute__ ((deprecated));
   *
   * @return ESP_OK on success
   */
-esp_err_t esp_read_mac(uint8_t* mac, esp_mac_type_t type);
+esp_err_t esp_read_mac(uint8_t *mac, esp_mac_type_t type);
 
 /**
   * @brief  Derive local MAC address from universal MAC address.
@@ -243,7 +262,7 @@ esp_err_t esp_read_mac(uint8_t* mac, esp_mac_type_t type);
   *
   * @return ESP_OK on success
   */
-esp_err_t esp_derive_local_mac(uint8_t* local_mac, const uint8_t* universal_mac);
+esp_err_t esp_derive_local_mac(uint8_t *local_mac, const uint8_t *universal_mac);
 
 /**
  * Get SDK version
@@ -252,21 +271,20 @@ esp_err_t esp_derive_local_mac(uint8_t* local_mac, const uint8_t* universal_mac)
  *
  * @return constant string "master"
  */
-const char* system_get_sdk_version(void)  __attribute__ ((deprecated));
+const char *system_get_sdk_version(void) __attribute__((deprecated));
 
 /**
  * Get IDF version
  *
  * @return constant string from IDF_VER
  */
-const char* esp_get_idf_version(void);
-
+const char *esp_get_idf_version(void);
 
 /**
  * @brief Chip models
  */
 typedef enum {
-    CHIP_ESP32 = 1, //!< ESP32
+	CHIP_ESP32 = 1,			//!< ESP32
 } esp_chip_model_t;
 
 /**
@@ -281,20 +299,19 @@ typedef enum {
  * @brief The structure represents information about the chip
  */
 typedef struct {
-    esp_chip_model_t model;  //!< chip model, one of esp_chip_model_t
-    uint32_t features;       //!< bit mask of CHIP_FEATURE_x feature flags
-    uint8_t cores;           //!< number of CPU cores
-    uint8_t revision;        //!< chip revision number
+	esp_chip_model_t model;	//!< chip model, one of esp_chip_model_t
+	uint32_t features;		//!< bit mask of CHIP_FEATURE_x feature flags
+	uint8_t cores;			//!< number of CPU cores
+	uint8_t revision;		//!< chip revision number
 } esp_chip_info_t;
 
 /**
  * @brief Fill an esp_chip_info_t structure with information about the chip
  * @param[out] out_info structure to be filled
  */
-void esp_chip_info(esp_chip_info_t* out_info);
+void esp_chip_info(esp_chip_info_t *out_info);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ESP_SYSTEM_H__ */
+#endif							/* __ESP_SYSTEM_H__ */

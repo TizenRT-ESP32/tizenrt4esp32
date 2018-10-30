@@ -17,10 +17,15 @@
  ******************************************************************/
 
 /****************************************************************************
- * arch/xtensa/src/esp32/esp32_start.h
  *
- *   Copyright (C) 2016 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>>
+ *   Copyright (C) 2014-2016 Gregory Nutt. All rights reserved.
+ *   Author: Gregory Nutt <gnutt@nuttx.org>
+ *
+ * The Samsung sample code has a BSD compatible license that requires this
+ * copyright notice:
+ *
+ *   Copyright (c) 2016 Samsung Electronics, Inc.
+ *   All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,39 +54,40 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- ****************************************************************************/
+ */
+// Copyright 2015-2017 Espressif Systems (Shanghai) PTE LTD
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-/****************************************************************************
- * Included Files
- ****************************************************************************/
+#include <stdint.h>
+#include "esp_attr.h"
+#include "esp_clk.h"
+/* Number of cycles to wait from the 32k XTAL oscillator to consider it running.
+ * Larger values increase startup delay. Smaller values may cause false positive
+ * detection (i.e. oscillator runs for a few cycles and then stops).
+ */
 
-#ifndef __ARCH_XTENSA_SRC_ESP32_ESP32_START_H
-#define __ARCH_XTENSA_SRC_ESP32_ESP32_START_H
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+// g_ticks_us defined in ROMs for PRO and APP CPU
+extern uint32_t g_ticks_per_us_pro;
+extern uint32_t g_ticks_per_us_app;
 
-/****************************************************************************
- * Included Files
- ****************************************************************************/
+int IRAM_ATTR esp_clk_cpu_freq(void)
+{
+	return g_ticks_per_us_pro * 1000000;
+}
 
-/****************************************************************************
- * Pre-processor Definitions
- ****************************************************************************/
-
-/****************************************************************************
- * Name: esp32_board_initialize
- *
- * Description:
- *   All ESP32 architectures must provide the following entry point.  This
- *   entry point is called early in the initialization -- after all memory
- *   has been configured but before any devices have been initialized.
- *
- * Input Parameters:
- *   None
- *
- * Returned Value:
- *   None
- *
- ****************************************************************************/
-
-void esp32_board_initialize(void);
-
-#endif							/* __ARCH_XTENSA_SRC_ESP32_ESP32_START_H */
+int IRAM_ATTR esp_clk_apb_freq(void)
+{
+	return MIN(g_ticks_per_us_pro, 80) * 1000000;
+}

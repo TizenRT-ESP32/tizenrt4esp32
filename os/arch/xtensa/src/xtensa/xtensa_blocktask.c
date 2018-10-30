@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_blocktask.c
  *
@@ -77,116 +95,111 @@
 
 void up_block_task(struct tcb_s *tcb, tstate_t task_state)
 {
-  struct tcb_s *rtcb = this_task();
-  bool switch_needed;
+	struct tcb_s *rtcb = this_task();
+	bool switch_needed;
 
-  /* Verify that the context switch can be performed */
+	/* Verify that the context switch can be performed */
 
-  ASSERT((tcb->task_state >= FIRST_READY_TO_RUN_STATE) &&
-         (tcb->task_state <= LAST_READY_TO_RUN_STATE));
+	ASSERT((tcb->task_state >= FIRST_READY_TO_RUN_STATE) && (tcb->task_state <= LAST_READY_TO_RUN_STATE));
 
-  /* Remove the tcb task from the ready-to-run list.  If we
-   * are blocking the task at the head of the task list (the
-   * most likely case), then a context switch to the next
-   * ready-to-run task is needed. In this case, it should
-   * also be true that rtcb == tcb.
-   */
+	/* Remove the tcb task from the ready-to-run list.  If we
+	 * are blocking the task at the head of the task list (the
+	 * most likely case), then a context switch to the next
+	 * ready-to-run task is needed. In this case, it should
+	 * also be true that rtcb == tcb.
+	 */
 
-  switch_needed = sched_removereadytorun(tcb);
+	switch_needed = sched_removereadytorun(tcb);
 
-  /* Add the task to the specified blocked task list */
+	/* Add the task to the specified blocked task list */
 
-  sched_addblocked(tcb, (tstate_t)task_state);
+	sched_addblocked(tcb, (tstate_t) task_state);
 
-  /* If there are any pending tasks, then add them to the ready-to-run
-   * task list now
-   */
+	/* If there are any pending tasks, then add them to the ready-to-run
+	 * task list now
+	 */
 
-  if (g_pendingtasks.head)
-    {
-      switch_needed |= sched_mergepending();
-    }
+	if (g_pendingtasks.head) {
+		switch_needed |= sched_mergepending();
+	}
 
-  /* Now, perform the context switch if one is needed */
+	/* Now, perform the context switch if one is needed */
 
-  if (switch_needed)
-    {
-      /* Update scheduler parameters */
+	if (switch_needed) {
+		/* Update scheduler parameters */
 
-      //sched_suspend_scheduler(rtcb);
+		//sched_suspend_scheduler(rtcb);
 
-      /* Are we in an interrupt handler? */
+		/* Are we in an interrupt handler? */
 
-      if (CURRENT_REGS)
-        {
-          /* Yes, then we have to do things differently.
-           * Just copy the CURRENT_REGS into the OLD rtcb.
-           */
+		if (CURRENT_REGS) {
+			/* Yes, then we have to do things differently.
+			 * Just copy the CURRENT_REGS into the OLD rtcb.
+			 */
 
-          xtensa_savestate(rtcb->xcp.regs);
+			xtensa_savestate(rtcb->xcp.regs);
 
-          /* Restore the exception context of the rtcb at the (new) head
-           * of the ready-to-run task list.
-           */
+			/* Restore the exception context of the rtcb at the (new) head
+			 * of the ready-to-run task list.
+			 */
 
-          rtcb = this_task();
+			rtcb = this_task();
 
-          /* Reset scheduler parameters */
+			/* Reset scheduler parameters */
 
-          //sched_resume_scheduler(rtcb);
-		  rtcb->timeslice = MSEC2TICK(CONFIG_RR_INTERVAL);
+			//sched_resume_scheduler(rtcb);
+			rtcb->timeslice = MSEC2TICK(CONFIG_RR_INTERVAL);
 
-          /* Then switch contexts.  Any necessary address environment
-           * changes will be made when the interrupt returns.
-           */
+			/* Then switch contexts.  Any necessary address environment
+			 * changes will be made when the interrupt returns.
+			 */
 
-          xtensa_restorestate(rtcb->xcp.regs);
-        }
+			xtensa_restorestate(rtcb->xcp.regs);
+		}
 
-      /* Copy the user C context into the TCB at the (old) head of the
-       * ready-to-run Task list. if up_saveusercontext returns a non-zero
-       * value, then this is really the previously running task restarting!
-       */
+		/* Copy the user C context into the TCB at the (old) head of the
+		 * ready-to-run Task list. if up_saveusercontext returns a non-zero
+		 * value, then this is really the previously running task restarting!
+		 */
 
-      else if (!xtensa_context_save(rtcb->xcp.regs))
-        {
+		else if (!xtensa_context_save(rtcb->xcp.regs)) {
 #if XCHAL_CP_NUM > 0
-          /* Save the co-processor state in in the suspended thread's co-
-           * processor save area.
-           */
+			/* Save the co-processor state in in the suspended thread's co-
+			 * processor save area.
+			 */
 
-          xtensa_coproc_savestate(&rtcb->xcp.cpstate);
+			xtensa_coproc_savestate(&rtcb->xcp.cpstate);
 #endif
 
-          /* Restore the exception context of the rtcb at the (new) head
-           * of the ready-to-run task list.
-           */
+			/* Restore the exception context of the rtcb at the (new) head
+			 * of the ready-to-run task list.
+			 */
 
-          rtcb = this_task();
+			rtcb = this_task();
 
 #if XCHAL_CP_NUM > 0
-          /* Set up the co-processor state for the newly started thread. */
+			/* Set up the co-processor state for the newly started thread. */
 
-          xtensa_coproc_restorestate(&rtcb->xcp.cpstate);
+			xtensa_coproc_restorestate(&rtcb->xcp.cpstate);
 #endif
 
 #ifdef CONFIG_ARCH_ADDRENV
-          /* Make sure that the address environment for the previously
-           * running task is closed down gracefully (data caches dump,
-           * MMU flushed) and set up the address environment for the new
-           * thread at the head of the ready-to-run list.
-           */
+			/* Make sure that the address environment for the previously
+			 * running task is closed down gracefully (data caches dump,
+			 * MMU flushed) and set up the address environment for the new
+			 * thread at the head of the ready-to-run list.
+			 */
 
-          (void)group_addrenv(rtcb);
+			(void)group_addrenv(rtcb);
 #endif
-          /* Reset scheduler parameters */
+			/* Reset scheduler parameters */
 
-          //sched_resume_scheduler(rtcb);
-		  rtcb->timeslice = MSEC2TICK(CONFIG_RR_INTERVAL);
+			//sched_resume_scheduler(rtcb);
+			rtcb->timeslice = MSEC2TICK(CONFIG_RR_INTERVAL);
 
-          /* Then switch contexts */
+			/* Then switch contexts */
 
-          xtensa_context_restore(rtcb->xcp.regs);
-        }
-    }
+			xtensa_context_restore(rtcb->xcp.regs);
+		}
+	}
 }

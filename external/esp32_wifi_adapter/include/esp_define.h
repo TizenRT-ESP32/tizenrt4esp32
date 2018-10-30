@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 
 #ifndef ESP_DEFINE_H
 #define ESP_DEFINE_H
@@ -17,7 +35,9 @@ typedef _uint32_t uint32_t;
 #ifdef __INT64_DEFINED
 typedef _int64_t int64_t;
 typedef _uint64_t uint64_t;
-#endif
+
+#endif	/* 
+ */
 
 #define portCHAR		int8_t
 #define portFLOAT		float
@@ -27,17 +47,21 @@ typedef _uint64_t uint64_t;
 #define portSTACK_TYPE	uint8_t
 #define portBASE_TYPE	int
 
-typedef portSTACK_TYPE			StackType_t;
-typedef portBASE_TYPE			BaseType_t;
-typedef unsigned portBASE_TYPE	UBaseType_t;
+typedef portSTACK_TYPE StackType_t;
+typedef portBASE_TYPE BaseType_t;
+typedef unsigned portBASE_TYPE UBaseType_t;
 
 #if( configUSE_16_BIT_TICKS == 1 )
-	typedef uint16_t TickType_t;
-	#define portMAX_DELAY ( TickType_t ) 0xffff
-#else
-	typedef uint32_t TickType_t;
-	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
-#endif
+typedef uint16_t TickType_t;
+
+#define portMAX_DELAY ( TickType_t ) 0xffff
+#else	/* 
+ */
+typedef uint32_t TickType_t;
+
+#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
+#endif	/* 
+ */
 
 
 #define pdFALSE			( ( BaseType_t ) 0 )
@@ -83,6 +107,6 @@ typedef unsigned portBASE_TYPE	UBaseType_t;
 #define BIT30  0x40000000  /**< preprocessor alias for 32-bit value with bit 30 set, used to specify this single bit */
 #define BIT31  0x80000000  /**< preprocessor alias for 32-bit value with bit 31 set, used to specify this single bit */
 
-#endif  /* BIT0 et al */
+#endif	/* BIT0 et al */
 
 #endif

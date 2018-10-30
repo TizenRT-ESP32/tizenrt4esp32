@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  *  arch/xtensa/src/common/xtensa_idle.c
  *
@@ -63,33 +81,33 @@
 void up_idle(void)
 {
 #if defined(CONFIG_SUPPRESS_INTERRUPTS) || defined(CONFIG_SUPPRESS_TIMER_INTS)
-  /* If the system is idle and there are no timer interrupts, then process
-   * "fake" timer interrupts. Hopefully, something will wake up.
-   */
+	/* If the system is idle and there are no timer interrupts, then process
+	 * "fake" timer interrupts. Hopefully, something will wake up.
+	 */
 
-  sched_process_timer();
+	sched_process_timer();
 #else
 
-  /* This would be an appropriate place to put some MCU-specific logic to
-   * sleep in a reduced power mode until an interrupt occurs to save power
-   */
+	/* This would be an appropriate place to put some MCU-specific logic to
+	 * sleep in a reduced power mode until an interrupt occurs to save power
+	 */
 
-  /* This is a kludge that I still don't understand.  The call to kmm_trysemaphore()
-   * in the os_start.c IDLE loop seems necessary for the good health of the IDLE
-   * loop.  When the work queue is enabled, this logic is removed from the IDLE
-   * loop and it appears that we are somehow left idling with interrupts non-
-   * functional. The following should be no-op, it just disables then re-enables
-   * interrupts.  But it fixes the problem and will stay here until I understand
-   * the problem/fix better.
-   *
-   * And no, the contents of the CP0 status register are not incorrect.  But for
-   * some reason the status register needs to be re-written again on this thread
-   * for it to take effect.  This might be a PIC32-only issue?
-   */
+	/* This is a kludge that I still don't understand.  The call to kmm_trysemaphore()
+	 * in the os_start.c IDLE loop seems necessary for the good health of the IDLE
+	 * loop.  When the work queue is enabled, this logic is removed from the IDLE
+	 * loop and it appears that we are somehow left idling with interrupts non-
+	 * functional. The following should be no-op, it just disables then re-enables
+	 * interrupts.  But it fixes the problem and will stay here until I understand
+	 * the problem/fix better.
+	 *
+	 * And no, the contents of the CP0 status register are not incorrect.  But for
+	 * some reason the status register needs to be re-written again on this thread
+	 * for it to take effect.  This might be a PIC32-only issue?
+	 */
 
 #ifdef CONFIG_SCHED_WORKQUEUE
-  irqstate_t flags = up_irq_save();
-  up_irq_restore(flags);
+	irqstate_t flags = up_irq_save();
+	up_irq_restore(flags);
 #endif
 #endif
 }

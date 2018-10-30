@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/esp32_intdecode.c
  *
@@ -58,12 +76,7 @@
 
 static inline void xtensa_intclear(uint32_t mask)
 {
-  __asm__ __volatile__
-  (
-    "movi a2, 0\n"
-    "wsr %0, INTCLEAR\n"
-    : "=r"(mask) : :
-  );
+	__asm__ __volatile__("movi a2, 0\n" "wsr %0, INTCLEAR\n":"=r"(mask)::);
 }
 
 /****************************************************************************
@@ -90,64 +103,58 @@ static inline void xtensa_intclear(uint32_t mask)
 
 uint32_t *xtensa_int_decode(uint32_t cpuints, uint32_t *regs)
 {
-  uint8_t *intmap;
-  uint32_t mask;
-  int bit;
+	uint8_t *intmap;
+	uint32_t mask;
+	int bit;
 #ifdef CONFIG_SMP
-  int cpu;
+	int cpu;
 #endif
 
 #ifdef CONFIG_SMP
-  /* Select PRO or APP CPU interrupt mapping table */
+	/* Select PRO or APP CPU interrupt mapping table */
 
-  cpu = up_cpu_index();
-  if (cpu != 0)
-    {
-      intmap = g_cpu1_intmap;
-    }
-  else
+	cpu = up_cpu_index();
+	if (cpu != 0) {
+		intmap = g_cpu1_intmap;
+	} else
 #endif
-    {
-      intmap = g_cpu0_intmap;
-    }
+	{
+		intmap = g_cpu0_intmap;
+	}
 
-  /* Skip over zero bits, eight at a time */
+	/* Skip over zero bits, eight at a time */
 
-  for (bit = 0, mask = 0xff;
-       bit < ESP32_NCPUINTS && (cpuints & mask) == 0;
-       bit += 8, mask <<= 8);
+	for (bit = 0, mask = 0xff; bit < ESP32_NCPUINTS && (cpuints & mask) == 0; bit += 8, mask <<= 8) ;
 
-  /* Process each pending CPU interrupt */
+	/* Process each pending CPU interrupt */
 
-  for (; bit < ESP32_NCPUINTS && cpuints != 0; bit++)
-    {
-      mask = (1 << bit);
-      if ((cpuints & mask) != 0)
-        {
-          /* Extract the IRQ number from the mapping table */
+	for (; bit < ESP32_NCPUINTS && cpuints != 0; bit++) {
+		mask = (1 << bit);
+		if ((cpuints & mask) != 0) {
+			/* Extract the IRQ number from the mapping table */
 
-          uint8_t irq = intmap[bit];
-          DEBUGASSERT(irq != CPUINT_UNASSIGNED);
+			uint8_t irq = intmap[bit];
+			DEBUGASSERT(irq != CPUINT_UNASSIGNED);
 
-          /* Clear software or edge-triggered interrupt */
+			/* Clear software or edge-triggered interrupt */
 
-           xtensa_intclear(mask);
+			xtensa_intclear(mask);
 
-          /* Dispatch the CPU interrupt.
-           *
-           * NOTE that regs may be altered in the case of an interrupt
-           * level context switch.
-           */
+			/* Dispatch the CPU interrupt.
+			 *
+			 * NOTE that regs may be altered in the case of an interrupt
+			 * level context switch.
+			 */
 
-          regs = xtensa_irq_dispatch((int)irq, regs);
+			regs = xtensa_irq_dispatch((int)irq, regs);
 
-          /* Clear the bit in the pending interrupt so that perhaps
-           * we can exit the look early.
-           */
+			/* Clear the bit in the pending interrupt so that perhaps
+			 * we can exit the look early.
+			 */
 
-          cpuints &= ~mask;
-        }
-    }
+			cpuints &= ~mask;
+		}
+	}
 
-  return regs;
+	return regs;
 }

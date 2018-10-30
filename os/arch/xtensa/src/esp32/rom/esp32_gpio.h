@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/rom/esp32_gpio.h
  *
@@ -42,22 +60,21 @@
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define MATRIX_DETACH_OUT_SIG     0x100  /* Detach an OUTPUT signal */
-#define MATRIX_DETACH_IN_LOW_PIN  0x30   /* Detach non-inverted INPUT signal */
-#define MATRIX_DETACH_IN_LOW_HIGH 0x38   /* Detach inverted INPUT signal */
+#define MATRIX_DETACH_OUT_SIG     0x100	/* Detach an OUTPUT signal */
+#define MATRIX_DETACH_IN_LOW_PIN  0x30	/* Detach non-inverted INPUT signal */
+#define MATRIX_DETACH_IN_LOW_HIGH 0x38	/* Detach inverted INPUT signal */
 
 /****************************************************************************
  * Public Types
  ****************************************************************************/
 
-enum gpio_inttype_e
-{
-  GPIO_PIN_INTR_DISABLE = 0,
-  GPIO_PIN_INTR_POSEDGE = 1,
-  GPIO_PIN_INTR_NEGEDGE = 2,
-  GPIO_PIN_INTR_ANYEGDE = 3,
-  GPIO_PIN_INTR_LOLEVEL = 4,
-  GPIO_PIN_INTR_HILEVEL = 5
+enum gpio_inttype_e {
+	GPIO_PIN_INTR_DISABLE = 0,
+	GPIO_PIN_INTR_POSEDGE = 1,
+	GPIO_PIN_INTR_NEGEDGE = 2,
+	GPIO_PIN_INTR_ANYEGDE = 3,
+	GPIO_PIN_INTR_LOLEVEL = 4,
+	GPIO_PIN_INTR_HILEVEL = 5
 };
 
 typedef enum gpio_inttype_e GPIO_INT_TYPE;
@@ -71,8 +88,7 @@ typedef void (*gpio_intr_handler_fn_t)(uint32_t intr_mask, bool high, void *arg)
  ****************************************************************************/
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /****************************************************************************
@@ -113,8 +129,7 @@ void gpio_init(void);
  *
  ****************************************************************************/
 
-void gpio_output_set(uint32_t set_mask, uint32_t clear_mask,
-                     uint32_t enable_mask, uint32_t disable_mask);
+void gpio_output_set(uint32_t set_mask, uint32_t clear_mask, uint32_t enable_mask, uint32_t disable_mask);
 
 /****************************************************************************
  * Name: gpio_output_set_high
@@ -136,8 +151,7 @@ void gpio_output_set(uint32_t set_mask, uint32_t clear_mask,
  *
  ****************************************************************************/
 
-void gpio_output_set_high(uint32_t set_mask, uint32_t clear_mask,
-                          uint32_t enable_mask, uint32_t disable_mask);
+void gpio_output_set_high(uint32_t set_mask, uint32_t clear_mask, uint32_t enable_mask, uint32_t disable_mask);
 
 /****************************************************************************
  * Name: gpio_input_get
@@ -325,8 +339,7 @@ void gpio_matrix_in(uint32_t gpio, uint32_t signal_idx, bool inv);
  *
  ****************************************************************************/
 
-void gpio_matrix_out(uint32_t gpio, uint32_t signal_idx, bool out_inv,
-                     bool oen_inv);
+void gpio_matrix_out(uint32_t gpio, uint32_t signal_idx, bool out_inv, bool oen_inv);
 
 /****************************************************************************
  * Name: gpio_pad_select_gpio
@@ -428,5 +441,4 @@ void gpio_pad_hold(uint8_t gpio_num);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __XTENSA_SRC_ESP32_ROM_ESP32_GPIO_H */
+#endif							/* __XTENSA_SRC_ESP32_ROM_ESP32_GPIO_H */

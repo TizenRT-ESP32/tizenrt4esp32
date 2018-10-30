@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_timer.h
  *
@@ -50,38 +68,38 @@
 
 #if XCHAL_NUM_TIMERS == 0
 
-#  error "This Xtensa configuration is unsupported, it has no timers."
+#error "This Xtensa configuration is unsupported, it has no timers."
 
 #else
 
 #ifndef XT_TIMER_INDEX
-#  if XCHAL_TIMER3_INTERRUPT != XTHAL_TIMER_UNCONFIGURED
-#    if XCHAL_INT_LEVEL(XCHAL_TIMER3_INTERRUPT) <= XCHAL_EXCM_LEVEL
-#      undef  XT_TIMER_INDEX
-#      define XT_TIMER_INDEX    3
-#    endif
-#  endif
-#  if XCHAL_TIMER2_INTERRUPT != XTHAL_TIMER_UNCONFIGURED
-#    if XCHAL_INT_LEVEL(XCHAL_TIMER2_INTERRUPT) <= XCHAL_EXCM_LEVEL
-#      undef  XT_TIMER_INDEX
-#      define XT_TIMER_INDEX    2
-#    endif
-#  endif
-#  if XCHAL_TIMER1_INTERRUPT != XTHAL_TIMER_UNCONFIGURED
-#    if XCHAL_INT_LEVEL(XCHAL_TIMER1_INTERRUPT) <= XCHAL_EXCM_LEVEL
-#      undef  XT_TIMER_INDEX
-#      define XT_TIMER_INDEX    1
-#    endif
-#  endif
-#  if XCHAL_TIMER0_INTERRUPT != XTHAL_TIMER_UNCONFIGURED
-#    if XCHAL_INT_LEVEL(XCHAL_TIMER0_INTERRUPT) <= XCHAL_EXCM_LEVEL
-#      undef  XT_TIMER_INDEX
-#      define XT_TIMER_INDEX    0
-#    endif
-#  endif
+#if XCHAL_TIMER3_INTERRUPT != XTHAL_TIMER_UNCONFIGURED
+#if XCHAL_INT_LEVEL(XCHAL_TIMER3_INTERRUPT) <= XCHAL_EXCM_LEVEL
+#undef  XT_TIMER_INDEX
+#define XT_TIMER_INDEX    3
+#endif
+#endif
+#if XCHAL_TIMER2_INTERRUPT != XTHAL_TIMER_UNCONFIGURED
+#if XCHAL_INT_LEVEL(XCHAL_TIMER2_INTERRUPT) <= XCHAL_EXCM_LEVEL
+#undef  XT_TIMER_INDEX
+#define XT_TIMER_INDEX    2
+#endif
+#endif
+#if XCHAL_TIMER1_INTERRUPT != XTHAL_TIMER_UNCONFIGURED
+#if XCHAL_INT_LEVEL(XCHAL_TIMER1_INTERRUPT) <= XCHAL_EXCM_LEVEL
+#undef  XT_TIMER_INDEX
+#define XT_TIMER_INDEX    1
+#endif
+#endif
+#if XCHAL_TIMER0_INTERRUPT != XTHAL_TIMER_UNCONFIGURED
+#if XCHAL_INT_LEVEL(XCHAL_TIMER0_INTERRUPT) <= XCHAL_EXCM_LEVEL
+#undef  XT_TIMER_INDEX
+#define XT_TIMER_INDEX    0
+#endif
+#endif
 #endif
 #ifndef XT_TIMER_INDEX
-#  error "There is no suitable timer in this Xtensa configuration."
+#error "There is no suitable timer in this Xtensa configuration."
 #endif
 
 #define XT_CCOMPARE             (CCOMPARE + XT_TIMER_INDEX)
@@ -90,12 +108,12 @@
 #define XT_TIMER_INTEN          (1 << XT_TIMER_INTNUM)
 
 #if XT_TIMER_INTNUM == XTHAL_TIMER_UNCONFIGURED
-#  error "The timer selected by XT_TIMER_INDEX does not exist in this core."
+#error "The timer selected by XT_TIMER_INDEX does not exist in this core."
 #elif XT_TIMER_INTPRI > XCHAL_EXCM_LEVEL
-#  error "The timer interrupt cannot be high priority (use medium or low)."
+#error "The timer interrupt cannot be high priority (use medium or low)."
 #endif
 
-#endif /* XCHAL_NUM_TIMERS */
+#endif							/* XCHAL_NUM_TIMERS */
 
 /* Set processor clock frequency, used to determine clock divisor for timer
  * tick. User should BE SURE TO ADJUST THIS for the Xtensa platform being
@@ -116,11 +134,11 @@
  */
 
 #if defined(XT_SIMULATOR) && !defined(BOARD_CLOCK_FREQUENCY)
-#  define BOARD_CLOCK_FREQUENCY
+#define BOARD_CLOCK_FREQUENCY
 #endif
 
 #if !defined(BOARD_CLOCK_FREQUENCY) && !defined(XT_BOARD)
-#  warning "BOARD_CLOCK_FREQUENCY must be defined for the target platform."
+#warning "BOARD_CLOCK_FREQUENCY must be defined for the target platform."
 #endif
 
 /* Default number of timer "ticks" per second (default 100 for 10ms tick).
@@ -131,13 +149,13 @@
  */
 
 #ifndef XT_TICK_PER_SEC
-#  define XT_TICK_PER_SEC   (1000000 / CONFIG_USEC_PER_TICK)
+#define XT_TICK_PER_SEC   (1000000 / CONFIG_USEC_PER_TICK)
 #endif
 
 /* Derivation of clock divisor for timer tick and interrupt (one per tick). */
 
 #ifdef BOARD_CLOCK_FREQUENCY
-#  define XT_TICK_DIVISOR   (BOARD_CLOCK_FREQUENCY / XT_TICK_PER_SEC)
+#define XT_TICK_DIVISOR   (BOARD_CLOCK_FREQUENCY / XT_TICK_PER_SEC)
 #endif
 
 #ifndef __ASSEMBLER__
@@ -145,4 +163,4 @@ extern unsigned _xt_tick_divisor;
 void _xt_tick_divisor_init(void);
 #endif
 
-#endif  /* __ARCH_XTENSA_SRC_COMMON_XTENSA_TIMER_H */
+#endif							/* __ARCH_XTENSA_SRC_COMMON_XTENSA_TIMER_H */

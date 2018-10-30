@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 // Copyright 2010-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,22 +71,27 @@ extern "C" {
   */
 
 typedef enum {
-    ETS_OK     = 0, /**< return successful in ets*/
-    ETS_FAILED = 1  /**< return failed in ets*/
-} ETS_STATUS;
+	ETS_OK = 0,	/**< return successful in ets*/
+	ETS_FAILED = 1
+				 /**< return failed in ets*/
+}
+ETS_STATUS;
 
 typedef uint32_t ETSSignal;
 typedef uint32_t ETSParam;
 
-typedef struct ETSEventTag ETSEvent;    /**< Event transmit/receive in ets*/
+typedef struct ETSEventTag ETSEvent;/**< Event transmit/receive in ets*/
 
 struct ETSEventTag {
-    ETSSignal sig;  /**< Event signal, in same task, different Event with different signal*/
-    ETSParam  par;  /**< Event parameter, sometimes without usage, then will be set as 0*/
+	ETSSignal sig;
+	/**< Event signal, in same task, different Event with different signal*/
+	ETSParam par;
+	/**< Event parameter, sometimes without usage, then will be set as 0*/
 };
 
-typedef void (*ETSTask)(ETSEvent *e);       /**< Type of the Task processer*/
-typedef void (* ets_idle_cb_t)(void *arg);  /**< Type of the system idle callback*/
+typedef void (*ETSTask)(ETSEvent *e);	/**< Type of the Task processer*/
+typedef void (*ets_idle_cb_t)(void *arg);
+/**< Type of the system idle callback*/
 
 /**
   * @brief  Start the Espressif Task Scheduler, which is an infinit loop. Please do not add code after it.
@@ -131,7 +154,7 @@ ETS_STATUS ets_post(uint8_t prio, ETSSignal sig, ETSParam par);
   * @{
   */
 
-extern const char *const exc_cause_table[40];   ///**< excption cause that defined by the core.*/
+extern const char *const exc_cause_table[40];	///**< excption cause that defined by the core.*/
 
 /**
   * @brief  Set Pro cpu Entry code, code can be called in PRO CPU when booting is not completed.
@@ -282,21 +305,22 @@ void ets_install_uart_printf(void);
 /** @addtogroup ets_timer_apis
   * @{
   */
-typedef void ETSTimerFunc(void *timer_arg);/**< timer handler*/
+typedef void ETSTimerFunc(void *timer_arg);
+/**< timer handler*/
 
 #if 0
 typedef struct _ETSTIMER_ {
-    struct _ETSTIMER_    *timer_next;   /**< timer linker*/
-    uint32_t              timer_expire; /**< abstruct time when timer expire*/
-    uint32_t              timer_period; /**< timer period, 0 means timer is not periodic repeated*/
-    ETSTimerFunc         *timer_func;   /**< timer handler*/
-    void                 *timer_arg;    /**< timer handler argument*/
+	struct _ETSTIMER_ *timer_next;	/**< timer linker*/
+	uint32_t timer_expire;			/**< abstruct time when timer expire*/
+	uint32_t timer_period;			/**< timer period, 0 means timer is not periodic repeated*/
+	ETSTimerFunc *timer_func;		/**< timer handler*/
+	void *timer_arg;				/**< timer handler argument*/
 } ETSTimer;
 #endif
 
 typedef struct _ETSTIMER_ {
-    WDOG_ID wdog;    
-}ETSTimer;
+	WDOG_ID wdog;
+} ETSTimer;
 
 /**
   * @brief  Init ets timer, this timer range is 640 us to 429496 ms
@@ -455,7 +479,8 @@ uint32_t ets_get_detected_xtal_freq(void);
   * @{
   */
 
-typedef void (* ets_isr_t)(void *);/**< interrupt handler type*/
+typedef void (*ets_isr_t)(void *);
+/**< interrupt handler type*/
 
 /**
   * @brief  Attach a interrupt handler to a CPU interrupt number.
@@ -634,11 +659,11 @@ void intr_matrix_set(int cpu_no, uint32_t model_num, uint32_t intr_num);
 #define ETS_MEM_BAR() asm volatile ( "" : : : "memory" )
 #if 0
 typedef enum {
-    OK = 0,
-    FAIL,
-    PENDING,
-    BUSY,
-    CANCEL,
+	OK = 0,
+	FAIL,
+	PENDING,
+	BUSY,
+	CANCEL,
 } STATUS;
 #endif
 
@@ -649,5 +674,4 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* _ROM_ETS_SYS_H_ */
+#endif							/* _ROM_ETS_SYS_H_ */

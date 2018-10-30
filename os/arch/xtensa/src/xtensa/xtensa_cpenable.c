@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_cpenable.c
  *
@@ -72,36 +90,35 @@
 
 void xtensa_coproc_enable(struct xtensa_cpstate_s *cpstate, int cpset)
 {
-  irqstate_t flags;
-  uint32_t cpenable;
+	irqstate_t flags;
+	uint32_t cpenable;
 
-  /* These operations must be atomic */
+	/* These operations must be atomic */
 
-  flags = up_irq_save();
+	flags = up_irq_save();
 
-  /* Don't enable co-processors that may already be enabled
-   *
-   *          cpenable
-   *            0   1
-   *          --- ---
-   *  cpset 0 | 0   0
-   *        1 | 1   0
-   */
+	/* Don't enable co-processors that may already be enabled
+	 *
+	 *          cpenable
+	 *            0   1
+	 *          --- ---
+	 *  cpset 0 | 0   0
+	 *        1 | 1   0
+	 */
 
-  cpset ^= (cpset & cpstate->cpenable);
-  if (cpset != 0)
-    {
-      /* Enable the co-processors */
+	cpset ^= (cpset & cpstate->cpenable);
+	if (cpset != 0) {
+		/* Enable the co-processors */
 
-      cpenable = xtensa_get_cpenable();
-      cpenable |= cpset;
-      xtensa_set_cpenable(cpenable);
+		cpenable = xtensa_get_cpenable();
+		cpenable |= cpset;
+		xtensa_set_cpenable(cpenable);
 
-      cpstate->cpenable  = cpenable;
-      cpstate->cpstored &= ~cpset;
-    }
+		cpstate->cpenable = cpenable;
+		cpstate->cpstored &= ~cpset;
+	}
 
-  up_irq_restore(flags);
+	up_irq_restore(flags);
 }
 
 /****************************************************************************
@@ -123,36 +140,35 @@ void xtensa_coproc_enable(struct xtensa_cpstate_s *cpstate, int cpset)
 
 void xtensa_coproc_disable(struct xtensa_cpstate_s *cpstate, int cpset)
 {
-  irqstate_t flags;
-  uint32_t cpenable;
+	irqstate_t flags;
+	uint32_t cpenable;
 
-  /* These operations must be atomic */
+	/* These operations must be atomic */
 
-  flags = up_irq_save();
+	flags = up_irq_save();
 
-  /* Don't disable co-processors that are already be disabled.
-   *
-   *          cpenable
-   *            0   1
-   *          --- ---
-   *  cpset 0 | 0   0
-   *        1 | 0   1
-   */
+	/* Don't disable co-processors that are already be disabled.
+	 *
+	 *          cpenable
+	 *            0   1
+	 *          --- ---
+	 *  cpset 0 | 0   0
+	 *        1 | 0   1
+	 */
 
-  cpset &= cpstate->cpenable;
-  if (cpset != 0)
-    {
-      /* Disable the co-processors */
+	cpset &= cpstate->cpenable;
+	if (cpset != 0) {
+		/* Disable the co-processors */
 
-      cpenable = xtensa_get_cpenable();
-      cpenable &= ~cpset;
-      xtensa_set_cpenable(cpenable);
+		cpenable = xtensa_get_cpenable();
+		cpenable &= ~cpset;
+		xtensa_set_cpenable(cpenable);
 
-      cpstate->cpenable  = cpenable;
-      cpstate->cpstored &= ~cpset;
-    }
+		cpstate->cpenable = cpenable;
+		cpstate->cpstored &= ~cpset;
+	}
 
-  up_irq_restore(flags);
+	up_irq_restore(flags);
 }
 
-#endif /* XCHAL_CP_NUM */
+#endif							/* XCHAL_CP_NUM */

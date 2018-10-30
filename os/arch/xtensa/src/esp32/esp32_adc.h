@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  *
  * Copyright 2016 Samsung Electronics All Rights Reserved.
@@ -72,8 +90,7 @@
 #undef EXTERN
 #if defined(__cplusplus)
 #define EXTERN extern "C"
-extern "C"
-{
+extern "C" {
 #else
 #define EXTERN extern
 #endif
@@ -82,20 +99,21 @@ extern "C"
  * Public Types
  ****************************************************************************/
 typedef enum {
-	adc_conversion_1time	= ADC_CON2_CTIME_1,
-	adc_conversion_2time	= ADC_CON2_CTIME_2,
-	adc_conversion_4time	= ADC_CON2_CTIME_4,
-	adc_conversion_8time	= ADC_CON2_CTIME_8,
-	adc_conversion_16time	= ADC_CON2_CTIME_16,
-	adc_conversion_32time	= ADC_CON2_CTIME_32,
-	adc_conversion_64time	= ADC_CON2_CTIME_64,
-} adc_conversion_mode_t;
+	adc_conversion_1time = ADC_CON2_CTIME_1,
+	adc_conversion_2time = ADC_CON2_CTIME_2,
+	adc_conversion_4time = ADC_CON2_CTIME_4,
+	adc_conversion_8time = ADC_CON2_CTIME_8,
+	adc_conversion_16time = ADC_CON2_CTIME_16,
+	adc_conversion_32time = ADC_CON2_CTIME_32,
+	adc_conversion_64time = ADC_CON2_CTIME_64,
+}
+adc_conversion_mode_t;
 
 typedef enum {
-	adc_channel_0		= ADC_CON2_ACHSEL_CHANNEL0,
-	adc_channel_1		= ADC_CON2_ACHSEL_CHANNEL1,
-	adc_channel_2		= ADC_CON2_ACHSEL_CHANNEL2,
-	adc_channel_3		= ADC_CON2_ACHSEL_CHANNEL3,
+	adc_channel_0 = ADC_CON2_ACHSEL_CHANNEL0,
+	adc_channel_1 = ADC_CON2_ACHSEL_CHANNEL1,
+	adc_channel_2 = ADC_CON2_ACHSEL_CHANNEL2,
+	adc_channel_3 = ADC_CON2_ACHSEL_CHANNEL3,
 } adc_channel_t;
 
 /****************************************************************************
@@ -118,13 +136,12 @@ typedef enum {
  *   Valid can device structure reference on success; a NULL on failure
  *
  ****************************************************************************/
-struct adc_dev_s *s5j_adc_initialize(FAR const uint8_t *chanlist,
-				     int cchannels);
+struct adc_dev_s *s5j_adc_initialize(FAR const uint8_t *chanlist, int cchannels);
 
 #undef EXTERN
 #if defined(__cplusplus)
 }
 #endif
 
-#endif /* __ASSEMBLY__ */
-#endif /* __ARCH_ARM_SRC_S5J_S5J_ADC_H */
+#endif							/* __ASSEMBLY__ */
+#endif							/* __ARCH_ARM_SRC_S5J_S5J_ADC_H */

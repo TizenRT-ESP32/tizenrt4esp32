@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_cpupause.c
  *
@@ -79,7 +97,7 @@ static spinlock_t g_cpu_paused[CONFIG_SMP_NCPUS] SP_SECTION;
 
 bool up_cpu_pausereq(int cpu)
 {
-  return spin_islocked(&g_cpu_paused[cpu]);
+	return spin_islocked(&g_cpu_paused[cpu]);
 }
 
 /****************************************************************************
@@ -111,60 +129,59 @@ bool up_cpu_pausereq(int cpu)
 
 int up_cpu_paused(int cpu)
 {
-  FAR struct tcb_s *otcb = this_task();
-  FAR struct tcb_s *ntcb;
+	FAR struct tcb_s *otcb = this_task();
+	FAR struct tcb_s *ntcb;
 
-  /* Update scheduler parameters */
+	/* Update scheduler parameters */
 
-  sched_suspend_scheduler(otcb);
-
-#ifdef CONFIG_SCHED_INSTRUMENTATION
-  /* Notify that we are paused */
-
-  sched_note_cpu_paused(otcb);
-#endif
-
-  /* Copy the CURRENT_REGS into the OLD TCB (otcb).  The co-processor state
-   * will be saved as part of the return from xtensa_irq_dispatch().
-   */
-
-  xtensa_savestate(otcb->xcp.regs);
-
-  /* Wait for the spinlock to be released */
-
-  spin_unlock(&g_cpu_paused[cpu]);
-  spin_lock(&g_cpu_wait[cpu]);
-
-  /* Upon return, we will restore the exception context of the new TCB
-   * (ntcb) at the head of the ready-to-run task list.
-   */
-
-  ntcb = this_task();
+	sched_suspend_scheduler(otcb);
 
 #ifdef CONFIG_SCHED_INSTRUMENTATION
-  /* Notify that we have resumed */
+	/* Notify that we are paused */
 
-  sched_note_cpu_resumed(ntcb);
+	sched_note_cpu_paused(otcb);
 #endif
 
-  /* Reset scheduler parameters */
+	/* Copy the CURRENT_REGS into the OLD TCB (otcb).  The co-processor state
+	 * will be saved as part of the return from xtensa_irq_dispatch().
+	 */
 
-  sched_resume_scheduler(ntcb);
+	xtensa_savestate(otcb->xcp.regs);
 
-  /* Did the task at the head of the list change? */
+	/* Wait for the spinlock to be released */
 
-  if (otcb != ntcb)
-    {
-      /* Set CURRENT_REGS to the context save are of the new TCB to start.
-       * This will inform the return-from-interrupt logic that a context
-       * switch must be performed.
-       */
+	spin_unlock(&g_cpu_paused[cpu]);
+	spin_lock(&g_cpu_wait[cpu]);
 
-      xtensa_restorestate(ntcb->xcp.regs);
-    }
+	/* Upon return, we will restore the exception context of the new TCB
+	 * (ntcb) at the head of the ready-to-run task list.
+	 */
 
-  spin_unlock(&g_cpu_wait[cpu]);
-  return OK;
+	ntcb = this_task();
+
+#ifdef CONFIG_SCHED_INSTRUMENTATION
+	/* Notify that we have resumed */
+
+	sched_note_cpu_resumed(ntcb);
+#endif
+
+	/* Reset scheduler parameters */
+
+	sched_resume_scheduler(ntcb);
+
+	/* Did the task at the head of the list change? */
+
+	if (otcb != ntcb) {
+		/* Set CURRENT_REGS to the context save are of the new TCB to start.
+		 * This will inform the return-from-interrupt logic that a context
+		 * switch must be performed.
+		 */
+
+		xtensa_restorestate(ntcb->xcp.regs);
+	}
+
+	spin_unlock(&g_cpu_wait[cpu]);
+	return OK;
 }
 
 /****************************************************************************
@@ -190,7 +207,7 @@ int up_cpu_paused(int cpu)
 
 void xtensa_pause_handler(void)
 {
-  (void)up_cpu_paused(up_cpu_index());
+	(void)up_cpu_paused(up_cpu_index());
 }
 
 /****************************************************************************
@@ -215,54 +232,50 @@ void xtensa_pause_handler(void)
 
 int up_cpu_pause(int cpu)
 {
-  int ret;
+	int ret;
 
 #ifdef CONFIG_SCHED_INSTRUMENTATION
-  /* Notify of the pause event */
+	/* Notify of the pause event */
 
-  sched_note_cpu_pause(this_task(), cpu);
+	sched_note_cpu_pause(this_task(), cpu);
 #endif
 
-  DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS && cpu != this_cpu());
+	DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS && cpu != this_cpu());
 
-  /* Take the both spinlocks.  The g_cpu_wait spinlock will prevent the SGI2
-   * handler from returning until up_cpu_resume() is called; g_cpu_paused
-   * is a handshake that will prefent this function from returning until
-   * the CPU is actually paused.
-   */
+	/* Take the both spinlocks.  The g_cpu_wait spinlock will prevent the SGI2
+	 * handler from returning until up_cpu_resume() is called; g_cpu_paused
+	 * is a handshake that will prefent this function from returning until
+	 * the CPU is actually paused.
+	 */
 
-  DEBUGASSERT(!spin_islocked(&g_cpu_wait[cpu]) &&
-              !spin_islocked(&g_cpu_paused[cpu]));
+	DEBUGASSERT(!spin_islocked(&g_cpu_wait[cpu]) && !spin_islocked(&g_cpu_paused[cpu]));
 
-  spin_lock(&g_cpu_wait[cpu]);
-  spin_lock(&g_cpu_paused[cpu]);
+	spin_lock(&g_cpu_wait[cpu]);
+	spin_lock(&g_cpu_paused[cpu]);
 
-  /* Execute SGI2 */
+	/* Execute SGI2 */
 
-  ret = xtensa_intercpu_interrupt(cpu, CPU_INTCODE_PAUSE);
-  if (ret < 0)
-    {
-      /* What happened?  Unlock the g_cpu_wait spinlock */
+	ret = xtensa_intercpu_interrupt(cpu, CPU_INTCODE_PAUSE);
+	if (ret < 0) {
+		/* What happened?  Unlock the g_cpu_wait spinlock */
 
-      spin_unlock(&g_cpu_wait[cpu]);
-    }
-  else
-    {
-      /* Wait for the other CPU to unlock g_cpu_paused meaning that
-       * it is fully paused and ready for up_cpu_resume();
-       */
+		spin_unlock(&g_cpu_wait[cpu]);
+	} else {
+		/* Wait for the other CPU to unlock g_cpu_paused meaning that
+		 * it is fully paused and ready for up_cpu_resume();
+		 */
 
-      spin_lock(&g_cpu_paused[cpu]);
-    }
+		spin_lock(&g_cpu_paused[cpu]);
+	}
 
-  spin_unlock(&g_cpu_paused[cpu]);
+	spin_unlock(&g_cpu_paused[cpu]);
 
-  /* On successful return g_cpu_wait will be locked, the other CPU will be
-   * spinninf on g_cpu_wait and will not continue until g_cpu_resume() is
-   * called.  g_cpu_paused will be unlocked in any case.
-   */
+	/* On successful return g_cpu_wait will be locked, the other CPU will be
+	 * spinninf on g_cpu_wait and will not continue until g_cpu_resume() is
+	 * called.  g_cpu_paused will be unlocked in any case.
+	 */
 
- return ret;
+	return ret;
 }
 
 /****************************************************************************
@@ -287,23 +300,22 @@ int up_cpu_pause(int cpu)
 int up_cpu_resume(int cpu)
 {
 #ifdef CONFIG_SCHED_INSTRUMENTATION
-  /* Notify of the resume event */
+	/* Notify of the resume event */
 
-  sched_note_cpu_resume(this_task(), cpu);
+	sched_note_cpu_resume(this_task(), cpu);
 #endif
 
-  DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS && cpu != this_cpu());
+	DEBUGASSERT(cpu >= 0 && cpu < CONFIG_SMP_NCPUS && cpu != this_cpu());
 
-  /* Release the spinlock.  Releasing the spinlock will cause the SGI2
-   * handler on 'cpu' to continue and return from interrupt to the newly
-   * established thread.
-   */
+	/* Release the spinlock.  Releasing the spinlock will cause the SGI2
+	 * handler on 'cpu' to continue and return from interrupt to the newly
+	 * established thread.
+	 */
 
-  DEBUGASSERT(spin_islocked(&g_cpu_wait[cpu]) &&
-              !spin_islocked(&g_cpu_paused[cpu]));
+	DEBUGASSERT(spin_islocked(&g_cpu_wait[cpu]) && !spin_islocked(&g_cpu_paused[cpu]));
 
-  spin_unlock(&g_cpu_wait[cpu]);
-  return OK;
+	spin_unlock(&g_cpu_wait[cpu]);
+	return OK;
 }
 
-#endif /* CONFIG_SMP */
+#endif							/* CONFIG_SMP */

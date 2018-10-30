@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  *
  * Copyright 2016 Samsung Electronics All Rights Reserved.
@@ -73,7 +91,7 @@ struct esp32_lowerhalf_s {
 	FAR const struct gpio_ops_s *ops;
 	struct gpio_upperhalf_s *parent;
 
-    int pinnum;
+	int pinnum;
 	uint32_t pincfg;
 	gpio_handler_t handler;
 };
@@ -131,16 +149,14 @@ static int esp32_gpio_get(FAR struct gpio_lowerhalf_s *lower)
  *   None
  *
  ****************************************************************************/
-static void esp32_gpio_set(FAR struct gpio_lowerhalf_s *lower,
-						 FAR unsigned int value)
+static void esp32_gpio_set(FAR struct gpio_lowerhalf_s *lower, FAR unsigned int value)
 {
 	struct esp32_lowerhalf_s *priv = (struct esp32_lowerhalf_s *)lower;
 
 	esp32_gpiowrite(priv->pinnum, value);
 }
 
-static int esp32_gpio_setdir(FAR struct gpio_lowerhalf_s *lower,
-						   unsigned long arg)
+static int esp32_gpio_setdir(FAR struct gpio_lowerhalf_s *lower, unsigned long arg)
 {
 	struct esp32_lowerhalf_s *priv = (struct esp32_lowerhalf_s *)lower;
 
@@ -160,7 +176,7 @@ static int esp32_gpio_pull(FAR struct gpio_lowerhalf_s *lower, unsigned long arg
 	struct esp32_lowerhalf_s *priv = (struct esp32_lowerhalf_s *)lower;
 
 	priv->pincfg &= ~PUPD_MASK;
-    if (arg == GPIO_DRIVE_PULLUP) {
+	if (arg == GPIO_DRIVE_PULLUP) {
 		priv->pincfg |= PULLUP;
 	} else if (arg == GPIO_DRIVE_PULLDOWN) {
 		priv->pincfg |= PULLDOWN;
@@ -171,8 +187,7 @@ static int esp32_gpio_pull(FAR struct gpio_lowerhalf_s *lower, unsigned long arg
 	return esp32_configgpio(priv->pinnum, priv->pincfg);
 }
 
-static int esp32_gpio_enable(FAR struct gpio_lowerhalf_s *lower, int falling,
-						   int rising, gpio_handler_t handler)
+static int esp32_gpio_enable(FAR struct gpio_lowerhalf_s *lower, int falling, int rising, gpio_handler_t handler)
 {
 #if 0
 	int irqvector;
@@ -208,16 +223,16 @@ static int esp32_gpio_enable(FAR struct gpio_lowerhalf_s *lower, int falling,
 
 	return esp32_configgpio(priv->pincfg);
 #endif
-    return 0;
+	return 0;
 }
 
 /****************************************************************************
  * Private Data
  ****************************************************************************/
 static const struct gpio_ops_s esp32_gpio_ops = {
-	.set    = esp32_gpio_set,
-	.get    = esp32_gpio_get,
-	.pull   = esp32_gpio_pull,
+	.set = esp32_gpio_set,
+	.get = esp32_gpio_get,
+	.pull = esp32_gpio_pull,
 	.setdir = esp32_gpio_setdir,
 	.enable = esp32_gpio_enable,
 
@@ -253,14 +268,14 @@ FAR struct gpio_lowerhalf_s *esp32_gpio_lowerhalf(int pinnum, uint16_t pincfg)
 	struct esp32_lowerhalf_s *lower;
 
 	lower = (struct esp32_lowerhalf_s *)
-						kmm_malloc(sizeof(struct esp32_lowerhalf_s));
+			kmm_malloc(sizeof(struct esp32_lowerhalf_s));
 	if (!lower) {
 		return NULL;
 	}
 
 	lower->pincfg = pincfg;
 	lower->pinnum = pinnum;
-	lower->ops    = &esp32_gpio_ops;
+	lower->ops = &esp32_gpio_ops;
 
 	return (struct gpio_lowerhalf_s *)lower;
 }
