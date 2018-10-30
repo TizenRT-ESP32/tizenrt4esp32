@@ -17,8 +17,7 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #define ESP_PARTITION_MAGIC 0x50AA
@@ -27,15 +26,14 @@ extern "C"
 /* OTA selection structure (two copies in the OTA data partition.)
    Size of 32 bytes is friendly to flash encryption */
 typedef struct {
-    uint32_t ota_seq;
-    uint8_t  seq_label[24];
-    uint32_t crc; /* CRC32 of ota_seq field only */
+	uint32_t ota_seq;
+	uint8_t seq_label[24];
+	uint32_t crc;			/* CRC32 of ota_seq field only */
 } esp_ota_select_entry_t;
 
-
 typedef struct {
-    uint32_t offset;
-    uint32_t size;
+	uint32_t offset;
+	uint32_t size;
 } esp_partition_pos_t;
 
 /* Structure which describes the layout of partition table entry.
@@ -43,11 +41,11 @@ typedef struct {
  */
 typedef struct {
 	uint16_t magic;
-	uint8_t  type;
-    uint8_t  subtype;
-    esp_partition_pos_t pos;
-	uint8_t  label[16];
-    uint32_t flags;
+	uint8_t type;
+	uint8_t subtype;
+	esp_partition_pos_t pos;
+	uint8_t label[16];
+	uint32_t flags;
 } esp_partition_info_t;
 
 #define PART_TYPE_APP 0x00
@@ -69,5 +67,4 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif
-
-#endif //__ESP_BIN_TYPES_H__
+#endif							//__ESP_BIN_TYPES_H__

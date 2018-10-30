@@ -22,16 +22,15 @@
 #include "esp_partition.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-#define OTA_SIZE_UNKNOWN 0xffffffff /*!< Used for esp_ota_begin() if new image size is unknown */
+#define OTA_SIZE_UNKNOWN 0xffffffff	/*!< Used for esp_ota_begin() if new image size is unknown */
 
-#define ESP_ERR_OTA_BASE                         0x1500                     /*!< Base error code for ota_ops api */
-#define ESP_ERR_OTA_PARTITION_CONFLICT           (ESP_ERR_OTA_BASE + 0x01)  /*!< Error if request was to write or erase the current running partition */
-#define ESP_ERR_OTA_SELECT_INFO_INVALID          (ESP_ERR_OTA_BASE + 0x02)  /*!< Error if OTA data partition contains invalid content */
-#define ESP_ERR_OTA_VALIDATE_FAILED              (ESP_ERR_OTA_BASE + 0x03)  /*!< Error if OTA app image is invalid */
+#define ESP_ERR_OTA_BASE                         0x1500	/*!< Base error code for ota_ops api */
+#define ESP_ERR_OTA_PARTITION_CONFLICT           (ESP_ERR_OTA_BASE + 0x01)	/*!< Error if request was to write or erase the current running partition */
+#define ESP_ERR_OTA_SELECT_INFO_INVALID          (ESP_ERR_OTA_BASE + 0x02)	/*!< Error if OTA data partition contains invalid content */
+#define ESP_ERR_OTA_VALIDATE_FAILED              (ESP_ERR_OTA_BASE + 0x03)	/*!< Error if OTA app image is invalid */
 
 /**
  * @brief Opaque handle for an application OTA update
@@ -66,7 +65,7 @@ typedef uint32_t esp_ota_handle_t;
  *    - ESP_ERR_INVALID_SIZE: Partition doesn't fit in configured flash size.
  *    - ESP_ERR_FLASH_OP_TIMEOUT or ESP_ERR_FLASH_OP_FAIL: Flash write failed.
  */
-esp_err_t esp_ota_begin(const esp_partition_t* partition, size_t image_size, esp_ota_handle_t* out_handle);
+esp_err_t esp_ota_begin(const esp_partition_t *partition, size_t image_size, esp_ota_handle_t *out_handle);
 
 /**
  * @brief   Write OTA update data to partition
@@ -86,7 +85,7 @@ esp_err_t esp_ota_begin(const esp_partition_t* partition, size_t image_size, esp
  *    - ESP_ERR_FLASH_OP_TIMEOUT or ESP_ERR_FLASH_OP_FAIL: Flash write failed.
  *    - ESP_ERR_OTA_SELECT_INFO_INVALID: OTA data partition has invalid contents
  */
-esp_err_t esp_ota_write(esp_ota_handle_t handle, const void* data, size_t size);
+esp_err_t esp_ota_write(esp_ota_handle_t handle, const void *data, size_t size);
 
 /**
  * @brief Finish OTA update and validate newly written app image.
@@ -118,7 +117,7 @@ esp_err_t esp_ota_end(esp_ota_handle_t handle);
  *    - ESP_ERR_NOT_FOUND: OTA data partition not found.
  *    - ESP_ERR_FLASH_OP_TIMEOUT or ESP_ERR_FLASH_OP_FAIL: Flash erase or write failed.
  */
-esp_err_t esp_ota_set_boot_partition(const esp_partition_t* partition);
+esp_err_t esp_ota_set_boot_partition(const esp_partition_t *partition);
 
 /**
  * @brief Get partition info of currently configured boot app
@@ -137,8 +136,7 @@ esp_err_t esp_ota_set_boot_partition(const esp_partition_t* partition);
  *
  * @return Pointer to info for partition structure, or NULL if partition table is invalid or a flash read operation failed. Any returned pointer is valid for the lifetime of the application.
  */
-const esp_partition_t* esp_ota_get_boot_partition(void);
-
+const esp_partition_t *esp_ota_get_boot_partition(void);
 
 /**
  * @brief Get partition info of currently running app
@@ -153,8 +151,7 @@ const esp_partition_t* esp_ota_get_boot_partition(void);
  *
  * @return Pointer to info for partition structure, or NULL if no partition is found or flash read operation failed. Returned pointer is valid for the lifetime of the application.
  */
-const esp_partition_t* esp_ota_get_running_partition(void);
-
+const esp_partition_t *esp_ota_get_running_partition(void);
 
 /**
  * @brief Return the next OTA app partition which should be written with a new firmware.
@@ -168,10 +165,9 @@ const esp_partition_t* esp_ota_get_running_partition(void);
  * @return Pointer to info for partition which should be updated next. NULL result indicates invalid OTA data partition, or that no eligible OTA app slot partition was found.
  *
  */
-const esp_partition_t* esp_ota_get_next_update_partition(const esp_partition_t *start_from);
+const esp_partition_t *esp_ota_get_next_update_partition(const esp_partition_t *start_from);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* OTA_OPS_H */
+#endif							/* OTA_OPS_H */

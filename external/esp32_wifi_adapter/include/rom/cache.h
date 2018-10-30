@@ -71,19 +71,18 @@ void mmu_init(int cpu_no);
   *                   4 : mmu table to be written is out of range
   *                   5 : vaddr is out of range
   */
-static inline unsigned int IRAM_ATTR cache_flash_mmu_set(int cpu_no, int pid, unsigned int vaddr, unsigned int paddr,  int psize, int num)
+static inline unsigned int IRAM_ATTR cache_flash_mmu_set(int cpu_no, int pid, unsigned int vaddr, unsigned int paddr, int psize, int num)
 {
-    extern unsigned int cache_flash_mmu_set_rom(int cpu_no, int pid, unsigned int vaddr, unsigned int paddr,  int psize, int num);
+	extern unsigned int cache_flash_mmu_set_rom(int cpu_no, int pid, unsigned int vaddr, unsigned int paddr, int psize, int num);
 
-    unsigned int ret;
+	unsigned int ret;
 
-    DPORT_STALL_OTHER_CPU_START();
-    ret = cache_flash_mmu_set_rom(cpu_no, pid, vaddr, paddr, psize, num);
-    DPORT_STALL_OTHER_CPU_END();
+	DPORT_STALL_OTHER_CPU_START();
+	ret = cache_flash_mmu_set_rom(cpu_no, pid, vaddr, paddr, psize, num);
+	DPORT_STALL_OTHER_CPU_END();
 
-    return ret;
+	return ret;
 }
-
 /**
   * @brief Set Ext-SRAM-Cache mmu mapping.
   *        Please do not call this function in your SDK application.
@@ -110,18 +109,17 @@ static inline unsigned int IRAM_ATTR cache_flash_mmu_set(int cpu_no, int pid, un
   *                   3 : psize error
   *                   4 : mmu table to be written is out of range
   *                   5 : vaddr is out of range
-  */
-static inline unsigned int IRAM_ATTR cache_sram_mmu_set(int cpu_no, int pid, unsigned int vaddr, unsigned int paddr, int psize, int num)
+  */ static inline unsigned int IRAM_ATTR cache_sram_mmu_set(int cpu_no, int pid, unsigned int vaddr, unsigned int paddr, int psize, int num)
 {
-    extern unsigned int cache_sram_mmu_set_rom(int cpu_no, int pid, unsigned int vaddr, unsigned int paddr, int psize, int num);
+	extern unsigned int cache_sram_mmu_set_rom(int cpu_no, int pid, unsigned int vaddr, unsigned int paddr, int psize, int num);
 
-    unsigned int ret;
+	unsigned int ret;
 
-    DPORT_STALL_OTHER_CPU_START();
-    ret = cache_sram_mmu_set_rom(cpu_no, pid, vaddr, paddr, psize, num);
-    DPORT_STALL_OTHER_CPU_END();
+	DPORT_STALL_OTHER_CPU_START();
+	ret = cache_sram_mmu_set_rom(cpu_no, pid, vaddr, paddr, psize, num);
+	DPORT_STALL_OTHER_CPU_END();
 
-    return ret;
+	return ret;
 }
 
 /**
@@ -134,10 +132,10 @@ static inline unsigned int IRAM_ATTR cache_sram_mmu_set(int cpu_no, int pid, uns
   */
 static inline void IRAM_ATTR Cache_Read_Init(int cpu_no)
 {
-    extern void Cache_Read_Init_rom(int cpu_no);
-    DPORT_STALL_OTHER_CPU_START();
-    Cache_Read_Init_rom(cpu_no);
-    DPORT_STALL_OTHER_CPU_END();
+	extern void Cache_Read_Init_rom(int cpu_no);
+	DPORT_STALL_OTHER_CPU_START();
+	Cache_Read_Init_rom(cpu_no);
+	DPORT_STALL_OTHER_CPU_END();
 }
 
 /**
@@ -150,10 +148,10 @@ static inline void IRAM_ATTR Cache_Read_Init(int cpu_no)
   */
 static inline void IRAM_ATTR Cache_Flush(int cpu_no)
 {
-    extern void Cache_Flush_rom(int cpu_no);
-    DPORT_STALL_OTHER_CPU_START();
-    Cache_Flush_rom(cpu_no);
-    DPORT_STALL_OTHER_CPU_END();
+	extern void Cache_Flush_rom(int cpu_no);
+	DPORT_STALL_OTHER_CPU_START();
+	Cache_Flush_rom(cpu_no);
+	DPORT_STALL_OTHER_CPU_END();
 }
 
 /**
@@ -166,10 +164,10 @@ static inline void IRAM_ATTR Cache_Flush(int cpu_no)
   */
 static inline void IRAM_ATTR Cache_Read_Disable(int cpu_no)
 {
-    extern void Cache_Read_Disable_rom(int cpu_no);
-    DPORT_STALL_OTHER_CPU_START();
-    Cache_Read_Disable_rom(cpu_no);
-    DPORT_STALL_OTHER_CPU_END();
+	extern void Cache_Read_Disable_rom(int cpu_no);
+	DPORT_STALL_OTHER_CPU_START();
+	Cache_Read_Disable_rom(cpu_no);
+	DPORT_STALL_OTHER_CPU_END();
 }
 
 /**
@@ -182,10 +180,10 @@ static inline void IRAM_ATTR Cache_Read_Disable(int cpu_no)
   */
 static inline void IRAM_ATTR Cache_Read_Enable(int cpu_no)
 {
-    extern void Cache_Read_Enable_rom(int cpu_no);
-    DPORT_STALL_OTHER_CPU_START();
-    Cache_Read_Enable_rom(cpu_no);
-    DPORT_STALL_OTHER_CPU_END();
+	extern void Cache_Read_Enable_rom(int cpu_no);
+	DPORT_STALL_OTHER_CPU_START();
+	Cache_Read_Enable_rom(cpu_no);
+	DPORT_STALL_OTHER_CPU_END();
 }
 
 /**
@@ -196,4 +194,4 @@ static inline void IRAM_ATTR Cache_Read_Enable(int cpu_no)
 }
 #endif
 
-#endif /* _ROM_CACHE_H_ */
+#endif							/* _ROM_CACHE_H_ */

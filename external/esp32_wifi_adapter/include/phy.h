@@ -38,7 +38,7 @@ void phy_get_romfunc_addr(void);
  * @param[in] cal_mode  RF calibration mode
  * @return ESP_CAL_DATA_CHECK_FAIL if calibration data checksum fails, other values are reserved for future use
  */
-int register_chipv7_phy(const esp_phy_init_data_t* init_data, esp_phy_calibration_data_t *cal_data, esp_phy_calibration_mode_t cal_mode);
+int register_chipv7_phy(const esp_phy_init_data_t *init_data, esp_phy_calibration_data_t *cal_data, esp_phy_calibration_mode_t cal_mode);
 
 /**
  * @brief Get the format version of calibration data used by PHY library.
@@ -67,4 +67,3 @@ void phy_close_rf(void);
 #ifdef __cplusplus
 }
 #endif
-

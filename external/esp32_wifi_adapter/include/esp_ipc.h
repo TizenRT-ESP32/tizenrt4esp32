@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 /** @cond */
-typedef void (*esp_ipc_func_t)(void* arg);
+typedef void (*esp_ipc_func_t)(void *arg);
 /** @endcond */
 /*
  * Inter-processor call APIs
@@ -32,7 +32,6 @@ typedef void (*esp_ipc_func_t)(void* arg);
  *
  * These APIs can only be used when FreeRTOS scheduler is running.
  */
-
 
 /*
  * Initialize inter-processor call module. This function is called automatically
@@ -71,8 +70,7 @@ void esp_ipc_init(void);
  *      - ESP_ERR_INVALID_STATE if the FreeRTOS scheduler is not running
  *      - ESP_OK otherwise
  */
-esp_err_t esp_ipc_call(uint32_t cpu_id, esp_ipc_func_t func, void* arg);
-
+esp_err_t esp_ipc_call(uint32_t cpu_id, esp_ipc_func_t func, void *arg);
 
 /**
  * @brief Execute a function on the given CPU and blocks until it completes
@@ -98,11 +96,9 @@ esp_err_t esp_ipc_call(uint32_t cpu_id, esp_ipc_func_t func, void* arg);
  *      - ESP_ERR_INVALID_STATE if the FreeRTOS scheduler is not running
  *      - ESP_OK otherwise
  */
-esp_err_t esp_ipc_call_blocking(uint32_t cpu_id, esp_ipc_func_t func, void* arg);
-
+esp_err_t esp_ipc_call_blocking(uint32_t cpu_id, esp_ipc_func_t func, void *arg);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __ESP_IPC_H__ */
+#endif							/* __ESP_IPC_H__ */

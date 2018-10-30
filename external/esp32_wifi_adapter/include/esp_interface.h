@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef __ESP_INTERFACE_H__
 #define __ESP_INTERFACE_H__
 
@@ -23,15 +22,14 @@ extern "C" {
 #endif
 
 typedef enum {
-    ESP_IF_WIFI_STA = 0,     /**< ESP32 station interface */
-    ESP_IF_WIFI_AP,          /**< ESP32 soft-AP interface */
-    ESP_IF_ETH,              /**< ESP32 ethernet interface */
-    ESP_IF_MAX
-} esp_interface_t;
+	ESP_IF_WIFI_STA = 0, /**< ESP32 station interface */
+	ESP_IF_WIFI_AP,		 /**< ESP32 soft-AP interface */
+	ESP_IF_ETH,			 /**< ESP32 ethernet interface */
+	ESP_IF_MAX
+}
+esp_interface_t;
 
 #ifdef __cplusplus
 }
 #endif
-
-
-#endif /* __ESP_INTERFACE_TYPES_H__ */
+#endif							/* __ESP_INTERFACE_TYPES_H__ */

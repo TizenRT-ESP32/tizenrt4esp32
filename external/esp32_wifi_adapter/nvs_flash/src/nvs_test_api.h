@@ -17,22 +17,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 #include "nvs_flash.h"
 
 /**
  * @brief Initialize NVS flash storage with custom flash sector layout
  *
  * @note  This API is intended to be used in unit tests.
- * 
+ *
  * @param partName Partition name of the NVS partition as per partition table
  * @param baseSector Flash sector (units of 4096 bytes) offset to start NVS
- * @param sectorCount Length (in flash sectors) of NVS region. 
+ * @param sectorCount Length (in flash sectors) of NVS region.
  					  NVS partition must be at least 3 sectors long.
  * @return ESP_OK if flash was successfully initialized
  */
 esp_err_t nvs_flash_init_custom(const char *partName, uint32_t baseSector, uint32_t sectorCount);
-
 
 /**
  * @brief Dump contents of NVS storage to stdout
@@ -43,7 +42,6 @@ esp_err_t nvs_flash_init_custom(const char *partName, uint32_t baseSector, uint3
  * @param partName Partition name of the NVS partition as per partition table
  */
 void nvs_dump(const char *partName);
-
 
 #ifdef __cplusplus
 }

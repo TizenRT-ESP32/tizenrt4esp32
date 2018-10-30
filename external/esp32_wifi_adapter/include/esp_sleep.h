@@ -25,40 +25,41 @@ extern "C" {
  * @brief Logic function used for EXT1 wakeup mode.
  */
 typedef enum {
-    ESP_EXT1_WAKEUP_ALL_LOW = 0,    //!< Wake the chip when all selected GPIOs go low
-    ESP_EXT1_WAKEUP_ANY_HIGH = 1    //!< Wake the chip when any of the selected GPIOs go high
-} esp_sleep_ext1_wakeup_mode_t;
+	ESP_EXT1_WAKEUP_ALL_LOW = 0,	//!< Wake the chip when all selected GPIOs go low
+	ESP_EXT1_WAKEUP_ANY_HIGH = 1	//!< Wake the chip when any of the selected GPIOs go high
+}
+esp_sleep_ext1_wakeup_mode_t;
 
 /**
  * @brief Power domains which can be powered down in sleep mode
  */
 typedef enum {
-    ESP_PD_DOMAIN_RTC_PERIPH,      //!< RTC IO, sensors and ULP co-processor
-    ESP_PD_DOMAIN_RTC_SLOW_MEM,    //!< RTC slow memory
-    ESP_PD_DOMAIN_RTC_FAST_MEM,    //!< RTC fast memory
-    ESP_PD_DOMAIN_XTAL,            //!< XTAL oscillator
-    ESP_PD_DOMAIN_MAX              //!< Number of domains
+	ESP_PD_DOMAIN_RTC_PERIPH,	//!< RTC IO, sensors and ULP co-processor
+	ESP_PD_DOMAIN_RTC_SLOW_MEM,	//!< RTC slow memory
+	ESP_PD_DOMAIN_RTC_FAST_MEM,	//!< RTC fast memory
+	ESP_PD_DOMAIN_XTAL,		//!< XTAL oscillator
+	ESP_PD_DOMAIN_MAX		//!< Number of domains
 } esp_sleep_pd_domain_t;
 
 /**
  * @brief Power down options
  */
 typedef enum {
-    ESP_PD_OPTION_OFF,      //!< Power down the power domain in sleep mode
-    ESP_PD_OPTION_ON,       //!< Keep power domain enabled during sleep mode
-    ESP_PD_OPTION_AUTO      //!< Keep power domain enabled in sleep mode, if it is needed by one of the wakeup options. Otherwise power it down.
+	ESP_PD_OPTION_OFF,		//!< Power down the power domain in sleep mode
+	ESP_PD_OPTION_ON,		//!< Keep power domain enabled during sleep mode
+	ESP_PD_OPTION_AUTO		//!< Keep power domain enabled in sleep mode, if it is needed by one of the wakeup options. Otherwise power it down.
 } esp_sleep_pd_option_t;
 
 /**
  * @brief Sleep wakeup cause
  */
 typedef enum {
-    ESP_SLEEP_WAKEUP_UNDEFINED,    //!< In case of deep sleep, reset was not caused by exit from deep sleep
-    ESP_SLEEP_WAKEUP_EXT0,         //!< Wakeup caused by external signal using RTC_IO
-    ESP_SLEEP_WAKEUP_EXT1,         //!< Wakeup caused by external signal using RTC_CNTL
-    ESP_SLEEP_WAKEUP_TIMER,        //!< Wakeup caused by timer
-    ESP_SLEEP_WAKEUP_TOUCHPAD,     //!< Wakeup caused by touchpad
-    ESP_SLEEP_WAKEUP_ULP,          //!< Wakeup caused by ULP program
+	ESP_SLEEP_WAKEUP_UNDEFINED,	//!< In case of deep sleep, reset was not caused by exit from deep sleep
+	ESP_SLEEP_WAKEUP_EXT0,	//!< Wakeup caused by external signal using RTC_IO
+	ESP_SLEEP_WAKEUP_EXT1,	//!< Wakeup caused by external signal using RTC_CNTL
+	ESP_SLEEP_WAKEUP_TIMER,	//!< Wakeup caused by timer
+	ESP_SLEEP_WAKEUP_TOUCHPAD,	//!< Wakeup caused by touchpad
+	ESP_SLEEP_WAKEUP_ULP,	//!< Wakeup caused by ULP program
 } esp_sleep_source_t;
 
 /* Leave this type define for compatibility */
@@ -189,7 +190,6 @@ esp_err_t esp_sleep_enable_ext0_wakeup(int gpio_num, int level);
  */
 esp_err_t esp_sleep_enable_ext1_wakeup(uint64_t mask, esp_sleep_ext1_wakeup_mode_t mode);
 
-
 /**
  * @brief Get the bit mask of GPIOs which caused wakeup (ext1)
  *
@@ -210,8 +210,7 @@ uint64_t esp_sleep_get_ext1_wakeup_status(void);
  *      - ESP_OK on success
  *      - ESP_ERR_INVALID_ARG if either of the arguments is out of range
  */
-esp_err_t esp_sleep_pd_config(esp_sleep_pd_domain_t domain,
-                                   esp_sleep_pd_option_t option);
+esp_err_t esp_sleep_pd_config(esp_sleep_pd_domain_t domain, esp_sleep_pd_option_t option);
 
 /**
  * @brief Enter deep sleep with the configured wakeup options
@@ -263,14 +262,12 @@ void esp_deep_sleep(uint64_t time_in_us) __attribute__((noreturn));
  */
 void system_deep_sleep(uint64_t time_in_us) __attribute__((noreturn, deprecated));
 
-
 /**
  * @brief Get the source which caused wakeup from sleep
  *
  * @return wakeup cause, or ESP_DEEP_SLEEP_WAKEUP_UNDEFINED if reset happened for reason other than deep sleep wakeup
  */
 esp_sleep_wakeup_cause_t esp_sleep_get_wakeup_cause(void);
-
 
 /**
  * @brief Default stub to run on wake from deep sleep.
@@ -318,7 +315,6 @@ esp_deep_sleep_wake_stub_fn_t esp_get_deep_sleep_wake_stub(void);
  *  See docs/deep-sleep-stub.rst for details.
  */
 void esp_default_wake_deep_sleep(void);
-
 
 #ifdef __cplusplus
 }

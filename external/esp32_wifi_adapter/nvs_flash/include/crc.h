@@ -29,7 +29,6 @@ extern "C" {
   * @{
   */
 
-
 /* Standard CRC8/16/32 algorithms. */
 // CRC-8        x8+x2+x1+1              0x07
 // CRC16-CCITT  x16+x12+x5+1   1021   ISO HDLC, ITU X.25, V.34/V.41/V.42, PPP-FCS
@@ -122,6 +121,4 @@ uint8_t crc8_be(uint8_t crc, uint8_t const *buf, uint32_t len);
 #ifdef __cplusplus
 }
 #endif
-
-
 #endif

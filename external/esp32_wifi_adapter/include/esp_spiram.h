@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #ifndef __ESP_SPIRAM_H
 #define __ESP_SPIRAM_H
 
@@ -38,10 +37,9 @@ esp_err_t esp_spiram_init(void);
  */
 void esp_spiram_init_cache(void);
 
-
 /**
  * @brief Memory test for SPI RAM. Should be called after SPI RAM is initialized and
- * (in case of a dual-core system) the app CPU is online. This test overwrites the 
+ * (in case of a dual-core system) the app CPU is online. This test overwrites the
  * memory with crap, so do not call after e.g. the heap allocator has stored important
  * stuff in SPI RAM.
  *
@@ -49,12 +47,10 @@ void esp_spiram_init_cache(void);
  */
 bool esp_spiram_test(void);
 
-
 /**
  * @brief Add the initialized SPI RAM to the heap allocator.
  */
 esp_err_t esp_spiram_add_to_heapalloc(void);
-
 
 /**
  * @brief Get the size of the attached SPI RAM chip selected in menuconfig
@@ -62,7 +58,6 @@ esp_err_t esp_spiram_add_to_heapalloc(void);
  * @return Size in bytes, or 0 if no external RAM chip support compiled in.
  */
 size_t esp_spiram_get_size(void);
-
 
 /**
  * @brief Force a writeback of the data in the SPI RAM cache. This is to be called whenever
@@ -72,8 +67,6 @@ size_t esp_spiram_get_size(void);
  * This is meant for use from within the SPI flash code.
  */
 void esp_spiram_writeback_cache(void);
-
-
 
 /**
  * @brief Reserve a pool of internal memory for specific DMA/internal allocations
@@ -85,6 +78,5 @@ void esp_spiram_writeback_cache(void);
  *          - ESP_ERR_NO_MEM when no memory available for pool
  */
 esp_err_t esp_spiram_reserve_dma_pool(size_t size);
-
 
 #endif

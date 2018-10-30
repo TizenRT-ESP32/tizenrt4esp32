@@ -29,38 +29,37 @@ extern "C" {
  * @brief Structure holding PHY init parameters
  */
 typedef struct {
-	uint8_t params[128];                    /*!< opaque PHY initialization parameters */
+	uint8_t params[128];	/*!< opaque PHY initialization parameters */
 } esp_phy_init_data_t;
 
 /**
  * @brief Opaque PHY calibration data
  */
 typedef struct {
-    uint8_t version[4];                     /*!< PHY version */
-    uint8_t mac[6];                         /*!< The MAC address of the station */
-    uint8_t opaque[1894];                   /*!< calibration data */
+	uint8_t version[4];		/*!< PHY version */
+	uint8_t mac[6];			/*!< The MAC address of the station */
+	uint8_t opaque[1894];	/*!< calibration data */
 } esp_phy_calibration_data_t;
 
 typedef enum {
-    PHY_RF_CAL_PARTIAL = 0x00000000,        /*!< Do part of RF calibration. This should be used after power-on reset. */
-    PHY_RF_CAL_NONE    = 0x00000001,        /*!< Don't do any RF calibration. This mode is only suggested to be used after deep sleep reset. */
-    PHY_RF_CAL_FULL    = 0x00000002         /*!< Do full RF calibration. Produces best results, but also consumes a lot of time and current. Suggested to be used once. */
+	PHY_RF_CAL_PARTIAL = 0x00000000,	/*!< Do part of RF calibration. This should be used after power-on reset. */
+	PHY_RF_CAL_NONE = 0x00000001,	/*!< Don't do any RF calibration. This mode is only suggested to be used after deep sleep reset. */
+	PHY_RF_CAL_FULL = 0x00000002	/*!< Do full RF calibration. Produces best results, but also consumes a lot of time and current. Suggested to be used once. */
 } esp_phy_calibration_mode_t;
 
-
 /**
- * @brief Modules for modem sleep 
+ * @brief Modules for modem sleep
  */
-typedef enum{
-    MODEM_BLE_MODULE,              //!< BLE controller used
-    MODEM_CLASSIC_BT_MODULE,       //!< Classic BT controller used
-    MODEM_WIFI_STATION_MODULE,     //!< Wi-Fi Station used
-    MODEM_WIFI_SOFTAP_MODULE,      //!< Wi-Fi SoftAP used
-    MODEM_WIFI_SNIFFER_MODULE,     //!< Wi-Fi Sniffer used
-    MODEM_WIFI_NULL_MODULE,        //!< Wi-Fi Null mode used
-    MODEM_USER_MODULE,             //!< User used
-    MODEM_MODULE_COUNT             //!< Number of items
-}modem_sleep_module_t;
+typedef enum {
+	MODEM_BLE_MODULE,		//!< BLE controller used
+	MODEM_CLASSIC_BT_MODULE,	//!< Classic BT controller used
+	MODEM_WIFI_STATION_MODULE,	//!< Wi-Fi Station used
+	MODEM_WIFI_SOFTAP_MODULE,	//!< Wi-Fi SoftAP used
+	MODEM_WIFI_SNIFFER_MODULE,	//!< Wi-Fi Sniffer used
+	MODEM_WIFI_NULL_MODULE,	//!< Wi-Fi Null mode used
+	MODEM_USER_MODULE,		//!< User used
+	MODEM_MODULE_COUNT		//!< Number of items
+} modem_sleep_module_t;
 
 /**
  * @brief Module WIFI mask for medem sleep
@@ -79,12 +78,12 @@ typedef enum{
 /**
  * @brief Modules needing to call phy_rf_init
  */
-typedef enum{
-    PHY_BT_MODULE,          //!< Bluetooth used
-    PHY_WIFI_MODULE,        //!< Wi-Fi used
-    PHY_MODEM_MODULE,       //!< Modem sleep used
-    PHY_MODULE_COUNT        //!< Number of items
-}phy_rf_module_t;
+typedef enum {
+	PHY_BT_MODULE,			//!< Bluetooth used
+	PHY_WIFI_MODULE,		//!< Wi-Fi used
+	PHY_MODEM_MODULE,		//!< Modem sleep used
+	PHY_MODULE_COUNT		//!< Number of items
+} phy_rf_module_t;
 
 /**
  * @brief Get PHY init data
@@ -102,14 +101,14 @@ typedef enum{
  *
  * @return pointer to PHY init data structure
  */
-const esp_phy_init_data_t* esp_phy_get_init_data(void);
+const esp_phy_init_data_t *esp_phy_get_init_data(void);
 
 /**
  * @brief Release PHY init data
  * @param data  pointer to PHY init data structure obtained from
  *              esp_phy_get_init_data function
  */
-void esp_phy_release_init_data(const esp_phy_init_data_t* data);
+void esp_phy_release_init_data(const esp_phy_init_data_t *data);
 
 /**
  * @brief Function called by esp_phy_init to load PHY calibration data
@@ -134,7 +133,7 @@ void esp_phy_release_init_data(const esp_phy_init_data_t* data);
  *                     loaded data.
  * @return ESP_OK on success
  */
-esp_err_t esp_phy_load_cal_data_from_nvs(esp_phy_calibration_data_t* out_cal_data);
+esp_err_t esp_phy_load_cal_data_from_nvs(esp_phy_calibration_data_t *out_cal_data);
 
 /**
  * @brief Function called by esp_phy_init to store PHY calibration data
@@ -153,7 +152,7 @@ esp_err_t esp_phy_load_cal_data_from_nvs(esp_phy_calibration_data_t* out_cal_dat
  * @param cal_data pointer to calibration data which has to be saved.
  * @return ESP_OK on success
  */
-esp_err_t esp_phy_store_cal_data_to_nvs(const esp_phy_calibration_data_t* cal_data);
+esp_err_t esp_phy_store_cal_data_to_nvs(const esp_phy_calibration_data_t *cal_data);
 
 /**
  * @brief Initialize PHY and RF module
@@ -170,8 +169,7 @@ esp_err_t esp_phy_store_cal_data_to_nvs(const esp_phy_calibration_data_t* cal_da
  * @return ESP_OK on success.
  * @return ESP_FAIL on fail.
  */
-esp_err_t esp_phy_rf_init(const esp_phy_init_data_t* init_data,esp_phy_calibration_mode_t mode, 
-        esp_phy_calibration_data_t* calibration_data, phy_rf_module_t module);
+esp_err_t esp_phy_rf_init(const esp_phy_init_data_t *init_data, esp_phy_calibration_mode_t mode, esp_phy_calibration_data_t *calibration_data, phy_rf_module_t module);
 
 /**
  * @brief De-initialize PHY and RF module
@@ -209,11 +207,10 @@ esp_err_t esp_modem_sleep_exit(modem_sleep_module_t module);
 esp_err_t esp_modem_sleep_register(modem_sleep_module_t module);
 
 /**
- * @brief De-register module from modem sleep list 
+ * @brief De-register module from modem sleep list
  */
 esp_err_t esp_modem_sleep_deregister(modem_sleep_module_t module);
 
 #ifdef __cplusplus
 }
 #endif
-

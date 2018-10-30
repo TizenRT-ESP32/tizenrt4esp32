@@ -20,7 +20,6 @@
  * detection (i.e. oscillator runs for a few cycles and then stops).
  */
 
-
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 // g_ticks_us defined in ROMs for PRO and APP CPU
 extern uint32_t g_ticks_per_us_pro;
@@ -28,12 +27,10 @@ extern uint32_t g_ticks_per_us_app;
 
 int IRAM_ATTR esp_clk_cpu_freq(void)
 {
-    return g_ticks_per_us_pro * 1000000;
+	return g_ticks_per_us_pro * 1000000;
 }
 
 int IRAM_ATTR esp_clk_apb_freq(void)
 {
-    return MIN(g_ticks_per_us_pro, 80) * 1000000;
+	return MIN(g_ticks_per_us_pro, 80) * 1000000;
 }
-
-
