@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_checkstack.c
  *
@@ -79,84 +97,75 @@ static size_t do_stackcheck(uintptr_t alloc, size_t size);
 
 static size_t do_stackcheck(uintptr_t alloc, size_t size)
 {
-  FAR uintptr_t start;
-  FAR uintptr_t end;
-  FAR uint32_t *ptr;
-  size_t mark;
+	FAR uintptr_t start;
+	FAR uintptr_t end;
+	FAR uint32_t *ptr;
+	size_t mark;
 
-  if (size == 0)
-    {
-      return 0;
-    }
+	if (size == 0) {
+		return 0;
+	}
 
-  /* Get aligned addresses of the top and bottom of the stack */
+	/* Get aligned addresses of the top and bottom of the stack */
 
 #ifdef CONFIG_TLS
-  /* Skip over the TLS data structure at the bottom of the stack */
+	/* Skip over the TLS data structure at the bottom of the stack */
 
-  DEBUGASSERT((alloc & TLS_STACK_MASK) == 0);
-  start = alloc + sizeof(struct tls_info_s);
+	DEBUGASSERT((alloc & TLS_STACK_MASK) == 0);
+	start = alloc + sizeof(struct tls_info_s);
 #else
-  start = alloc & ~3;
+	start = alloc & ~3;
 #endif
-  end   = (alloc + size + 3) & ~3;
+	end = (alloc + size + 3) & ~3;
 
-  /* Get the adjusted size based on the top and bottom of the stack */
+	/* Get the adjusted size based on the top and bottom of the stack */
 
-  size  = end - start;
+	size = end - start;
 
-  /* The Xtensa CPUs use a push-down stack:  the stack grows toward lower
-   * addresses in memory.  We need to start at the lowest address in the
-   * stack memory allocation and search to higher addresses.  The first word
-   * we encounter that does not have the magic value is the high water mark.
-   */
+	/* The Xtensa CPUs use a push-down stack:  the stack grows toward lower
+	 * addresses in memory.  We need to start at the lowest address in the
+	 * stack memory allocation and search to higher addresses.  The first word
+	 * we encounter that does not have the magic value is the high water mark.
+	 */
 
-  for (ptr = (FAR uint32_t *)start, mark = (size >> 2);
-       *ptr == STACK_COLOR && mark > 0;
-       ptr++, mark--);
+	for (ptr = (FAR uint32_t *) start, mark = (size >> 2); *ptr == STACK_COLOR && mark > 0; ptr++, mark--) ;
 
-  /* If the stack is completely used, then this might mean that the stack
-   * overflowed from above (meaning that the stack is too small), or may
-   * have been overwritten from below meaning that some other stack or data
-   * structure overflowed.
-   *
-   * If you see returned values saying that the entire stack is being used
-   * then enable the following logic to see it there are unused areas in the
-   * middle of the stack.
-   */
+	/* If the stack is completely used, then this might mean that the stack
+	 * overflowed from above (meaning that the stack is too small), or may
+	 * have been overwritten from below meaning that some other stack or data
+	 * structure overflowed.
+	 *
+	 * If you see returned values saying that the entire stack is being used
+	 * then enable the following logic to see it there are unused areas in the
+	 * middle of the stack.
+	 */
 
 #if 0
-  if (mark + 16 > nwords)
-    {
-      int i;
-      int j;
+	if (mark + 16 > nwords) {
+		int i;
+		int j;
 
-      ptr = (FAR uint32_t *)start;
-      for (i = 0; i < size; i += 4*64)
-        {
-          for (j = 0; j < 64; j++)
-            {
-              int ch;
-              if (*ptr++ == STACK_COLOR)
-                {
-                  ch = '.';
-                }
-              else
-                {
-                  ch = 'X';
-                }
+		ptr = (FAR uint32_t *) start;
+		for (i = 0; i < size; i += 4 * 64) {
+			for (j = 0; j < 64; j++) {
+				int ch;
+				if (*ptr++ == STACK_COLOR) {
+					ch = '.';
+				} else {
+					ch = 'X';
+				}
 
-              up_putc(ch);
-            }
+				up_putc(ch);
+			}
 
-          up_putc('\n');
-        }
-    }
+			up_putc('\n');
+		}
+	}
 #endif
 
-  /* Return our guess about how much stack space was used */
+	/* Return our guess about how much stack space was used */
 
-  return mark << 2;
+	return mark << 2;
 }
 
 /****************************************************************************
@@ -181,34 +190,34 @@ static size_t do_stackcheck(uintptr_t alloc, size_t size)
 
 size_t up_check_tcbstack(FAR struct tcb_s *tcb)
 {
-  return do_stackcheck((uintptr_t)tcb->stack_alloc_ptr, tcb->adj_stack_size);
+	return do_stackcheck((uintptr_t) tcb->stack_alloc_ptr, tcb->adj_stack_size);
 }
 
 ssize_t up_check_tcbstack_remain(FAR struct tcb_s *tcb)
 {
-  return (ssize_t)tcb->adj_stack_size - (ssize_t)up_check_tcbstack(tcb);
+	return (ssize_t) tcb->adj_stack_size - (ssize_t) up_check_tcbstack(tcb);
 }
 
 size_t up_check_stack(void)
 {
-  return up_check_tcbstack(this_task());
+	return up_check_tcbstack(this_task());
 }
 
 ssize_t up_check_stack_remain(void)
 {
-  return up_check_tcbstack_remain(this_task());
+	return up_check_tcbstack_remain(this_task());
 }
 
 #if CONFIG_ARCH_INTERRUPTSTACK > 3
 size_t up_check_intstack(void)
 {
-  return do_stackcheck((uintptr_t)&g_intstackalloc, (CONFIG_ARCH_INTERRUPTSTACK & ~3));
+	return do_stackcheck((uintptr_t) & g_intstackalloc, (CONFIG_ARCH_INTERRUPTSTACK & ~3));
 }
 
 size_t up_check_intstack_remain(void)
 {
-  return (CONFIG_ARCH_INTERRUPTSTACK & ~3) - up_check_intstack();
+	return (CONFIG_ARCH_INTERRUPTSTACK & ~3) - up_check_intstack();
 }
 #endif
 
-#endif /* CONFIG_STACK_COLORATION */
+#endif							/* CONFIG_STACK_COLORATION */

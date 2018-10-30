@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/include/xtensa/xtensa_coproc.h
  *
@@ -124,9 +142,9 @@
 
 /* Offsets within the overall save area: */
 
-#define XTENSA_CPENABLE   0  /* (2 bytes) coprocessors active for this thread */
-#define XTENSA_CPSTORED   2  /* (2 bytes) coprocessors saved for this thread */
-#define XTENSA_CPASA      4  /* (4 bytes) ptr to aligned save area */
+#define XTENSA_CPENABLE   0		/* (2 bytes) coprocessors active for this thread */
+#define XTENSA_CPSTORED   2		/* (2 bytes) coprocessors saved for this thread */
+#define XTENSA_CPASA      4		/* (4 bytes) ptr to aligned save area */
 
 /****************************************************************************
  * Public Types
@@ -134,11 +152,10 @@
 
 #ifndef __ASSEMBLY__
 
-struct xtensa_cpstate_s
-{
-  uint16_t cpenable;  /* (2 bytes) Co-processors active for this thread */
-  uint16_t cpstored;  /* (2 bytes) Co-processors saved for this thread */
-  uint32_t *cpasa;    /* (4 bytes) Pointer to aligned save area */
+struct xtensa_cpstate_s {
+	uint16_t cpenable;			/* (2 bytes) Co-processors active for this thread */
+	uint16_t cpstored;			/* (2 bytes) Co-processors saved for this thread */
+	uint32_t *cpasa;			/* (4 bytes) Pointer to aligned save area */
 };
 
 /****************************************************************************
@@ -149,29 +166,22 @@ struct xtensa_cpstate_s
 
 static inline uint32_t xtensa_get_cpenable(void)
 {
-  uint32_t cpenable;
+	uint32_t cpenable;
 
-  __asm__ __volatile__
-  (
-    "\trsr %0, CPENABLE\n"
-    : "=r"(cpenable)
-  );
+	__asm__ __volatile__("\trsr %0, CPENABLE\n":"=r"(cpenable)
+		);
 
-  return cpenable;
+	return cpenable;
 }
 
 /* Set the value of the CPENABLE register */
 
 static inline void xtensa_set_cpenable(uint32_t cpenable)
 {
-  __asm__ __volatile__
-  (
-    "\twsr %0, CPENABLE\n"
-    "\trsync\n"
-    : : "r"(cpenable)
-  );
+	__asm__ __volatile__("\twsr %0, CPENABLE\n" "\trsync\n"::"r"(cpenable)
+		);
 }
 
-#endif /* __ASSEMBLY__ */
-#endif /* #if XCHAL_CP_NUM > 0 */
-#endif /* __ARCH_XTENSA_INCLUDE_XTENSA_XTENSA_COPROC_H */
+#endif							/* __ASSEMBLY__ */
+#endif							/* #if XCHAL_CP_NUM > 0 */
+#endif							/* __ARCH_XTENSA_INCLUDE_XTENSA_XTENSA_COPROC_H */

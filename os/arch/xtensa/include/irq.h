@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/include/irq.h
  *
@@ -60,18 +78,18 @@
 /* Include architecture-specific IRQ definitions */
 
 #ifdef CONFIG_ARCH_FAMILY_LX6
-#  include <arch/lx6/irq.h>
+#include <arch/lx6/irq.h>
 
 /* Include implementation-specific IRQ definitions (including IRQ numbers) */
 
-#  ifdef CONFIG_ARCH_CHIP_ESP32
-#    include <arch/esp32/irq.h>
-#  else
-#    error "Unknown LX6 implementation"
-#  endif
+#ifdef CONFIG_ARCH_CHIP_ESP32
+#include <arch/esp32/irq.h>
+#else
+#error "Unknown LX6 implementation"
+#endif
 
 #else
-#  error "Unknown XTENSA architecture"
+#error "Unknown XTENSA architecture"
 #endif
 
 /****************************************************************************
@@ -80,10 +98,10 @@
 
 /* IRQ Stack Frame Format.  Each value is a uint32_t register index */
 
-#define REG_PC              (0)  /* Return PC */
-#define REG_PS              (1)  /* Return PS */
+#define REG_PC              (0)	/* Return PC */
+#define REG_PS              (1)	/* Return PS */
 #define REG_A0              (2)
-#define REG_A1              (3)  /* Stack pointer before interrupt */
+#define REG_A1              (3)	/* Stack pointer before interrupt */
 #define REG_A2              (4)
 #define REG_A3              (5)
 #define REG_A4              (6)
@@ -105,12 +123,12 @@
 #define _REG_LOOPS_START    (21)
 
 #ifdef XCHAL_HAVE_LOOPS
-#  define REG_LBEG          (_REG_LOOPS_START + 0)
-#  define REG_LEND          (_REG_LOOPS_START + 1)
-#  define REG_LCOUNT        (_REG_LOOPS_START + 2)
-#  define _REG_WINDOW_TMPS  (_REG_LOOPS_START + 3)
+#define REG_LBEG          (_REG_LOOPS_START + 0)
+#define REG_LEND          (_REG_LOOPS_START + 1)
+#define REG_LCOUNT        (_REG_LOOPS_START + 2)
+#define _REG_WINDOW_TMPS  (_REG_LOOPS_START + 3)
 #else
-#  define _REG_WINDOW_TMPS  _REG_LOOPS_START
+#define _REG_WINDOW_TMPS  _REG_LOOPS_START
 #endif
 
 #ifndef __XTENSA_CALL0_ABI__
@@ -118,20 +136,20 @@
    * REVISIT: I don't think that we need so many temporaries.
    */
 
-#  define REG_TMP0          (_REG_WINDOW_TMPS + 0)
-#  define REG_TMP1          (_REG_WINDOW_TMPS + 1)
-#  define _REG_OVLY_START   (_REG_WINDOW_TMPS + 2)
+#define REG_TMP0          (_REG_WINDOW_TMPS + 0)
+#define REG_TMP1          (_REG_WINDOW_TMPS + 1)
+#define _REG_OVLY_START   (_REG_WINDOW_TMPS + 2)
 #else
-#  define _REG_OVLY_START   _REG_WINDOW_TMPS
+#define _REG_OVLY_START   _REG_WINDOW_TMPS
 #endif
 
 #ifdef CONFIG_XTENSA_USE_OVLY
 /* Storage for overlay state */
 
-#  error Overlays not supported
-#  define XCPTCONTEXT_REGS  _REG_OVLY_START
+#error Overlays not supported
+#define XCPTCONTEXT_REGS  _REG_OVLY_START
 #else
-#  define XCPTCONTEXT_REGS  _REG_OVLY_START
+#define XCPTCONTEXT_REGS  _REG_OVLY_START
 #endif
 
 #define XCPTCONTEXT_SIZE    (4 * XCPTCONTEXT_REGS)
@@ -144,38 +162,37 @@
 
 /* This struct defines the way the registers are stored. */
 
-struct xcptcontext
-{
-  /* The following function pointer is non-zero if there are pending signals
-   * to be processed.
-   */
+struct xcptcontext {
+	/* The following function pointer is non-zero if there are pending signals
+	 * to be processed.
+	 */
 
 #ifndef CONFIG_DISABLE_SIGNALS
-  void *sigdeliver; /* Actual type is sig_deliver_t */
+	void *sigdeliver;			/* Actual type is sig_deliver_t */
 
-  /* These are saved copies of registers used during signal processing. */
+	/* These are saved copies of registers used during signal processing. */
 
-  uint32_t saved_pc;
-  uint32_t saved_ps;
+	uint32_t saved_pc;
+	uint32_t saved_ps;
 #endif
 
-  /* Register save area */
+	/* Register save area */
 
-  uint32_t regs[XCPTCONTEXT_REGS];
+	uint32_t regs[XCPTCONTEXT_REGS];
 
 #if XCHAL_CP_NUM > 0
-  /* Co-processor save area */
+	/* Co-processor save area */
 
-  struct xtensa_cpstate_s cpstate;
+	struct xtensa_cpstate_s cpstate;
 #endif
 
 #ifdef CONFIG_LIB_SYSCALL
-  /* The following array holds the return address and the exc_return value
-   * needed to return from each nested system call.
-   */
+	/* The following array holds the return address and the exc_return value
+	 * needed to return from each nested system call.
+	 */
 
-  uint8_t nsyscalls;
-  struct xcpt_syscall_s syscall[CONFIG_SYS_NNEST];
+	uint8_t nsyscalls;
+	struct xcpt_syscall_s syscall[CONFIG_SYS_NNEST];
 #endif
 };
 
@@ -187,34 +204,28 @@ struct xcptcontext
 
 static inline uint32_t xtensa_getps(void)
 {
-  uint32_t ps;
+	uint32_t ps;
 
-  __asm__ __volatile__
-  (
-    "rsr %0, PS"  : "=r"(ps)
-  );
+	__asm__ __volatile__("rsr %0, PS":"=r"(ps)
+		);
 
-  return ps;
+	return ps;
 }
 
 /* Set the value of the PS register */
 
 static inline void xtensa_setps(uint32_t ps)
 {
-  __asm__ __volatile__
-  (
-    "wsr %0, PS"  : : "r"(ps)
-  );
+	__asm__ __volatile__("wsr %0, PS"::"r"(ps)
+		);
 }
 
 /* Restore the value of the PS register */
 
 static inline void up_irq_restore(uint32_t ps)
 {
-  __asm__ __volatile__
-  (
-    "wsr %0, PS"  : : "r"(ps)
-  );
+	__asm__ __volatile__("wsr %0, PS"::"r"(ps)
+		);
 }
 
 static inline void irqrestore(irqstate_t flags)
@@ -222,28 +233,25 @@ static inline void irqrestore(irqstate_t flags)
 	up_irq_restore(flags);
 }
 
-
 /* Disable interrupts and return the previous value of the PS register */
 
 static inline uint32_t up_irq_save(void)
 {
-  uint32_t ps;
+	uint32_t ps;
 
-  /* Disable all low- and medium-priority interrupts.  High priority
-   * interrupts should not interfere with ongoing RTOS operations and
-   * are not disabled.
-   */
+	/* Disable all low- and medium-priority interrupts.  High priority
+	 * interrupts should not interfere with ongoing RTOS operations and
+	 * are not disabled.
+	 */
 
-  __asm__ __volatile__
-  (
-    "rsil %0, %1" : "=r"(ps) : "I"(XCHAL_EXCM_LEVEL)
-  );
+	__asm__ __volatile__("rsil %0, %1":"=r"(ps):"I"(XCHAL_EXCM_LEVEL)
+		);
 
-  /* Return the previous PS value so that it can be restored with
-   * up_irq_restore().
-   */
+	/* Return the previous PS value so that it can be restored with
+	 * up_irq_restore().
+	 */
 
-  return ps;
+	return ps;
 }
 
 /* Enable interrupts at all levels */
@@ -253,13 +261,12 @@ static inline irqstate_t irqsave(void)
 	return up_irq_save();
 }
 
-
 static inline void up_irq_enable(void)
 {
 #ifdef __XTENSA_CALL0_ABI__
-  xtensa_setps(PS_INTLEVEL(0) | PS_UM);
+	xtensa_setps(PS_INTLEVEL(0) | PS_UM);
 #else
-  xtensa_setps(PS_INTLEVEL(0) | PS_UM | PS_WOE);
+	xtensa_setps(PS_INTLEVEL(0) | PS_UM | PS_WOE);
 #endif
 }
 
@@ -268,9 +275,9 @@ static inline void up_irq_enable(void)
 static inline void up_irq_disable(void)
 {
 #ifdef __XTENSA_CALL0_ABI__
-  xtensa_setps(PS_INTLEVEL(XCHAL_EXCM_LEVEL) | PS_UM);
+	xtensa_setps(PS_INTLEVEL(XCHAL_EXCM_LEVEL) | PS_UM);
 #else
-  xtensa_setps(PS_INTLEVEL(XCHAL_EXCM_LEVEL) | PS_UM | PS_WOE);
+	xtensa_setps(PS_INTLEVEL(XCHAL_EXCM_LEVEL) | PS_UM | PS_WOE);
 #endif
 }
 
@@ -280,8 +287,7 @@ static inline void up_irq_disable(void)
 
 #ifdef __cplusplus
 #define EXTERN extern "C"
-extern "C"
-{
+extern "C" {
 #else
 #define EXTERN extern
 #endif
@@ -319,5 +325,5 @@ irqstate_t xtensa_disable_interrupts(irqstate_t mask);
 }
 #endif
 
-#endif /* __ASSEMBLY__ */
-#endif /* __ARCH_XTENSA_INCLUDE_IRQ_H */
+#endif							/* __ASSEMBLY__ */
+#endif							/* __ARCH_XTENSA_INCLUDE_IRQ_H */

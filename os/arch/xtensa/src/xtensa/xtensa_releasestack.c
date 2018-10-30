@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  *  arch/xtensa/src/common/xtensa_releasestack.c
  *
@@ -84,31 +102,28 @@
 
 void up_release_stack(FAR struct tcb_s *dtcb, uint8_t ttype)
 {
-  /* Is there a stack allocated? */
+	/* Is there a stack allocated? */
 
-  if (dtcb->stack_alloc_ptr)
-    {
+	if (dtcb->stack_alloc_ptr) {
 #if defined(CONFIG_BUILD_KERNEL) && defined(CONFIG_MM_KERNEL_HEAP)
-      /* Use the kernel allocator if this is a kernel thread */
+		/* Use the kernel allocator if this is a kernel thread */
 
-      if (ttype == TCB_FLAG_TTYPE_KERNEL)
-        {
-          sched_kfree(dtcb->stack_alloc_ptr);
-        }
-      else
+		if (ttype == TCB_FLAG_TTYPE_KERNEL) {
+			sched_kfree(dtcb->stack_alloc_ptr);
+		} else
 #endif
-        {
-          /* Use the user-space allocator if this is a task or pthread */
+		{
+			/* Use the user-space allocator if this is a task or pthread */
 
-          sched_ufree(dtcb->stack_alloc_ptr);
-        }
+			sched_ufree(dtcb->stack_alloc_ptr);
+		}
 
-      /* Mark the stack freed */
+		/* Mark the stack freed */
 
-      dtcb->stack_alloc_ptr = NULL;
-    }
+		dtcb->stack_alloc_ptr = NULL;
+	}
 
-  /* The size of the allocated stack is now zero */
+	/* The size of the allocated stack is now zero */
 
-  dtcb->adj_stack_size = 0;
+	dtcb->adj_stack_size = 0;
 }

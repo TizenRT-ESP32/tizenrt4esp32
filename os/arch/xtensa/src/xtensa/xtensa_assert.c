@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_assert.c
  *
@@ -61,7 +79,7 @@
 /* USB trace dumping */
 
 #ifndef CONFIG_USBDEV_TRACE
-#  undef CONFIG_ARCH_USBDUMP
+#undef CONFIG_ARCH_USBDUMP
 #endif
 
 /****************************************************************************
@@ -75,21 +93,21 @@
 #ifdef CONFIG_ARCH_USBDUMP
 static int usbtrace_syslog(FAR const char *fmt, ...)
 {
-  va_list ap;
-  int ret;
+	va_list ap;
+	int ret;
 
-  /* Let nx_vsyslog do the real work */
+	/* Let nx_vsyslog do the real work */
 
-  va_start(ap, fmt);
-  ret = nx_vsyslog(LOG_EMERG, fmt, &ap);
-  va_end(ap);
-  return ret;
+	va_start(ap, fmt);
+	ret = nx_vsyslog(LOG_EMERG, fmt, &ap);
+	va_end(ap);
+	return ret;
 }
 
 static int assert_tracecallback(FAR struct usbtrace_s *trace, FAR void *arg)
 {
-  usbtrace_trprintf(usbtrace_syslog, trace->event, trace->value);
-  return 0;
+	usbtrace_trprintf(usbtrace_syslog, trace->event, trace->value);
+	return 0;
 }
 #endif
 
@@ -100,49 +118,45 @@ static int assert_tracecallback(FAR struct usbtrace_s *trace, FAR void *arg)
 static void xtensa_assert(int errorcode) noreturn_function;
 static void xtensa_assert(int errorcode)
 {
-  /* Dump the processor state */
+	/* Dump the processor state */
 
-  xtensa_dumpstate();
+	xtensa_dumpstate();
 
 #ifdef CONFIG_ARCH_USBDUMP
-  /* Dump USB trace data */
+	/* Dump USB trace data */
 
-  (void)usbtrace_enumerate(assert_tracecallback, NULL);
+	(void)usbtrace_enumerate(assert_tracecallback, NULL);
 #endif
 
 #ifdef CONFIG_BOARD_CRASHDUMP
-  /* Perform board-specific crash dump */
+	/* Perform board-specific crash dump */
 
-  board_crashdump(up_getsp(), this_task(), filename, lineno);
+	board_crashdump(up_getsp(), this_task(), filename, lineno);
 #endif
 
-  /* Flush any buffered SYSLOG data (from the above) */
+	/* Flush any buffered SYSLOG data (from the above) */
 
-  //(void)syslog_flush();
+	//(void)syslog_flush();
 
-  /* Are we in an interrupt handler or the idle task? */
+	/* Are we in an interrupt handler or the idle task? */
 
-  if (CURRENT_REGS || this_task()->pid == 0)
-    {
-       /* Blink the LEDs forever */
+	if (CURRENT_REGS || this_task()->pid == 0) {
+		/* Blink the LEDs forever */
 
-       (void)up_irq_save();
-        for (; ; )
-          {
+		(void)up_irq_save();
+		for (;;) {
 #ifdef CONFIG_ARCH_LEDS
-            board_autoled_on(LED_PANIC);
-            up_mdelay(250);
-            board_autoled_off(LED_PANIC);
-            up_mdelay(250);
+			board_autoled_on(LED_PANIC);
+			up_mdelay(250);
+			board_autoled_off(LED_PANIC);
+			up_mdelay(250);
 #endif
-          }
-    }
-  else
-    {
-      /* Assertions in other contexts only cause the thread to exit */
+		}
+	} else {
+		/* Assertions in other contexts only cause the thread to exit */
 
-      exit(errorcode);
-    }
+		exit(errorcode);
+	}
 }
 
 /****************************************************************************
@@ -156,22 +170,22 @@ static void xtensa_assert(int errorcode)
 void up_assert(const uint8_t *filename, int lineno)
 {
 #if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ALERT)
-  struct tcb_s *rtcb = this_task();
+	struct tcb_s *rtcb = this_task();
 #endif
 
-  board_autoled_on(LED_ASSERTION);
+	board_autoled_on(LED_ASSERTION);
 
-  /* Flush any buffered SYSLOG data (from prior to the assertion) */
+	/* Flush any buffered SYSLOG data (from prior to the assertion) */
 
-  //(void)syslog_flush();
+	//(void)syslog_flush();
 
 #if CONFIG_TASK_NAME_SIZE > 0
-  //_alert("Assertion failed at file:%s line: %d task: %s\n",filename, lineno, rtcb->name);
+	//_alert("Assertion failed at file:%s line: %d task: %s\n",filename, lineno, rtcb->name);
 #else
-  //_alert("Assertion failed at file:%s line: %d\n",filename, lineno);
+	//_alert("Assertion failed at file:%s line: %d\n",filename, lineno);
 #endif
 
-  xtensa_assert(EXIT_FAILURE);
+	xtensa_assert(EXIT_FAILURE);
 }
 
 /****************************************************************************
@@ -199,26 +213,26 @@ void up_assert(const uint8_t *filename, int lineno)
 void xtensa_panic(int xptcode, uint32_t *regs)
 {
 #if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ALERT)
-  struct tcb_s *rtcb = this_task();
+	struct tcb_s *rtcb = this_task();
 #endif
 
-  /* We get here when a un-dispatch-able, irrecoverable exception occurs */
+	/* We get here when a un-dispatch-able, irrecoverable exception occurs */
 
-  board_autoled_on(LED_ASSERTION);
+	board_autoled_on(LED_ASSERTION);
 
-  /* Flush any buffered SYSLOG data (from prior to the panic) */
+	/* Flush any buffered SYSLOG data (from prior to the panic) */
 
-  //(void)syslog_flush();
+	//(void)syslog_flush();
 
 #if CONFIG_TASK_NAME_SIZE > 0
-  //_alert("Unhandled Exception %d task: %s\n", xptcode, rtcb->name);
+	//_alert("Unhandled Exception %d task: %s\n", xptcode, rtcb->name);
 #else
-  //_alert("Unhandled Exception %d\n", xptcode);
+	//_alert("Unhandled Exception %d\n", xptcode);
 #endif
 
-  CURRENT_REGS = regs;
-  xtensa_assert(EXIT_FAILURE); /* Should not return */
-  for (; ; );
+	CURRENT_REGS = regs;
+	xtensa_assert(EXIT_FAILURE);	/* Should not return */
+	for (;;) ;
 }
 
 /****************************************************************************
@@ -303,24 +317,24 @@ void xtensa_panic(int xptcode, uint32_t *regs)
 void xtensa_user(int exccause, uint32_t *regs)
 {
 #if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ALERT)
-  struct tcb_s *rtcb = this_task();
+	struct tcb_s *rtcb = this_task();
 #endif
 
-  /* We get here when a un-dispatch-able, irrecoverable exception occurs */
+	/* We get here when a un-dispatch-able, irrecoverable exception occurs */
 
-  board_autoled_on(LED_ASSERTION);
+	board_autoled_on(LED_ASSERTION);
 
-  /* Flush any buffered SYSLOG data (from prior to the error) */
+	/* Flush any buffered SYSLOG data (from prior to the error) */
 
-  //(void)syslog_flush();
+	//(void)syslog_flush();
 
 #if CONFIG_TASK_NAME_SIZE > 0
-  //_alert("User Exception: EXCCAUSE=%04x task: %s\n", exccause, rtcb->name);
+	//_alert("User Exception: EXCCAUSE=%04x task: %s\n", exccause, rtcb->name);
 #else
-  //_alert("User Exception: EXCCAUSE=%04x\n", exccause);
+	//_alert("User Exception: EXCCAUSE=%04x\n", exccause);
 #endif
 
-  CURRENT_REGS = regs;
-  xtensa_assert(EXIT_FAILURE); /* Should not return */
-  for (; ; );
+	CURRENT_REGS = regs;
+	xtensa_assert(EXIT_FAILURE);	/* Should not return */
+	for (;;) ;
 }

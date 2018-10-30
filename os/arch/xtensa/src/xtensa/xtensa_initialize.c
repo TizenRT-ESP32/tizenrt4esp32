@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_initialize.c
  *
@@ -77,18 +95,17 @@
 #if defined(CONFIG_ARCH_CALIBRATION) && defined(CONFIG_DEBUG_FEATURES)
 static void up_calibratedelay(void)
 {
-  int i;
+	int i;
 
-  _warn("Beginning 100s delay\n");
-  for (i = 0; i < 100; i++)
-    {
-      up_mdelay(1000);
-    }
+	_warn("Beginning 100s delay\n");
+	for (i = 0; i < 100; i++) {
+		up_mdelay(1000);
+	}
 
-  _warn("End 100s delay\n");
+	_warn("End 100s delay\n");
 }
 #else
-# define up_calibratedelay()
+#define up_calibratedelay()
 #endif
 
 /****************************************************************************
@@ -116,162 +133,161 @@ void up_initialize(void)
 {
 
 #ifdef CONFIG_SMP
-  int i;
+	int i;
 
-  /* Initialize global variables */
+	/* Initialize global variables */
 
-  for (i = 0; i < CONFIG_SMP_NCPUS; i++)
-    {
-      g_current_regs[i] = NULL;
-    }
+	for (i = 0; i < CONFIG_SMP_NCPUS; i++) {
+		g_current_regs[i] = NULL;
+	}
 #else
-  CURRENT_REGS = NULL;
+	CURRENT_REGS = NULL;
 #endif
 
-  /* Calibrate the timing loop */
+	/* Calibrate the timing loop */
 
-  up_calibratedelay();
+	up_calibratedelay();
 
-  /* Add any extra memory fragments to the memory manager */
+	/* Add any extra memory fragments to the memory manager */
 
-  xtensa_add_region();
+	xtensa_add_region();
 
-  /* Initialize the interrupt subsystem */
+	/* Initialize the interrupt subsystem */
 
-  xtensa_irq_initialize();
+	xtensa_irq_initialize();
 
 #ifdef CONFIG_PM
-  /* Initialize the power management subsystem.  This MCU-specific function
-   * must be called *very* early in the initialization sequence *before* any
-   * other device drivers are initialized (since they may attempt to register
-   * with the power management subsystem).
-   */
+	/* Initialize the power management subsystem.  This MCU-specific function
+	 * must be called *very* early in the initialization sequence *before* any
+	 * other device drivers are initialized (since they may attempt to register
+	 * with the power management subsystem).
+	 */
 
-  up_pminitialize();
+	up_pminitialize();
 #endif
 
 #ifdef CONFIG_ARCH_DMA
-  /* Initialize the DMA subsystem if the weak function xtensa_dma_initialize
-   * has been brought into the build
-   */
+	/* Initialize the DMA subsystem if the weak function xtensa_dma_initialize
+	 * has been brought into the build
+	 */
 
 #ifdef CONFIG_HAVE_WEAKFUNCTIONS
-  if (xtensa_dma_initialize)
+	if (xtensa_dma_initialize)
 #endif
-    {
-      xtensa_dma_initialize();
-    }
+	{
+		xtensa_dma_initialize();
+	}
 #endif
 
 #if !defined(CONFIG_SUPPRESS_INTERRUPTS) && !defined(CONFIG_SUPPRESS_TIMER_INTS)
-  /* Initialize the system timer interrupt */
+	/* Initialize the system timer interrupt */
 
-  xtensa_timer_initialize();
+	xtensa_timer_initialize();
 #endif
 
 #ifdef CONFIG_MM_IOB
-  /* Initialize IO buffering */
+	/* Initialize IO buffering */
 
-  iob_initialize();
+	iob_initialize();
 #endif
 
 #if CONFIG_NFILE_DESCRIPTORS > 0
-  /* Register devices */
+	/* Register devices */
 
 #if defined(CONFIG_DEV_NULL)
-  devnull_register();   /* Standard /dev/null */
+	devnull_register();			/* Standard /dev/null */
 #endif
 
 #if defined(CONFIG_DEV_RANDOM)
-  devrandom_register(); /* Standard /dev/random */
+	devrandom_register();		/* Standard /dev/random */
 #endif
 
 #if defined(CONFIG_DEV_URANDOM)
-  devurandom_register();   /* Standard /dev/urandom */
+	devurandom_register();		/* Standard /dev/urandom */
 #endif
 
 #if defined(CONFIG_DEV_ZERO)
-  devzero_register();   /* Standard /dev/zero */
+	devzero_register();			/* Standard /dev/zero */
 #endif
 
 #if defined(CONFIG_DEV_LOOP)
-  loop_register();      /* Standard /dev/loop */
+	loop_register();			/* Standard /dev/loop */
 #endif
-#endif /* CONFIG_NFILE_DESCRIPTORS */
+#endif							/* CONFIG_NFILE_DESCRIPTORS */
 
 #if defined(CONFIG_SCHED_INSTRUMENTATION_BUFFER) && \
     defined(CONFIG_DRIVER_NOTE)
-  note_register();      /* Non-standard /dev/note */
+	note_register();			/* Non-standard /dev/note */
 #endif
 
-  /* Initialize the serial device driver */
+	/* Initialize the serial device driver */
 
 #ifdef USE_SERIALDRIVER
-  xtensa_serial_initialize();
+	xtensa_serial_initialize();
 #endif
 
-  /* Initialize the console device driver (if it is other than the standard
-   * serial driver).
-   */
+	/* Initialize the console device driver (if it is other than the standard
+	 * serial driver).
+	 */
 
 #if defined(CONFIG_DEV_LOWCONSOLE)
-  lowconsole_init();
+	lowconsole_init();
 #elif defined(CONFIG_CONSOLE_SYSLOG)
-  syslog_console_init();
+	syslog_console_init();
 #elif defined(CONFIG_RAMLOG_CONSOLE)
-  ramlog_consoleinit();
+	ramlog_consoleinit();
 #endif
 
 #if CONFIG_NFILE_DESCRIPTORS > 0 && defined(CONFIG_PSEUDOTERM_SUSV1)
-  /* Register the master pseudo-terminal multiplexor device */
+	/* Register the master pseudo-terminal multiplexor device */
 
-  (void)ptmx_register();
+	(void)ptmx_register();
 #endif
 
-  /* Early initialization of the system logging device.  Some SYSLOG channel
-   * can be initialized early in the initialization sequence because they
-   * depend on only minimal OS initialization.
-   */
+	/* Early initialization of the system logging device.  Some SYSLOG channel
+	 * can be initialized early in the initialization sequence because they
+	 * depend on only minimal OS initialization.
+	 */
 
-  //syslog_initialize(SYSLOG_INIT_EARLY);
+	//syslog_initialize(SYSLOG_INIT_EARLY);
 
 #if defined(CONFIG_CRYPTO)
-  /* Initialize the HW crypto and /dev/crypto */
+	/* Initialize the HW crypto and /dev/crypto */
 
-  up_cryptoinitialize();
+	up_cryptoinitialize();
 #endif
 
 #if CONFIG_NFILE_DESCRIPTORS > 0 && defined(CONFIG_CRYPTO_CRYPTODEV)
-  devcrypto_register();
+	devcrypto_register();
 #endif
 
 #ifndef CONFIG_NETDEV_LATEINIT
-  /* Initialize the network */
+	/* Initialize the network */
 
-  up_netinitialize();
+	up_netinitialize();
 #endif
 
 #ifdef CONFIG_NETDEV_LOOPBACK
-  /* Initialize the local loopback device */
+	/* Initialize the local loopback device */
 
-  (void)localhost_initialize();
+	(void)localhost_initialize();
 #endif
 
 #ifdef CONFIG_NET_TUN
-  /* Initialize the TUN device */
+	/* Initialize the TUN device */
 
-  (void)tun_initialize();
+	(void)tun_initialize();
 #endif
 
 #ifdef CONFIG_NETDEV_TELNET
-  /* Initialize the Telnet session factory */
+	/* Initialize the Telnet session factory */
 
-  (void)telnet_initialize();
+	(void)telnet_initialize();
 #endif
 
-  /* Initialize USB -- device and/or host */
+	/* Initialize USB -- device and/or host */
 
-  up_usbinitialize();
-  board_autoled_on(LED_IRQSENABLED);
+	up_usbinitialize();
+	board_autoled_on(LED_IRQSENABLED);
 
 }

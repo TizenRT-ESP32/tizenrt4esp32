@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_initialstate.c
  *
@@ -71,43 +89,43 @@
 
 void up_initial_state(struct tcb_s *tcb)
 {
-  struct xcptcontext *xcp = &tcb->xcp;
+	struct xcptcontext *xcp = &tcb->xcp;
 
-  /* Initialize the initial exception register context structure */
+	/* Initialize the initial exception register context structure */
 
-  memset(xcp, 0, sizeof(struct xcptcontext));
+	memset(xcp, 0, sizeof(struct xcptcontext));
 
-  /* Set initial values of registers */
+	/* Set initial values of registers */
 
-  xcp->regs[REG_PC]   = (uint32_t)tcb->start;         /* Task entrypoint                */
-  xcp->regs[REG_A0]   = 0;                            /* To terminate GDB backtrace     */
-  xcp->regs[REG_A1]   = (uint32_t)tcb->adj_stack_ptr; /* Physical top of stack frame    */
+	xcp->regs[REG_PC] = (uint32_t) tcb->start;	/* Task entrypoint                */
+	xcp->regs[REG_A0] = 0;		/* To terminate GDB backtrace     */
+	xcp->regs[REG_A1] = (uint32_t) tcb->adj_stack_ptr;	/* Physical top of stack frame    */
 
-  /* Set initial PS to int level 0, EXCM disabled ('rfe' will enable), user
-   * mode.
-   */
+	/* Set initial PS to int level 0, EXCM disabled ('rfe' will enable), user
+	 * mode.
+	 */
 
 #ifdef __XTENSA_CALL0_ABI__
-  xcp->regs[REG_PS]   = PS_UM | PS_EXCM;
+	xcp->regs[REG_PS] = PS_UM | PS_EXCM;
 
 #else
-  /* For windowed ABI set WOE and CALLINC (pretend task was 'call4'd). */
+	/* For windowed ABI set WOE and CALLINC (pretend task was 'call4'd). */
 
-  xcp->regs[REG_PS]   = PS_UM | PS_EXCM | PS_WOE | PS_CALLINC(1);
+	xcp->regs[REG_PS] = PS_UM | PS_EXCM | PS_WOE | PS_CALLINC(1);
 #endif
 
 #if XCHAL_CP_NUM > 0
-  /* Set up the co-processors that will be enabled initially when the thread
-   * starts (see xtensa_coproc.h).  If the lazy co-processor state restore
-   * logic is selected, that would be the empty set.
-   */
+	/* Set up the co-processors that will be enabled initially when the thread
+	 * starts (see xtensa_coproc.h).  If the lazy co-processor state restore
+	 * logic is selected, that would be the empty set.
+	 */
 
 #ifdef CONFIG_XTENSA_CP_LAZY
-  xcp->cpstate.cpenable = 0;  /* No co-processors are enabled */
+	xcp->cpstate.cpenable = 0;	/* No co-processors are enabled */
 #else
-  //xcp->cpstate.cpenable = (CONFIG_XTENSA_CP_INITSET & XTENSA_CP_ALLSET);// modify it because no defination
-  xcp->cpstate.cpenable = 0;
+	//xcp->cpstate.cpenable = (CONFIG_XTENSA_CP_INITSET & XTENSA_CP_ALLSET);// modify it because no defination
+	xcp->cpstate.cpenable = 0;
 #endif
-  xcp->cpstate.cpstored = 0;  /* No co-processors haved state saved */
+	xcp->cpstate.cpstored = 0;	/* No co-processors haved state saved */
 #endif
 }
