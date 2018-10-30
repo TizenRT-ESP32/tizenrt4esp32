@@ -45,7 +45,6 @@
 #include <arch/board/board.h>
 #include "esp32_gpio.h"
 #include "esp32-core.h"
-#include "esp32_i2c.h"
 #include <tinyara/gpio.h>
 
 /************************************************************************************
@@ -99,18 +98,6 @@ static void board_gpio_initialize(void)
 #endif
 }
 
-static void board_i2c_initialize(void)
-{
-#if defined(CONFIG_I2C)
-#if defined(CONFIG_ESP32_I2C0) && (1==CONFIG_ESP32_I2C0)
-    esp32_i2c_register(0);
-#endif
-
-#if defined(CONFIG_ESP32_I2C1) && (1==CONFIG_ESP32_I2C1)
-    esp32_i2c_register(1);
-#endif
-#endif
-}
 /****************************************************************************
  * Name: board_initialize
  *
@@ -131,8 +118,6 @@ void board_initialize(void)
 
     (void)esp32_bringup();
     
-    board_gpio_initialize();
-
-    board_i2c_initialize();
+    board_gpio_initialize();    
 }
 #endif
