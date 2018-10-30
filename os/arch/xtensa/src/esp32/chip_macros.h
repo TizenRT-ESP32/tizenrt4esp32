@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/chip_macros.h
  *
@@ -61,15 +79,8 @@
  * simply checking bit 1: it's 1 on the APP and 0 on the PRO processor.
  */
 
-	.macro		getcoreid reg
-	rsr.prid	\reg
-	bbci		\reg, 1, 1f
-	movi		\reg, 1
-	j			2f
-1:
-	movi		\reg, 0
-2:
-	.endm
-
-#endif /* __ASSEMBLY */
-#endif /* __ARCH_XTENSA_SRC_ESP32_CHIP_MACROS_H */
+.macro getcoreid reg rsr.prid \ reg bbci \ reg, 1, 1f movi \ reg, 1 j 2f 1:
+movi \ reg, 0 2:
+.endm
+#endif							/* __ASSEMBLY */
+#endif							/* __ARCH_XTENSA_SRC_ESP32_CHIP_MACROS_H */
