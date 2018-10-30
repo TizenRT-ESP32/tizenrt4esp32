@@ -89,8 +89,7 @@ static inline uint32_t xtensa_compareset(FAR volatile uint32_t *addr, uint32_t c
 						 "ISYNC\n"	/* Wait sync */
 						 "S32C1I %0, %1, 0\n"	/* Store id into the lock, if the lock is the
 												 * same as comparel. Otherwise, no write-access */
-						 :"=r"(set):"r"(addr), "r"(compare), "0"(set)
-						);
+						 :"=r"(set):"r"(addr), "r"(compare), "0"(set));
 
 	return set;
 }

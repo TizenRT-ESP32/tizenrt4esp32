@@ -168,8 +168,8 @@ static inline uint32_t xtensa_get_cpenable(void)
 {
 	uint32_t cpenable;
 
-	__asm__ __volatile__("\trsr %0, CPENABLE\n":"=r"(cpenable)
-		);
+	__asm__ __volatile__("\trsr %0, CPENABLE\n"
+						 :"=r"(cpenable));
 
 	return cpenable;
 }
@@ -178,8 +178,9 @@ static inline uint32_t xtensa_get_cpenable(void)
 
 static inline void xtensa_set_cpenable(uint32_t cpenable)
 {
-	__asm__ __volatile__("\twsr %0, CPENABLE\n" "\trsync\n"::"r"(cpenable)
-		);
+	__asm__ __volatile__("\twsr %0, CPENABLE\n"
+						 "\trsync\n"
+						 ::"r"(cpenable));
 }
 
 #endif							/* __ASSEMBLY__ */

@@ -148,7 +148,17 @@
 #ifdef __XTENSA_CALL0_ABI__
 /* Call0 */
 
-.macro entry1 size = 0x10 addi sp, sp, -\size s32i a0, sp, 0.endm.macro ret1 size = 0x10 l32i a0, sp, 0 addi sp, sp, \size ret.endm
+	.macro	entry1 size=0x10
+	addi	sp, sp, -\size
+	s32i	a0, sp, 0
+	.endm
+
+	.macro	ret1 size=0x10
+	l32i	a0, sp, 0
+	addi	sp, sp, \size
+	ret
+	.endm
+
 #define ENTRY(sz)     entry1  sz
 #define ENTRY0
 #define RET(sz)       ret1    sz

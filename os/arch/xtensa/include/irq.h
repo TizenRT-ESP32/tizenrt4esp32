@@ -206,8 +206,7 @@ static inline uint32_t xtensa_getps(void)
 {
 	uint32_t ps;
 
-	__asm__ __volatile__("rsr %0, PS":"=r"(ps)
-		);
+	__asm__ __volatile__("rsr %0, PS":"=r"(ps));
 
 	return ps;
 }
@@ -216,16 +215,14 @@ static inline uint32_t xtensa_getps(void)
 
 static inline void xtensa_setps(uint32_t ps)
 {
-	__asm__ __volatile__("wsr %0, PS"::"r"(ps)
-		);
+	__asm__ __volatile__("wsr %0, PS"::"r"(ps));
 }
 
 /* Restore the value of the PS register */
 
 static inline void up_irq_restore(uint32_t ps)
 {
-	__asm__ __volatile__("wsr %0, PS"::"r"(ps)
-		);
+	__asm__ __volatile__("wsr %0, PS"::"r"(ps));
 }
 
 static inline void irqrestore(irqstate_t flags)
@@ -244,8 +241,7 @@ static inline uint32_t up_irq_save(void)
 	 * are not disabled.
 	 */
 
-	__asm__ __volatile__("rsil %0, %1":"=r"(ps):"I"(XCHAL_EXCM_LEVEL)
-		);
+	__asm__ __volatile__("rsil %0, %1":"=r"(ps):"I"(XCHAL_EXCM_LEVEL));
 
 	/* Return the previous PS value so that it can be restored with
 	 * up_irq_restore().

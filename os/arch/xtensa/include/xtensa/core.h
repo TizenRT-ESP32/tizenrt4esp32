@@ -964,12 +964,16 @@
  * original ptr to next load/store location.
  */
 
-.macro xchal_sa_start continue totofs.ifeq \ continue.set.Lxchal_pofs_, 0	/* offset from original ptr to current \ptr */
-	.set.Lxchal_ofs_, 0			/* offset from current \ptr to next load/store location */
-	.endif.if \totofs
-	+1							/* if totofs specified (not -1) */
-		.set.Lxchal_ofs_, \totofs -.Lxchal_pofs_	/* specific offset from original ptr */
-		.endif.endm
+	.macro	xchal_sa_start	continue totofs
+	.ifeq	\continue
+	.set	.Lxchal_pofs_, 0						/* offset from original ptr to current \ptr */
+	.set	.Lxchal_ofs_, 0 						/* offset from current \ptr to next load/store location */
+	.endif
+	.if 	\totofs + 1 							/* if totofs specified (not -1) */
+	.set	.Lxchal_ofs_, \totofs - .Lxchal_pofs_	/* specific offset from original ptr */
+	.endif
+	.endm
+
 /* Align portion of save area and bring ptr in range if necessary.  Used by
  * save area load/store sequences.  Not usually invoked directly.  Allows
  * combining multiple (sub-)sequences arbitrarily.  ptr pointer to save
@@ -980,19 +984,24 @@
  * ptr to next load/store loc) totalign align from orig ptr to next
  * load/store loc (pow of 2)
  */
-		.macro xchal_sa_align ptr minofs maxofs ofsalign totalign
-		/*  First align where we start accessing the next register
-		 *  per \totalign relative to original ptr (i.e. start of the save area):
-		 */
-		.set.Lxchal_ofs_, ((.Lxchal_pofs_ +.Lxchal_ofs_ + \totalign - 1) & -\totalign) -.Lxchal_pofs_
-		/*  If necessary, adjust \ptr to bring .Lxchal_ofs_ in acceptable range:  */
-		.if (((\maxofs) -.Lxchal_ofs_) & 0xC0000000)
-		|((.Lxchal_ofs_ - (\minofs)) & 0xC0000000) | (.Lxchal_ofs_ & (\ofsalign - 1))
-			.set.Ligmask, 0xFFFFFFFF	/* TODO: optimize to addmi, per aligns and .Lxchal_ofs_ */
-			addi \ ptr, \ptr, (.Lxchal_ofs_ &.Ligmask)
-			.set.Lxchal_pofs_,.Lxchal_pofs_ + (.Lxchal_ofs_ &.Ligmask)
-			.set.Lxchal_ofs_, (.Lxchal_ofs_ & ~.Ligmask)
-			.endif.endm
+	.macro  xchal_sa_align  ptr minofs maxofs ofsalign totalign
+
+	/*  First align where we start accessing the next register
+	 *  per \totalign relative to original ptr (i.e. start of the save area):
+	 */
+
+	.set    .Lxchal_ofs_, ((.Lxchal_pofs_ + .Lxchal_ofs_ + \totalign - 1) & -\totalign) - .Lxchal_pofs_
+
+	/*  If necessary, adjust \ptr to bring .Lxchal_ofs_ in acceptable range:  */
+
+	.if		(((\maxofs) - .Lxchal_ofs_) & 0xC0000000) | ((.Lxchal_ofs_ - (\minofs)) & 0xC0000000) | (.Lxchal_ofs_ & (\ofsalign-1))
+	.set	.Ligmask, 0xFFFFFFFF    /* TODO: optimize to addmi, per aligns and .Lxchal_ofs_ */
+	addi	\ptr, \ptr, (.Lxchal_ofs_ & .Ligmask)
+	.set	.Lxchal_pofs_, .Lxchal_pofs_ + (.Lxchal_ofs_ & .Ligmask)
+	.set	.Lxchal_ofs_, (.Lxchal_ofs_ & ~.Ligmask)
+	.endif
+	.endm
+
 /* We could optimize for addi to expand to only addmi instead of
  * "addmi;addi", where possible.  Here's a partial example how:
  *
@@ -1008,8 +1017,15 @@
  *
 
 /* Invoke this after xchal_XXX_{load,store} macros to restore \ptr. */
-			.macro xchal_sa_ptr_restore ptr.if.Lxchal_pofs_
-			addi \ ptr, \ptr, -.Lxchal_pofs_.set.Lxchal_ofs_,.Lxchal_ofs_ +.Lxchal_pofs_.set.Lxchal_pofs_, 0.endif.endm
+
+	.macro	xchal_sa_ptr_restore	ptr
+	.if 	.Lxchal_pofs_
+	addi	\ptr, \ptr, - .Lxchal_pofs_
+	.set	.Lxchal_ofs_, .Lxchal_ofs_ + .Lxchal_pofs_
+	.set	.Lxchal_pofs_, 0
+	.endif
+	.endm
+
 /* Use as eg:
  *   xchal_atmps_store a1, SOMEOFS, XCHAL_SA_NUM_ATMPS, a4, a5
  *   xchal_ncp_load a2, a0,a3,a4,a5
@@ -1022,9 +1038,23 @@
  */
 #define xchal_atmps_store               xchal_atmps_loadstore s32i,
 #define xchal_atmps_load                xchal_atmps_loadstore l32i,
-				.macro xchal_atmps_loadstore inst ptr offset nreq aa = 0 ab = 0 ac = 0 ad = 0.set.Lnsaved_, 0.irp reg, \aa, \ab, \ac, \ad.ifeq 0x \ reg;
-.set.Lnsaved_,.Lnsaved_ + 1;
-.endif.endr.set.Laofs_, 0.irp reg, \aa, \ab, \ac, \ad.ifgt(\nreq) -.Lnsaved_ \ inst \ reg, \ptr,.Laofs_ + \offset.set.Laofs_,.Laofs_ + 4.set.Lnsaved_,.Lnsaved_ + 1.endif.endr.endm
+
+	.macro	xchal_atmps_loadstore	inst ptr offset nreq aa=0 ab=0 ac=0 ad=0
+	.set	.Lnsaved_, 0
+	.irp	reg,\aa,\ab,\ac,\ad
+	.ifeq	0x\reg ; .set .Lnsaved_,.Lnsaved_+1 ; .endif
+	.endr
+	.set	.Laofs_, 0
+	.irp	reg,\aa,\ab,\ac,\ad
+	.ifgt	(\nreq)-.Lnsaved_
+	\inst	\reg, \ptr, .Laofs_+\offset
+	.set	.Laofs_,.Laofs_+4
+	.set	.Lnsaved_,.Lnsaved_+1
+	.endif
+	.endr
+	.endm
+
+
 /* #define xchal_ncp_load_a2            xchal_ncp_load		a2,a3,a4,a5,a6 */
 /* #define xchal_ncp_store_a2           xchal_ncp_store		a2,a3,a4,a5,a6 */
 #define xchal_extratie_load           xchal_ncptie_load
@@ -1053,49 +1083,43 @@
 #define xchal_cp6_load_a2             xchal_cp6_load		a2,a3,a4,a5,a6
 #define xchal_cp7_store_a2            xchal_cp7_store		a2,a3,a4,a5,a6
 #define xchal_cp7_load_a2             xchal_cp7_load		a2,a3,a4,a5,a6
+
 /* Empty placeholder macros for undefined coprocessors: */
 #if (XCHAL_CP_MASK & ~XCHAL_CP_PORT_MASK) == 0
-#if XCHAL_CP0_SA_SIZE == 0
-	.macro xchal_cp0_store p a b c d continue = 0 ofs = -1 select = -1;
-.endm.macro xchal_cp0_load p a b c d continue = 0 ofs = -1 select = -1;
-.endm
+# if XCHAL_CP0_SA_SIZE == 0
+    .macro xchal_cp0_store  p a b c d continue=0 ofs=-1 select=-1 ; .endm
+    .macro xchal_cp0_load   p a b c d continue=0 ofs=-1 select=-1 ; .endm
+# endif
+# if XCHAL_CP1_SA_SIZE == 0
+    .macro xchal_cp1_store  p a b c d continue=0 ofs=-1 select=-1 ; .endm
+    .macro xchal_cp1_load   p a b c d continue=0 ofs=-1 select=-1 ; .endm
+# endif
+# if XCHAL_CP2_SA_SIZE == 0
+    .macro xchal_cp2_store  p a b c d continue=0 ofs=-1 select=-1 ; .endm
+    .macro xchal_cp2_load   p a b c d continue=0 ofs=-1 select=-1 ; .endm
+# endif
+# if XCHAL_CP3_SA_SIZE == 0
+    .macro xchal_cp3_store  p a b c d continue=0 ofs=-1 select=-1 ; .endm
+    .macro xchal_cp3_load   p a b c d continue=0 ofs=-1 select=-1 ; .endm
+# endif
+# if XCHAL_CP4_SA_SIZE == 0
+    .macro xchal_cp4_store  p a b c d continue=0 ofs=-1 select=-1 ; .endm
+    .macro xchal_cp4_load   p a b c d continue=0 ofs=-1 select=-1 ; .endm
+# endif
+# if XCHAL_CP5_SA_SIZE == 0
+    .macro xchal_cp5_store  p a b c d continue=0 ofs=-1 select=-1 ; .endm
+    .macro xchal_cp5_load   p a b c d continue=0 ofs=-1 select=-1 ; .endm
+# endif
+# if XCHAL_CP6_SA_SIZE == 0
+    .macro xchal_cp6_store  p a b c d continue=0 ofs=-1 select=-1 ; .endm
+    .macro xchal_cp6_load   p a b c d continue=0 ofs=-1 select=-1 ; .endm
+# endif
+# if XCHAL_CP7_SA_SIZE == 0
+    .macro xchal_cp7_store  p a b c d continue=0 ofs=-1 select=-1 ; .endm
+    .macro xchal_cp7_load   p a b c d continue=0 ofs=-1 select=-1 ; .endm
+# endif
 #endif
-#if XCHAL_CP1_SA_SIZE == 0
-	.macro xchal_cp1_store p a b c d continue = 0 ofs = -1 select = -1;
-.endm.macro xchal_cp1_load p a b c d continue = 0 ofs = -1 select = -1;
-.endm
-#endif
-#if XCHAL_CP2_SA_SIZE == 0
-	.macro xchal_cp2_store p a b c d continue = 0 ofs = -1 select = -1;
-.endm.macro xchal_cp2_load p a b c d continue = 0 ofs = -1 select = -1;
-.endm
-#endif
-#if XCHAL_CP3_SA_SIZE == 0
-	.macro xchal_cp3_store p a b c d continue = 0 ofs = -1 select = -1;
-.endm.macro xchal_cp3_load p a b c d continue = 0 ofs = -1 select = -1;
-.endm
-#endif
-#if XCHAL_CP4_SA_SIZE == 0
-	.macro xchal_cp4_store p a b c d continue = 0 ofs = -1 select = -1;
-.endm.macro xchal_cp4_load p a b c d continue = 0 ofs = -1 select = -1;
-.endm
-#endif
-#if XCHAL_CP5_SA_SIZE == 0
-	.macro xchal_cp5_store p a b c d continue = 0 ofs = -1 select = -1;
-.endm.macro xchal_cp5_load p a b c d continue = 0 ofs = -1 select = -1;
-.endm
-#endif
-#if XCHAL_CP6_SA_SIZE == 0
-	.macro xchal_cp6_store p a b c d continue = 0 ofs = -1 select = -1;
-.endm.macro xchal_cp6_load p a b c d continue = 0 ofs = -1 select = -1;
-.endm
-#endif
-#if XCHAL_CP7_SA_SIZE == 0
-	.macro xchal_cp7_store p a b c d continue = 0 ofs = -1 select = -1;
-.endm.macro xchal_cp7_load p a b c d continue = 0 ofs = -1 select = -1;
-.endm
-#endif
-#endif
+
 /* Macros to create functions that save and restore the state of *any* TIE
  *  coprocessor (by dynamic index).
  */
@@ -1106,35 +1130,60 @@
  *        a3 = coprocessor number
  * Exit:  any register a2-a15 (?) may have been clobbered.
  */
-	.macro xchal_cpi_store_funcbody
+	.macro	xchal_cpi_store_funcbody
 #if (XCHAL_CP_MASK & ~XCHAL_CP_PORT_MASK)
-#if XCHAL_CP0_SA_SIZE
- bnez a3, 99f xchal_cp0_store_a2 j 90f 99:
+# if XCHAL_CP0_SA_SIZE
+	bnez	a3, 99f
+	xchal_cp0_store_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP1_SA_SIZE
+	bnei	a3, 1, 99f
+	xchal_cp1_store_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP2_SA_SIZE
+	bnei	a3, 2, 99f
+	xchal_cp2_store_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP3_SA_SIZE
+	bnei	a3, 3, 99f
+	xchal_cp3_store_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP4_SA_SIZE
+	bnei	a3, 4, 99f
+	xchal_cp4_store_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP5_SA_SIZE
+	bnei	a3, 5, 99f
+	xchal_cp5_store_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP6_SA_SIZE
+	bnei	a3, 6, 99f
+	xchal_cp6_store_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP7_SA_SIZE
+	bnei	a3, 7, 99f
+	xchal_cp7_store_a2
+	j		90f
+99:
+# endif
+90:
 #endif
-#if XCHAL_CP1_SA_SIZE
- bnei a3, 1, 99f xchal_cp1_store_a2 j 90f 99:
-#endif
-#if XCHAL_CP2_SA_SIZE
- bnei a3, 2, 99f xchal_cp2_store_a2 j 90f 99:
-#endif
-#if XCHAL_CP3_SA_SIZE
- bnei a3, 3, 99f xchal_cp3_store_a2 j 90f 99:
-#endif
-#if XCHAL_CP4_SA_SIZE
- bnei a3, 4, 99f xchal_cp4_store_a2 j 90f 99:
-#endif
-#if XCHAL_CP5_SA_SIZE
- bnei a3, 5, 99f xchal_cp5_store_a2 j 90f 99:
-#endif
-#if XCHAL_CP6_SA_SIZE
- bnei a3, 6, 99f xchal_cp6_store_a2 j 90f 99:
-#endif
-#if XCHAL_CP7_SA_SIZE
- bnei a3, 7, 99f xchal_cp7_store_a2 j 90f 99:
-#endif
- 90:
-#endif
-.endm
+		.endm
+
 /* Macro that expands to the body of a function that loads the selected coprocessor's state
  * (registers etc).
  *
@@ -1142,36 +1191,63 @@
  *        a3 = coprocessor number
  * Exit:  any register a2-a15 (?) may have been clobbered.
  */
-	.macro xchal_cpi_load_funcbody
+
+	.macro	xchal_cpi_load_funcbody
 #if (XCHAL_CP_MASK & ~XCHAL_CP_PORT_MASK)
-#if XCHAL_CP0_SA_SIZE
- bnez a3, 99f xchal_cp0_load_a2 j 90f 99:
+# if XCHAL_CP0_SA_SIZE
+	bnez	a3, 99f
+	xchal_cp0_load_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP1_SA_SIZE
+	bnei	a3, 1, 99f
+	xchal_cp1_load_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP2_SA_SIZE
+	bnei	a3, 2, 99f
+	xchal_cp2_load_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP3_SA_SIZE
+	bnei	a3, 3, 99f
+	xchal_cp3_load_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP4_SA_SIZE
+	bnei	a3, 4, 99f
+	xchal_cp4_load_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP5_SA_SIZE
+	bnei	a3, 5, 99f
+	xchal_cp5_load_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP6_SA_SIZE
+	bnei	a3, 6, 99f
+	xchal_cp6_load_a2
+	j		90f
+99:
+# endif
+# if XCHAL_CP7_SA_SIZE
+	bnei	a3, 7, 99f
+	xchal_cp7_load_a2
+	j		90f
+99:
+# endif
+90:
 #endif
-#if XCHAL_CP1_SA_SIZE
- bnei a3, 1, 99f xchal_cp1_load_a2 j 90f 99:
-#endif
-#if XCHAL_CP2_SA_SIZE
- bnei a3, 2, 99f xchal_cp2_load_a2 j 90f 99:
-#endif
-#if XCHAL_CP3_SA_SIZE
- bnei a3, 3, 99f xchal_cp3_load_a2 j 90f 99:
-#endif
-#if XCHAL_CP4_SA_SIZE
- bnei a3, 4, 99f xchal_cp4_load_a2 j 90f 99:
-#endif
-#if XCHAL_CP5_SA_SIZE
- bnei a3, 5, 99f xchal_cp5_load_a2 j 90f 99:
-#endif
-#if XCHAL_CP6_SA_SIZE
- bnei a3, 6, 99f xchal_cp6_load_a2 j 90f 99:
-#endif
-#if XCHAL_CP7_SA_SIZE
- bnei a3, 7, 99f xchal_cp7_load_a2 j 90f 99:
-#endif
- 90:
-#endif
-.endm
-#endif							/* __ASSEMBLY__ */
+	.endm
+
+#endif /* __ASSEMBLY__ */
+							/* __ASSEMBLY__ */
 /* Other default macros for undefined coprocessors: */
 #ifndef XCHAL_CP0_NAME
 #define XCHAL_CP0_NAME                  0

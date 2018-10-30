@@ -95,8 +95,7 @@ static inline uint32_t xtensa_getcount(void)
 {
 	uint32_t count;
 
-	__asm__ __volatile__("rsr %0, CCOUNT":"=r"(count)
-						);
+	__asm__ __volatile__("rsr %0, CCOUNT":"=r"(count));
 
 	return count;
 }
@@ -107,8 +106,7 @@ static inline uint32_t xtensa_getcompare(void)
 {
 	uint32_t compare;
 
-	__asm__ __volatile__("rsr %0, %1":"=r"(compare):"I"(XT_CCOMPARE)
-						);
+	__asm__ __volatile__("rsr %0, %1":"=r"(compare):"I"(XT_CCOMPARE));
 
 	return compare;
 }
@@ -117,8 +115,7 @@ static inline uint32_t xtensa_getcompare(void)
 
 static inline void xtensa_setcompare(uint32_t compare)
 {
-	__asm__ __volatile__("wsr %0, %1"::"r"(compare), "I"(XT_CCOMPARE)
-						);
+	__asm__ __volatile__("wsr %0, %1"::"r"(compare), "I"(XT_CCOMPARE));
 }
 
 extern uint32_t g_ticks_per_us_pro;

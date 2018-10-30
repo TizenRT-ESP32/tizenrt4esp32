@@ -87,7 +87,8 @@ static inline uint32_t xtensa_getsp(void)
 {
 	register uint32_t sp;
 
-	__asm__ __volatile__("mov %0, sp\n":"=r"(sp));
+	__asm__ __volatile__("mov %0, sp\n"
+		 				 :"=r"(sp));
 
 	return sp;
 }
