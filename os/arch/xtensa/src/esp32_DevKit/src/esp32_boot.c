@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /************************************************************************************
  * configs/esp32-core/src/esp32_boot.c
  *
@@ -73,28 +91,33 @@ void esp32_board_initialize(void)
 {
 }
 
-
 static void board_gpio_initialize(void)
 {
 #ifdef CONFIG_GPIO
-    int i;
-    struct gpio_lowerhalf_s *lower;
+	int i;
+	struct gpio_lowerhalf_s *lower;
 
-    struct {
-        uint8_t minor;
-        uint16_t pincfg;
-    } pins[] = {
-        {5,  INPUT_PULLDOWN},
-        {15, INPUT_PULLDOWN},
-        {18, INPUT_PULLDOWN},
-        {19, INPUT_PULLDOWN},
-        {21, INPUT_PULLDOWN},
-    };
-    
-    for (i = 0; i < sizeof(pins) / sizeof(*pins); i++) {
-        lower = esp32_gpio_lowerhalf(pins[i].minor, pins[i].pincfg);
-        gpio_register(pins[i].minor, lower);
-    }
+	struct {
+		uint8_t minor;
+		uint16_t pincfg;
+	} pins[] = {
+		{
+			5, INPUT_PULLDOWN
+		}, {
+			15, INPUT_PULLDOWN
+		}, {
+			18, INPUT_PULLDOWN
+		}, {
+			19, INPUT_PULLDOWN
+		}, {
+			21, INPUT_PULLDOWN
+		},
+	};
+
+	for (i = 0; i < sizeof(pins) / sizeof(*pins); i++) {
+		lower = esp32_gpio_lowerhalf(pins[i].minor, pins[i].pincfg);
+		gpio_register(pins[i].minor, lower);
+	}
 #endif
 }
 
@@ -114,10 +137,10 @@ static void board_gpio_initialize(void)
 #ifdef CONFIG_BOARD_INITIALIZE
 void board_initialize(void)
 {
-  /* Perform board-specific initialization */
+	/* Perform board-specific initialization */
 
-    (void)esp32_bringup();
-    
-    board_gpio_initialize();    
+	(void)esp32_bringup();
+
+	board_gpio_initialize();
 }
 #endif

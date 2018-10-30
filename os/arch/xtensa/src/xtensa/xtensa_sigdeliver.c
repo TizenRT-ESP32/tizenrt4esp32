@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/arm_sigdeliver.c
  *
@@ -69,107 +87,104 @@
 
 void xtensa_sig_deliver(void)
 {
-  struct tcb_s  *rtcb = this_task();
-  uint32_t regs[XCPTCONTEXT_REGS];
-  sig_deliver_t sigdeliver;
+	struct tcb_s *rtcb = this_task();
+	uint32_t regs[XCPTCONTEXT_REGS];
+	sig_deliver_t sigdeliver;
 
-  /* Save the errno.  This must be preserved throughout the signal handling
-   * so that the user code final gets the correct errno value (probably
-   * EINTR).
-   */
+	/* Save the errno.  This must be preserved throughout the signal handling
+	 * so that the user code final gets the correct errno value (probably
+	 * EINTR).
+	 */
 
-  int saved_errno = rtcb->pterrno;
+	int saved_errno = rtcb->pterrno;
 
 #ifdef CONFIG_SMP
-  /* In the SMP case, we must terminate the critical section while the signal
-   * handler executes, but we also need to restore the irqcount when the
-   * we resume the main thread of the task.
-   */
+	/* In the SMP case, we must terminate the critical section while the signal
+	 * handler executes, but we also need to restore the irqcount when the
+	 * we resume the main thread of the task.
+	 */
 
-  int16_t saved_irqcount;
+	int16_t saved_irqcount;
 #endif
 
-  board_autoled_on(LED_SIGNAL);
+	board_autoled_on(LED_SIGNAL);
 
-  //sinfo("rtcb=%p sigdeliver=%p sigpendactionq.head=%p\n", rtcb, rtcb->xcp.sigdeliver, rtcb->sigpendactionq.head);
-  ASSERT(rtcb->xcp.sigdeliver != NULL);
+	//sinfo("rtcb=%p sigdeliver=%p sigpendactionq.head=%p\n", rtcb, rtcb->xcp.sigdeliver, rtcb->sigpendactionq.head);
+	ASSERT(rtcb->xcp.sigdeliver != NULL);
 
-  /* Save the real return state on the stack. */
+	/* Save the real return state on the stack. */
 
-  xtensa_copystate(regs, rtcb->xcp.regs);
-  regs[REG_PC]         = rtcb->xcp.saved_pc;
-  regs[REG_PS]         = rtcb->xcp.saved_ps;
+	xtensa_copystate(regs, rtcb->xcp.regs);
+	regs[REG_PC] = rtcb->xcp.saved_pc;
+	regs[REG_PS] = rtcb->xcp.saved_ps;
 
-  /* Get a local copy of the sigdeliver function pointer. we do this so that
-   * we can nullify the sigdeliver function pointer in the TCB and accept
-   * more signal deliveries while processing the current pending signals.
-   */
+	/* Get a local copy of the sigdeliver function pointer. we do this so that
+	 * we can nullify the sigdeliver function pointer in the TCB and accept
+	 * more signal deliveries while processing the current pending signals.
+	 */
 
-  sigdeliver           = rtcb->xcp.sigdeliver;
-  rtcb->xcp.sigdeliver = NULL;
+	sigdeliver = rtcb->xcp.sigdeliver;
+	rtcb->xcp.sigdeliver = NULL;
 
 #ifdef CONFIG_SMP
-  /* In the SMP case, up_schedule_sigaction(0) will have incremented
-   * 'irqcount' in order to force us into a critical section.  Save the
-   * pre-incremented irqcount.
-   */
+	/* In the SMP case, up_schedule_sigaction(0) will have incremented
+	 * 'irqcount' in order to force us into a critical section.  Save the
+	 * pre-incremented irqcount.
+	 */
 
-  saved_irqcount       = rtcb->irqcount - 1;
-  DEBUGASSERT(saved_irqcount >= 0);
+	saved_irqcount = rtcb->irqcount - 1;
+	DEBUGASSERT(saved_irqcount >= 0);
 
-  /* Now we need call up_irq_restore() repeatedly to get the irqcount
-   * to zero, freeing all global spinlocks that enforce the critical section.
-   */
+	/* Now we need call up_irq_restore() repeatedly to get the irqcount
+	 * to zero, freeing all global spinlocks that enforce the critical section.
+	 */
 
-  do
-    {
-      up_irq_restore((regs[REG_PS]));
-    }
-  while (rtcb->irqcount > 0);
-#endif /* CONFIG_SMP */
+	do {
+		up_irq_restore((regs[REG_PS]));
+	} while (rtcb->irqcount > 0);
+#endif							/* CONFIG_SMP */
 
 #ifndef CONFIG_SUPPRESS_INTERRUPTS
-  /* Then make sure that interrupts are enabled.  Signal handlers must always
-   * run with interrupts enabled.
-   */
+	/* Then make sure that interrupts are enabled.  Signal handlers must always
+	 * run with interrupts enabled.
+	 */
 
-  up_irq_enable();
+	up_irq_enable();
 #endif
 
-  /* Deliver the signals */
+	/* Deliver the signals */
 
-  sigdeliver(rtcb);
+	sigdeliver(rtcb);
 
-  /* Output any debug messages BEFORE restoring errno (because they may
-   * alter errno), then disable interrupts again and restore the original
-   * errno that is needed by the user logic (it is probably EINTR).
-   */
+	/* Output any debug messages BEFORE restoring errno (because they may
+	 * alter errno), then disable interrupts again and restore the original
+	 * errno that is needed by the user logic (it is probably EINTR).
+	 */
 
-  //sinfo("Resuming\n");
-  (void)up_irq_save();
+	//sinfo("Resuming\n");
+	(void)up_irq_save();
 
-  /* Restore the saved errno value */
+	/* Restore the saved errno value */
 
-  rtcb->pterrno = saved_errno;
+	rtcb->pterrno = saved_errno;
 
 #ifdef CONFIG_SMP
-  /* Restore the saved 'irqcount' and recover the critical section
-   * spinlocks.
-   */
+	/* Restore the saved 'irqcount' and recover the critical section
+	 * spinlocks.
+	 */
 
-  DEBUGASSERT(rtcb->irqcount == 0);
-  while (rtcb->irqcount < saved_irqcount)
-    {
-      (void)up_irq_save();
-    }
+	DEBUGASSERT(rtcb->irqcount == 0);
+	while (rtcb->irqcount < saved_irqcount) {
+		(void)up_irq_save();
+	}
 #endif
 
-  /* Then restore the correct state for this thread of execution.
-   * NOTE: The co-processor state should already be correct.
-   */
+	/* Then restore the correct state for this thread of execution.
+	 * NOTE: The co-processor state should already be correct.
+	 */
 
-  board_autoled_off(LED_SIGNAL);
-  xtensa_context_restore(regs);
+	board_autoled_off(LED_SIGNAL);
+	xtensa_context_restore(regs);
 }
 
-#endif /* !CONFIG_DISABLE_SIGNALS */
+#endif							/* !CONFIG_DISABLE_SIGNALS */

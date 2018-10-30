@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/common/xtensa.h
  *
@@ -41,8 +59,8 @@
  ****************************************************************************/
 
 #ifndef __ASSEMBLY__
-#  include <stdint.h>
-#  include <stdbool.h>
+#include <stdint.h>
+#include <stdbool.h>
 #endif
 
 #include <arch/chip/core-isa.h>
@@ -57,15 +75,15 @@
  * board bring-up and not part of normal platform configuration.
  */
 
-#undef  CONFIG_SUPPRESS_INTERRUPTS     /* DEFINED: Do not enable interrupts */
-#undef  CONFIG_SUPPRESS_TIMER_INTS     /* DEFINED: No timer */
-#undef  CONFIG_SUPPRESS_SERIAL_INTS    /* DEFINED: Console will poll */
-#undef  CONFIG_SUPPRESS_UART_CONFIG    /* DEFINED: Do not reconfigure UART */
-#define CONFIG_SUPPRESS_CLOCK_CONFIG 1 /* DEFINED: Do not reconfigure clocking */
-#undef  CONFIG_DUMP_ON_EXIT            /* DEFINED: Dump task state on exit */
+#undef  CONFIG_SUPPRESS_INTERRUPTS	/* DEFINED: Do not enable interrupts */
+#undef  CONFIG_SUPPRESS_TIMER_INTS	/* DEFINED: No timer */
+#undef  CONFIG_SUPPRESS_SERIAL_INTS	/* DEFINED: Console will poll */
+#undef  CONFIG_SUPPRESS_UART_CONFIG	/* DEFINED: Do not reconfigure UART */
+#define CONFIG_SUPPRESS_CLOCK_CONFIG 1	/* DEFINED: Do not reconfigure clocking */
+#undef  CONFIG_DUMP_ON_EXIT		/* DEFINED: Dump task state on exit */
 
 #ifndef CONFIG_DEBUG_SCHED_INFO
-#  undef CONFIG_DUMP_ON_EXIT          /* Needs CONFIG_DEBUG_SCHED_INFO */
+#undef CONFIG_DUMP_ON_EXIT		/* Needs CONFIG_DEBUG_SCHED_INFO */
 #endif
 
 /* Determine which (if any) console driver to use.  If a console is enabled
@@ -74,22 +92,22 @@
  */
 
 #if !defined(CONFIG_DEV_CONSOLE) || CONFIG_NFILE_DESCRIPTORS <= 0
-#  undef  USE_SERIALDRIVER
-#  undef  USE_EARLYSERIALINIT
-#  undef  CONFIG_DEV_LOWCONSOLE
-#  undef  CONFIG_RAMLOG_CONSOLE
+#undef  USE_SERIALDRIVER
+#undef  USE_EARLYSERIALINIT
+#undef  CONFIG_DEV_LOWCONSOLE
+#undef  CONFIG_RAMLOG_CONSOLE
 #else
-#  if defined(CONFIG_RAMLOG_CONSOLE)
-#    undef  USE_SERIALDRIVER
-#    undef  USE_EARLYSERIALINIT
-#    undef  CONFIG_DEV_LOWCONSOLE
-#  elif defined(CONFIG_DEV_LOWCONSOLE)
-#    undef  USE_SERIALDRIVER
-#    undef  USE_EARLYSERIALINIT
-#  else
-#    define USE_SERIALDRIVER 1
-#    define USE_EARLYSERIALINIT 1
-#  endif
+#if defined(CONFIG_RAMLOG_CONSOLE)
+#undef  USE_SERIALDRIVER
+#undef  USE_EARLYSERIALINIT
+#undef  CONFIG_DEV_LOWCONSOLE
+#elif defined(CONFIG_DEV_LOWCONSOLE)
+#undef  USE_SERIALDRIVER
+#undef  USE_EARLYSERIALINIT
+#else
+#define USE_SERIALDRIVER 1
+#define USE_EARLYSERIALINIT 1
+#endif
 #endif
 
 /* If some other device is used as the console, then the serial driver may
@@ -99,7 +117,7 @@
  */
 
 #if !defined(USE_SERIALDRIVER) && defined(CONFIG_STANDARD_SERIAL)
-#  define USE_SERIALDRIVER 1
+#define USE_SERIALDRIVER 1
 #endif
 
 /* Check if an interrupt stack size is configured */
@@ -107,11 +125,11 @@
 #define HAVE_INTERRUPTSTACK 1
 
 #if !defined(CONFIG_ARCH_INTERRUPTSTACK)
-#  define CONFIG_ARCH_INTERRUPTSTACK 0
-#  undef  HAVE_INTERRUPTSTACK
+#define CONFIG_ARCH_INTERRUPTSTACK 0
+#undef  HAVE_INTERRUPTSTACK
 #elif CONFIG_ARCH_INTERRUPTSTACK < 16
-#  warning CONFIG_ARCH_INTERRUPTSTACK is to small
-#  undef  HAVE_INTERRUPTSTACK
+#warning CONFIG_ARCH_INTERRUPTSTACK is to small
+#undef  HAVE_INTERRUPTSTACK
 #endif
 
 #define INTERRUPTSTACK_SIZE  ((CONFIG_ARCH_INTERRUPTSTACK + 15) & ~15)
@@ -120,9 +138,9 @@
 /* An IDLE thread stack size for CPU0 must be defined */
 
 #if !defined(CONFIG_IDLETHREAD_STACKSIZE)
-#  error CONFIG_IDLETHREAD_STACKSIZE is not defined
+#error CONFIG_IDLETHREAD_STACKSIZE is not defined
 #elif CONFIG_IDLETHREAD_STACKSIZE < 16
-#  error CONFIG_IDLETHREAD_STACKSIZE is to small
+#error CONFIG_IDLETHREAD_STACKSIZE is to small
 #endif
 
 #define IDLETHREAD_STACKSIZE  ((CONFIG_IDLETHREAD_STACKSIZE + 15) & ~15)
@@ -189,14 +207,14 @@
  * such value for each processor that can receive an interrupt.
  */
 
-int up_cpu_index(void); /* See include/nuttx/arch.h */
+int up_cpu_index(void);			/* See include/nuttx/arch.h */
 extern volatile uint32_t *g_current_regs[CONFIG_SMP_NCPUS];
-#  define CURRENT_REGS (g_current_regs[up_cpu_index()])
+#define CURRENT_REGS (g_current_regs[up_cpu_index()])
 
 #else
 
 extern volatile uint32_t *g_current_regs[1];
-#  define CURRENT_REGS (g_current_regs[0])
+#define CURRENT_REGS (g_current_regs[0])
 
 #endif
 
@@ -222,17 +240,17 @@ extern uint32_t g_idlestack[IDLETHREAD_STACKWORDS];
  *    of _data.  like:  uint32_t *pdata = &_sdata;
  */
 
-extern uint32_t _init_start;        /* Start of initialization logic */
-extern uint32_t _stext;             /* Start of .text */
-extern uint32_t _etext;             /* End+1 of .text + .rodata */
-extern uint32_t _sdata;             /* Start of .data */
-extern uint32_t _edata;             /* End+1 of .data */
-extern uint32_t _srodata;           /* Start of .rodata */
-extern uint32_t _erodata;           /* End+1 of .rodata */
-extern uint32_t _sbss;              /* Start of .bss */
-extern uint32_t _ebss;              /* End+1 of .bss */
-extern uint32_t _sheap;             /* Start of heap */
-extern uint32_t _eheap;             /* End+1 of heap */
+extern uint32_t _init_start;	/* Start of initialization logic */
+extern uint32_t _stext;			/* Start of .text */
+extern uint32_t _etext;			/* End+1 of .text + .rodata */
+extern uint32_t _sdata;			/* Start of .data */
+extern uint32_t _edata;			/* End+1 of .data */
+extern uint32_t _srodata;		/* Start of .rodata */
+extern uint32_t _erodata;		/* End+1 of .rodata */
+extern uint32_t _sbss;			/* Start of .bss */
+extern uint32_t _ebss;			/* End+1 of .bss */
+extern uint32_t _sheap;			/* Start of heap */
+extern uint32_t _eheap;			/* End+1 of heap */
 
 /****************************************************************************
  * Inline Functions
@@ -268,7 +286,7 @@ void up_lowputs(const char *str);
 #ifdef CONFIG_DEV_LOWCONSOLE
 void lowconsole_init(void);
 #else
-# define lowconsole_init()
+#define lowconsole_init()
 #endif
 
 /* Debug */
@@ -276,7 +294,7 @@ void lowconsole_init(void);
 #ifdef CONFIG_ARCH_STACKDUMP
 void xtensa_dumpstate(void);
 #else
-#  define xtensa_dumpstate()
+#define xtensa_dumpstate()
 #endif
 
 /* Common XTENSA functions */
@@ -339,7 +357,7 @@ void weak_function xtensa_dma_initialize(void);
 #if CONFIG_MM_REGIONS > 1
 void xtensa_add_region(void);
 #else
-# define xtensa_add_region()
+#define xtensa_add_region()
 #endif
 
 /* Serial output */
@@ -349,8 +367,8 @@ void up_lowputc(char ch);
 void xtensa_early_serial_initialize(void);
 void xtensa_serial_initialize(void);
 #else
-# define xtensa_earlyserialinit()
-# define xtensa_serial_initialize()
+#define xtensa_earlyserialinit()
+#define xtensa_serial_initialize()
 #endif
 
 /* System timer */
@@ -362,7 +380,7 @@ void xtensa_timer_initialize(void);
 #ifdef CONFIG_NET
 void up_netinitialize(void);
 #else
-# define up_netinitialize()
+#define up_netinitialize()
 #endif
 
 /* USB */
@@ -371,9 +389,9 @@ void up_netinitialize(void);
 void up_usbinitialize(void);
 void up_usbuninitialize(void);
 #else
-# define up_usbinitialize()
-# define up_usbuninitialize()
+#define up_usbinitialize()
+#define up_usbuninitialize()
 #endif
 
-#endif /* __ASSEMBLY__ */
-#endif  /* __ARCH_XTENSA_SRC_COMMON_XTENSA_H */
+#endif							/* __ASSEMBLY__ */
+#endif							/* __ARCH_XTENSA_SRC_COMMON_XTENSA_H */

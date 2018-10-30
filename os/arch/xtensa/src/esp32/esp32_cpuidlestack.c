@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/esp32_cpuidlestack.c
  *
@@ -43,8 +61,7 @@
 /* Address of the CPU0 IDLE thread */
 
 uint32_t g_cpu1_idlestack[CPU1_IDLETHREAD_STACKWORDS]
-  __attribute__((aligned(16) section(".noinit")));
-
+__attribute__((aligned(16) section(".noinit")));
 
 /****************************************************************************
  * Public Functions
@@ -95,28 +112,26 @@ uint32_t g_cpu1_idlestack[CPU1_IDLETHREAD_STACKWORDS]
 
 int up_cpu_idlestack(int cpu, FAR struct tcb_s *tcb, size_t stack_size)
 {
-  uintptr_t topofstack;
+	uintptr_t topofstack;
 
-  /* XTENSA uses a push-down stack:  the stack grows toward lower* addresses
-   * in memory.  The stack pointer register points to the lowest, valid
-   * working address (the "top" of the stack).  Items on the stack are
-   * referenced as positive word offsets from sp.
-   */
+	/* XTENSA uses a push-down stack:  the stack grows toward lower* addresses
+	 * in memory.  The stack pointer register points to the lowest, valid
+	 * working address (the "top" of the stack).  Items on the stack are
+	 * referenced as positive word offsets from sp.
+	 */
 
-  /* Save information about pre-allocated IDLE thread stack */
+	/* Save information about pre-allocated IDLE thread stack */
 
-
-  tcb->stack_alloc_ptr = g_cpu1_idlestack;
-  tcb->adj_stack_size  = CPU1_IDLETHREAD_STACKSIZE;
-  topofstack           = (uintptr_t)g_cpu1_idlestack + CPU1_IDLETHREAD_STACKSIZE;
-  tcb->adj_stack_ptr   = (uint32_t *)topofstack;
+	tcb->stack_alloc_ptr = g_cpu1_idlestack;
+	tcb->adj_stack_size = CPU1_IDLETHREAD_STACKSIZE;
+	topofstack = (uintptr_t) g_cpu1_idlestack + CPU1_IDLETHREAD_STACKSIZE;
+	tcb->adj_stack_ptr = (uint32_t *) topofstack;
 
 #if XCHAL_CP_NUM > 0
-  /* REVISIT: Does it make since to have co-processors enabled on the IDLE thread? */
+	/* REVISIT: Does it make since to have co-processors enabled on the IDLE thread? */
 #endif
 
-  return OK;
+	return OK;
 }
 
-#endif /* CONFIG_SMP */
-
+#endif							/* CONFIG_SMP */

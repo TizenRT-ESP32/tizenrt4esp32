@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/common/xtensa_cpuint.S
  *
@@ -128,7 +146,7 @@
 /* Function prologues and epilogues */
 
 #ifdef __XTENSA_CALL0_ABI__
-  /* Call0 */
+/* Call0 */
 
 	.macro	entry1 size=0x10
 	addi	sp, sp, -\size
@@ -141,25 +159,24 @@
 	ret
 	.endm
 
-#  define ENTRY(sz)     entry1  sz
-#  define ENTRY0
-#  define RET(sz)       ret1    sz
-#  define RET0          ret
-
+#define ENTRY(sz)     entry1  sz
+#define ENTRY0
+#define RET(sz)       ret1    sz
+#define RET0          ret
 #else
-  /* Windowed */
+/* Windowed */
 
-#  define ENTRY(sz)     entry   sp, sz
-#  define ENTRY0        entry   sp, 0x10
-#  define RET(sz)       retw
-#  define RET0          retw
+#define ENTRY(sz)     entry   sp, sz
+#define ENTRY0        entry   sp, 0x10
+#define RET(sz)       retw
+#define RET0          retw
 
 #endif
 
-/* Index into stack frame (skipping over saved A0) */
+					 /* Index into stack frame (skipping over saved A0) */
 
-#define LOCAL_OFFSET(n) ((n) << 2)  /* n = 1 .. ((size >> 2) - 1) */
+#define LOCAL_OFFSET(n) ((n) << 2)	/* n = 1 .. ((size >> 2) - 1) */
 
-#endif /*  __ASSEMBLY_ */
+#endif							/*  __ASSEMBLY_ */
 
-#endif /* __ARCH_XTENSA_SRC_COMMON_XTENSA_ABI_H */
+#endif							/* __ARCH_XTENSA_SRC_COMMON_XTENSA_ABI_H */

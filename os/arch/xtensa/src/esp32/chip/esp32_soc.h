@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 // Copyright 2010-2018 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,7 +87,6 @@
 #define SOC_EXTRAM_DATA_LOW 0x3F800000
 #define SOC_EXTRAM_DATA_HIGH 0x3FC00000
 
-
 #define DR_REG_DPORT_BASE                       0x3ff00000
 #define DR_REG_AES_BASE                         0x3ff01000
 #define DR_REG_RSA_BASE                         0x3ff02000
@@ -115,7 +132,7 @@
 #define DR_REG_SPI2_BASE                        0x3ff64000
 #define DR_REG_SPI3_BASE                        0x3ff65000
 #define DR_REG_SYSCON_BASE                      0x3ff66000
-#define DR_REG_APB_CTRL_BASE                    0x3ff66000    /* Old name for SYSCON, to be removed */
+#define DR_REG_APB_CTRL_BASE                    0x3ff66000	/* Old name for SYSCON, to be removed */
 #define DR_REG_I2C1_EXT_BASE                    0x3ff67000
 #define DR_REG_SDMMC_BASE                       0x3ff68000
 #define DR_REG_EMAC_BASE                        0x3ff69000
@@ -128,7 +145,7 @@
 
 //Registers Operation {{
 #define ETS_UNCACHED_ADDR(addr) (addr)
-#define ETS_CACHED_ADDR(addr) (addr) 
+#define ETS_CACHED_ADDR(addr) (addr)
 
 #ifndef __ASSEMBLER__
 #define BIT(nr)                 (1UL << (nr))
@@ -261,20 +278,20 @@
             ((READ_PERI_REG(reg)>>(shift))&(mask));                                                                    \
         })
 
-#endif /* !__ASSEMBLER__ */
+#endif							/* !__ASSEMBLER__ */
 //}}
 
 //Periheral Clock {{
 #define  APB_CLK_FREQ_ROM                            ( 26*1000000 )
 #define  CPU_CLK_FREQ_ROM                            APB_CLK_FREQ_ROM
 #define  CPU_CLK_FREQ                                APB_CLK_FREQ
-#define  APB_CLK_FREQ                                ( 80*1000000 )       //unit: Hz
+#define  APB_CLK_FREQ                                ( 80*1000000 )	//unit: Hz
 #define  REF_CLK_FREQ                                ( 1000000 )
 #define  UART_CLK_FREQ                               APB_CLK_FREQ
 #define  WDT_CLK_FREQ                                APB_CLK_FREQ
-#define  TIMER_CLK_FREQ                              (80000000>>4) //80MHz divided by 16
+#define  TIMER_CLK_FREQ                              (80000000>>4)	//80MHz divided by 16
 #define  SPI_CLK_DIV                                 4
-#define  TICKS_PER_US_ROM                            26              // CPU is 80MHz
+#define  TICKS_PER_US_ROM                            26	// CPU is 80MHz
 //}}
 
 /* Overall memory map */
@@ -334,10 +351,10 @@
 #define ETS_TG1_LACT_LEVEL_INTR_SOURCE          21/**< interrupt of TIMER_GROUP1, LACT, level*/
 #define ETS_GPIO_INTR_SOURCE                    22/**< interrupt of GPIO, level*/
 #define ETS_GPIO_NMI_SOURCE                     23/**< interrupt of GPIO, NMI*/
-#define ETS_FROM_CPU_INTR0_SOURCE               24/**< interrupt0 generated from a CPU, level*/ /* Used for FreeRTOS */
-#define ETS_FROM_CPU_INTR1_SOURCE               25/**< interrupt1 generated from a CPU, level*/ /* Used for FreeRTOS */
-#define ETS_FROM_CPU_INTR2_SOURCE               26/**< interrupt2 generated from a CPU, level*/ /* Used for DPORT Access */
-#define ETS_FROM_CPU_INTR3_SOURCE               27/**< interrupt3 generated from a CPU, level*/ /* Used for DPORT Access */
+#define ETS_FROM_CPU_INTR0_SOURCE               24/**< interrupt0 generated from a CPU, level*/	/* Used for FreeRTOS */
+#define ETS_FROM_CPU_INTR1_SOURCE               25/**< interrupt1 generated from a CPU, level*/	/* Used for FreeRTOS */
+#define ETS_FROM_CPU_INTR2_SOURCE               26/**< interrupt2 generated from a CPU, level*/	/* Used for DPORT Access */
+#define ETS_FROM_CPU_INTR3_SOURCE               27/**< interrupt3 generated from a CPU, level*/	/* Used for DPORT Access */
 #define ETS_SPI0_INTR_SOURCE                    28/**< interrupt of SPI0, level, SPI0 is for Cache Access, do not use this*/
 #define ETS_SPI1_INTR_SOURCE                    29/**< interrupt of SPI1, level, SPI1 is for flash read/write, do not use this*/
 #define ETS_SPI2_INTR_SOURCE                    30/**< interrupt of SPI2, level*/
@@ -437,4 +454,4 @@
 //Invalid interrupt for number interrupt matrix
 #define ETS_INVALID_INUM                        6
 
-#endif /* _ESP32_SOC_H_ */
+#endif							/* _ESP32_SOC_H_ */

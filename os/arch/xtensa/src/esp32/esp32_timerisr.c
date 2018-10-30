@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/src/esp32/esp32_timerisr.c
  *
@@ -75,51 +93,43 @@ static uint32_t g_tick_divisor;
 
 static inline uint32_t xtensa_getcount(void)
 {
-  uint32_t count;
+	uint32_t count;
 
-  __asm__ __volatile__
-  (
-    "rsr %0, CCOUNT"  : "=r"(count)
-  );
+	__asm__ __volatile__("rsr %0, CCOUNT":"=r"(count));
 
-  return count;
+	return count;
 }
 
 /* Return the old value of the compare register */
 
 static inline uint32_t xtensa_getcompare(void)
 {
-  uint32_t compare;
+	uint32_t compare;
 
-  __asm__ __volatile__
-  (
-    "rsr %0, %1"  : "=r"(compare) : "I"(XT_CCOMPARE)
-  );
+	__asm__ __volatile__("rsr %0, %1":"=r"(compare):"I"(XT_CCOMPARE));
 
-  return compare;
+	return compare;
 }
 
 /* Set the value of the compare register */
 
 static inline void xtensa_setcompare(uint32_t compare)
 {
-  __asm__ __volatile__
-  (
-    "wsr %0, %1" : : "r"(compare), "I"(XT_CCOMPARE)
-  );
+	__asm__ __volatile__("wsr %0, %1"::"r"(compare), "I"(XT_CCOMPARE));
 }
 
 extern uint32_t g_ticks_per_us_pro;
 int64_t get_instant_time(void)
 {
-    uint32_t compare;
-    uint32_t diff;
-    compare = xtensa_getcompare();
-    diff = xtensa_getcount() - compare;
-    int ticks = clock_systimer();
-    int64_t ms = TICK2MSEC(ticks) + diff / (g_ticks_per_us_pro * 1000); 
-    return ms;
+	uint32_t compare;
+	uint32_t diff;
+	compare = xtensa_getcompare();
+	diff = xtensa_getcount() - compare;
+	int ticks = clock_systimer();
+	int64_t ms = TICK2MSEC(ticks) + diff / (g_ticks_per_us_pro * 1000);
+	return ms;
 }
+
 /****************************************************************************
  * Function:  esp32_timerisr
  *
@@ -140,31 +150,29 @@ int64_t get_instant_time(void)
  ****************************************************************************/
 static int esp32_timerisr(int irq, uint32_t *regs, FAR void *arg)
 {
-  uint32_t divisor;
-  uint32_t compare;
-  uint32_t diff;
+	uint32_t divisor;
+	uint32_t compare;
+	uint32_t diff;
 
-  divisor = g_tick_divisor;
-  do
-    {
-      /* Increment the compare register for the next tick */
+	divisor = g_tick_divisor;
+	do {
+		/* Increment the compare register for the next tick */
 
-      compare = xtensa_getcompare();
-      xtensa_setcompare(compare + divisor);
+		compare = xtensa_getcompare();
+		xtensa_setcompare(compare + divisor);
 
-      /* Process one timer tick */
+		/* Process one timer tick */
 
-      sched_process_timer();
+		sched_process_timer();
 
-      /* Check if we are falling behind and need to process multiple timer
-       * interrupts.
-       */
+		/* Check if we are falling behind and need to process multiple timer
+		 * interrupts.
+		 */
 
-      diff = xtensa_getcount() - compare;
-    }
-  while (diff < divisor);
+		diff = xtensa_getcount() - compare;
+	} while (diff < divisor);
 
-  return OK;
+	return OK;
 }
 
 /****************************************************************************
@@ -183,32 +191,32 @@ static int esp32_timerisr(int irq, uint32_t *regs, FAR void *arg)
 void xtensa_timer_initialize(void)
 {
 
-  uint32_t divisor;
-  uint32_t count;
+	uint32_t divisor;
+	uint32_t count;
 
-  /* Configured the timer0 as the system timer.
-   *
-   *   divisor = BOARD_CLOCK_FREQUENCY / ticks_per_sec
-   */
+	/* Configured the timer0 as the system timer.
+	 *
+	 *   divisor = BOARD_CLOCK_FREQUENCY / ticks_per_sec
+	 */
 
-  divisor = BOARD_CLOCK_FREQUENCY / CLOCKS_PER_SEC;
-  g_tick_divisor = divisor;
+	divisor = BOARD_CLOCK_FREQUENCY / CLOCKS_PER_SEC;
+	g_tick_divisor = divisor;
 
-  /* Set up periodic timer */
+	/* Set up periodic timer */
 
-  count = xtensa_getcount();
-  xtensa_setcompare(count + divisor);
+	count = xtensa_getcount();
+	xtensa_setcompare(count + divisor);
 
-  /* NOTE: Timer 0 is an internal interrupt source so we do not need to
-   * attach any peripheral ID to the dedicated CPU interrupt.
-   */
+	/* NOTE: Timer 0 is an internal interrupt source so we do not need to
+	 * attach any peripheral ID to the dedicated CPU interrupt.
+	 */
 
-  /* Attach the timer interrupt */
+	/* Attach the timer interrupt */
 
-  (void)irq_attach(XTENSA_IRQ_TIMER0, (xcpt_t)esp32_timerisr, NULL);
+	(void)irq_attach(XTENSA_IRQ_TIMER0, (xcpt_t) esp32_timerisr, NULL);
 
-  /* Enable the timer 0 CPU interrupt. */
+	/* Enable the timer 0 CPU interrupt. */
 
-  up_enable_irq(ESP32_CPUINT_TIMER0);
+	up_enable_irq(ESP32_CPUINT_TIMER0);
 
 }

@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 /****************************************************************************
  * arch/xtensa/include/types.h
  *
@@ -63,32 +81,32 @@
  * files
  */
 
-typedef signed char        _int8_t;
-typedef unsigned char      _uint8_t;
+typedef signed char _int8_t;
+typedef unsigned char _uint8_t;
 
-typedef signed short       _int16_t;
-typedef unsigned short     _uint16_t;
+typedef signed short _int16_t;
+typedef unsigned short _uint16_t;
 
-typedef signed long        _int32_t;
-typedef unsigned long      _uint32_t;
+typedef signed long _int32_t;
+typedef unsigned long _uint32_t;
 
-typedef signed long long   _int64_t;
+typedef signed long long _int64_t;
 typedef unsigned long long _uint64_t;
 #define __INT64_DEFINED
 
 /* A pointer is 4 bytes */
 
-typedef signed long        _intptr_t;
-typedef unsigned long      _uintptr_t;
+typedef signed long _intptr_t;
+typedef unsigned long _uintptr_t;
 
 /* This is the size of the interrupt state save returned by up_irq_save(). */
 
-typedef unsigned int       irqstate_t;
+typedef unsigned int irqstate_t;
 
-#endif /* __ASSEMBLY__ */
+#endif							/* __ASSEMBLY__ */
 
 /****************************************************************************
  * Public Function Prototypes
  ****************************************************************************/
 
-#endif /* __ARCH_XTENSA_INCLUDE_TYPES_H */
+#endif							/* __ARCH_XTENSA_INCLUDE_TYPES_H */
