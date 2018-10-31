@@ -288,6 +288,21 @@ static int i2c_esp32_isr(int irq, FAR void *context, FAR void *arg)
 	return 0;
 }
 
+static void i2c_interrupts_enable(i2c_port_t i2c_num)
+{
+	uint32_t intr_mask = 0;
+	intr_mask |= I2C_ARBITRATION_LOST_INT_ENA_M | I2C_TIME_OUT_INT_ST_M;
+	intr_mask |= (I2C_TRANS_COMPLETE_INT_ENA_M | I2C_ACK_ERR_INT_ENA_M);
+	I2C[i2c_num]->int_clr.val = intr_mask;
+	I2C[i2c_num]->int_ena.val = intr_mask;	
+}
+
+static void i2c_interrupts_disable(i2c_port_t i2c_num)
+{
+	I2C[i2c_num]->int_clr.val = 0xffffffff;
+	I2C[i2c_num]->int_ena.val = 0;
+}
+
 static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
 {
 	int i2c_num = priv->i2c_num;
@@ -305,13 +320,6 @@ static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
 
 	/* Use FIFO to transmit data */
 	I2C[i2c_num]->fifo_conf.nonfifo_en = 0;
-
-	/* interrupt chip configure */
-	uint32_t intr_mask = 0;
-	intr_mask |= I2C_ARBITRATION_LOST_INT_ENA_M | I2C_TIME_OUT_INT_ST_M;
-	intr_mask |= (I2C_TRANS_COMPLETE_INT_ENA_M | I2C_ACK_ERR_INT_ENA_M);
-	I2C[i2c_num]->int_clr.val = intr_mask;
-	I2C[i2c_num]->int_ena.val = intr_mask;
 
 	/*register isr */
 	priv->cpuint = esp32_alloc_levelint(1);
@@ -569,10 +577,12 @@ static int i2c_esp32_transmit_wait(struct i2c_dev_s *dev, volatile struct i2c_es
 	int ret;
 	struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev;
 
+	i2c_interrupts_enable(priv->i2c_num);
 	ret = i2c_esp32_transmit(dev);
 	if (!ret) {
 		ret = i2c_esp32_wait(dev, wait_cmd);
 	}
+	i2c_interrupts_disable(priv->i2c_num);
 
 	return ret;
 }
