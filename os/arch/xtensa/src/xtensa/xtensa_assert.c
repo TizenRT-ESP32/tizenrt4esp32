@@ -134,10 +134,6 @@ static void xtensa_assert(int errorcode)
 	board_crashdump(up_getsp(), this_task(), filename, lineno);
 #endif
 
-	/* Flush any buffered SYSLOG data (from the above) */
-
-	//(void)syslog_flush();
-
 	/* Are we in an interrupt handler or the idle task? */
 
 	if (CURRENT_REGS || this_task()->pid == 0) {
@@ -169,20 +165,16 @@ static void xtensa_assert(int errorcode)
 
 void up_assert(const uint8_t *filename, int lineno)
 {
-#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ALERT)
+#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
 	struct tcb_s *rtcb = this_task();
 #endif
 
 	board_autoled_on(LED_ASSERTION);
 
-	/* Flush any buffered SYSLOG data (from prior to the assertion) */
-
-	//(void)syslog_flush();
-
-#if CONFIG_TASK_NAME_SIZE > 0
-	//_alert("Assertion failed at file:%s line: %d task: %s\n",filename, lineno, rtcb->name);
+#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
+	lldbg("Assertion failed at file:%s line: %d task: %s\n",filename, lineno, rtcb->name);
 #else
-	//_alert("Assertion failed at file:%s line: %d\n",filename, lineno);
+	lldbg("Assertion failed at file:%s line: %d\n",filename, lineno);
 #endif
 
 	xtensa_assert(EXIT_FAILURE);
@@ -212,7 +204,7 @@ void up_assert(const uint8_t *filename, int lineno)
 
 void xtensa_panic(int xptcode, uint32_t *regs)
 {
-#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ALERT)
+#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
 	struct tcb_s *rtcb = this_task();
 #endif
 
@@ -220,14 +212,10 @@ void xtensa_panic(int xptcode, uint32_t *regs)
 
 	board_autoled_on(LED_ASSERTION);
 
-	/* Flush any buffered SYSLOG data (from prior to the panic) */
-
-	//(void)syslog_flush();
-
-#if CONFIG_TASK_NAME_SIZE > 0
-	//_alert("Unhandled Exception %d task: %s\n", xptcode, rtcb->name);
+#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
+	lldbg("Unhandled Exception %d task: %s\n", xptcode, rtcb->name);
 #else
-	//_alert("Unhandled Exception %d\n", xptcode);
+	lldbg("Unhandled Exception %d\n", xptcode);
 #endif
 
 	CURRENT_REGS = regs;
@@ -316,7 +304,7 @@ void xtensa_panic(int xptcode, uint32_t *regs)
 
 void xtensa_user(int exccause, uint32_t *regs)
 {
-#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ALERT)
+#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
 	struct tcb_s *rtcb = this_task();
 #endif
 
@@ -324,14 +312,10 @@ void xtensa_user(int exccause, uint32_t *regs)
 
 	board_autoled_on(LED_ASSERTION);
 
-	/* Flush any buffered SYSLOG data (from prior to the error) */
-
-	//(void)syslog_flush();
-
-#if CONFIG_TASK_NAME_SIZE > 0
-	//_alert("User Exception: EXCCAUSE=%04x task: %s\n", exccause, rtcb->name);
+#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
+	lldbg("User Exception: EXCCAUSE=%04x task: %s\n", exccause, rtcb->name);
 #else
-	//_alert("User Exception: EXCCAUSE=%04x\n", exccause);
+	lldbg("User Exception: EXCCAUSE=%04x\n", exccause);
 #endif
 
 	CURRENT_REGS = regs;

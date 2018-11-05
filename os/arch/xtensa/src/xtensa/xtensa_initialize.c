@@ -248,6 +248,9 @@ void up_initialize(void)
 	 * can be initialized early in the initialization sequence because they
 	 * depend on only minimal OS initialization.
 	 */
+#ifdef CONFIG_SYSLOG_CHAR
+		syslog_initialize();
+#endif
 
 	//syslog_initialize(SYSLOG_INIT_EARLY);
 
