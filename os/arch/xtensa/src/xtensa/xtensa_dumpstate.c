@@ -71,7 +71,7 @@
 #include "sched/sched.h"
 #include "xtensa.h"
 
-#ifdef CONFIG_DEBUG_ALERT
+#ifdef CONFIG_DEBUG_ERROR
 
 /****************************************************************************
  * Private Functions
@@ -103,9 +103,9 @@ static void up_taskdump(FAR struct tcb_s *tcb, FAR void *arg)
 	/* Dump interesting properties of this task */
 
 #if CONFIG_TASK_NAME_SIZE > 0
-	//_alert("%s: PID=%d Stack Used=%lu of %lu\n",tcb->name, tcb->pid, (unsigned long)up_check_tcbstack(tcb), (unsigned long)tcb->adj_stack_size);
+	lldbg("%s: PID=%d Stack Used=%lu of %lu\n",tcb->name, tcb->pid, (unsigned long)up_check_tcbstack(tcb), (unsigned long)tcb->adj_stack_size);
 #else
-	//_alert("PID: %d Stack Used=%lu of %lu\n",tcb->pid, (unsigned long)up_check_tcbstack(tcb), (unsigned long)tcb->adj_stack_size);
+	lldbg("PID: %d Stack Used=%lu of %lu\n",tcb->pid, (unsigned long)up_check_tcbstack(tcb), (unsigned long)tcb->adj_stack_size);
 #endif
 }
 #endif
@@ -135,7 +135,7 @@ static void xtensa_stackdump(uint32_t sp, uint32_t stack_base)
 
 	for (stack = sp & ~0x1f; stack < stack_base; stack += 32) {
 		uint32_t *ptr = (uint32_t *) stack;
-		//_alert("%08x: %08x %08x %08x %08x %08x %08x %08x %08x\n",stack, ptr[0], ptr[1], ptr[2], ptr[3],ptr[4], ptr[5], ptr[6], ptr[7]);
+		lldbg("%08x: %08x %08x %08x %08x %08x %08x %08x %08x\n",stack, ptr[0], ptr[1], ptr[2], ptr[3],ptr[4], ptr[5], ptr[6], ptr[7]);
 	}
 }
 
@@ -150,27 +150,24 @@ static inline void xtensa_registerdump(void)
 	/* Are user registers available from interrupt processing? */
 
 	if (regs != NULL) {
-#if 0
-		//_alert("   PC: %08lx    PS: %08lx\n",
-		(unsigned long)regs[REG_PC], (unsigned long)regs[REG_PS]);
-		//_alert("   A0: %08lx    A1: %08lx    A2: %08lx    A3: %08lx\n",
+		lldbg("   PC: %08lx    PS: %08lx\n",(unsigned long)regs[REG_PC], (unsigned long)regs[REG_PS]);
+		lldbg("   A0: %08lx    A1: %08lx    A2: %08lx    A3: %08lx\n",
 		(unsigned long)regs[REG_A0], (unsigned long)regs[REG_A1], (unsigned long)regs[REG_A2], (unsigned long)regs[REG_A3]);
-		//_alert("   A4: %08lx    A5: %08lx    A6: %08lx    A7: %08lx\n",
+		lldbg("   A4: %08lx    A5: %08lx    A6: %08lx    A7: %08lx\n",
 		(unsigned long)regs[REG_A4], (unsigned long)regs[REG_A5], (unsigned long)regs[REG_A6], (unsigned long)regs[REG_A7]);
-		//_alert("   A8: %08lx    A9: %08lx   A10: %08lx   A11: %08lx\n",
+		lldbg("   A8: %08lx    A9: %08lx   A10: %08lx   A11: %08lx\n",
 		(unsigned long)regs[REG_A8], (unsigned long)regs[REG_A9], (unsigned long)regs[REG_A10], (unsigned long)regs[REG_A11]);
-		//_alert("  A12: %08lx   A13: %08lx   A14: %08lx   A15: %08lx\n",
+		lldbg("  A12: %08lx   A13: %08lx   A14: %08lx   A15: %08lx\n",
 		(unsigned long)regs[REG_A12], (unsigned long)regs[REG_A13], (unsigned long)regs[REG_A14], (unsigned long)regs[REG_A15]);
-		//_alert("  SAR: %08lx CAUSE: %08lx VADDR: %08lx\n",
+		lldbg("  SAR: %08lx CAUSE: %08lx VADDR: %08lx\n",
 		(unsigned long)regs[REG_SAR], (unsigned long)regs[REG_EXCCAUSE], (unsigned long)regs[REG_EXCVADDR]);
 #ifdef XCHAL_HAVE_LOOPS
-		//_alert(" LBEG: %08lx  LEND: %08lx  LCNT: %08lx\n",
+		lldbg(" LBEG: %08lx  LEND: %08lx  LCNT: %08lx\n",
 		(unsigned long)regs[REG_LBEG], (unsigned long)regs[REG_LEND], (unsigned long)regs[REG_LCOUNT]);
 #endif
 #ifndef __XTENSA_CALL0_ABI__
-		//_alert(" TMP0: %08lx  TMP1: %08lx\n",
+		lldbg(" TMP0: %08lx  TMP1: %08lx\n",
 		(unsigned long)regs[REG_TMP0], (unsigned long)regs[REG_TMP1]);
-#endif
 #endif
 	}
 }
@@ -193,8 +190,7 @@ void xtensa_dumpstate(void)
 
 #ifdef CONFIG_SMP
 	/* Show the CPU number */
-
-	//_alert("CPU%d:\n", up_cpu_index());
+	lldbg("CPU%d:\n", up_cpu_index());
 #endif
 
 	/* Get the limits on the user stack memory */
@@ -216,12 +212,12 @@ void xtensa_dumpstate(void)
 
 	/* Show interrupt stack info */
 
-	//_alert("sp:     %08x\n", sp);
-	//_alert("IRQ stack:\n");
-	//_alert("  base: %08x\n", istackbase);
-	//_alert("  size: %08x\n", istacksize);
+	lldbg("sp:     %08x\n", sp);
+	lldbg("IRQ stack:\n");
+	lldbg("  base: %08x\n", istackbase);
+	lldbg("  size: %08x\n", istacksize);
 #ifdef CONFIG_STACK_COLORATION
-	//_alert("  used: %08x\n", up_check_intstack());
+	lldbg("  used: %08x\n", up_check_intstack());
 #endif
 
 	/* Does the current stack pointer lie within the interrupt
@@ -238,23 +234,23 @@ void xtensa_dumpstate(void)
 		 */
 
 		sp = &g_instack[INTERRUPTSTACK_SIZE - sizeof(uint32_t)];
-		//_alert("sp:     %08x\n", sp);
+		lldbg("sp:     %08x\n", sp);
 	}
 
 	/* Show user stack info */
 
-	//_alert("User stack:\n");
-	//_alert("  base: %08x\n", ustackbase);
-	//_alert("  size: %08x\n", ustacksize);
+	lldbg("User stack:\n");
+	lldbg("  base: %08x\n", ustackbase);
+	lldbg("  size: %08x\n", ustacksize);
 #ifdef CONFIG_STACK_COLORATION
-	//_alert("  used: %08x\n", up_check_tcbstack(rtcb));
+	lldbg("  used: %08x\n", up_check_tcbstack(rtcb));
 #endif
 #else
-	//_alert("sp:         %08x\n", sp);
-	//_alert("stack base: %08x\n", ustackbase);
-	//_alert("stack size: %08x\n", ustacksize);
+	lldbg("sp:         %08x\n", sp);
+	lldbg("stack base: %08x\n", ustackbase);
+	lldbg("stack size: %08x\n", ustacksize);
 #ifdef CONFIG_STACK_COLORATION
-	//_alert("stack used: %08x\n", up_check_tcbstack(rtcb));
+	lldbg("stack used: %08x\n", up_check_tcbstack(rtcb));
 #endif
 #endif
 
@@ -264,7 +260,7 @@ void xtensa_dumpstate(void)
 
 	if (sp > ustackbase || sp <= ustackbase - ustacksize) {
 #ifdef HAVE_INTERRUPTSTACK
-		//_alert("ERROR: Stack pointer is not within allocated stack\n");
+		lldbg("ERROR: Stack pointer is not within allocated stack\n");
 #endif
 	} else {
 		xtensa_stackdump(sp, ustackbase);

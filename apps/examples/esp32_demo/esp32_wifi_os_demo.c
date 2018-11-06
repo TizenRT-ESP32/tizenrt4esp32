@@ -39,13 +39,15 @@
 #define QUEUE_SEND_HANDLER_STACKSIZE (1024 * 4)
 #define RANDOM_TEST_TIME (20)
 
+extern wifi_osi_funcs_t g_wifi_osi_funcs;
+
 /*testcase*/
 void test_rand(void)
 {
     uint32_t ret;
     for(int i = 0; i < RANDOM_TEST_TIME; i++)
     {
-        ret = esp_random();
+        ret = g_wifi_osi_funcs._rand();
         printf("random %d =  %u\n", i+1, ret);
     }
     printf("====Test random sucess====\n");
@@ -53,72 +55,74 @@ void test_rand(void)
 
 void test_mutex(void)
 {
-    void *mutex = mutex_create_wrapper();
+    void *mutex = g_wifi_osi_funcs._mutex_create();
     if(!mutex)
         printf("mutex is NULL\n");
-    static int num = 0; 
-    mutex_lock_wrapper(mutex);
+    static int num = 0;  
+    g_wifi_osi_funcs._mutex_lock(mutex);
     num++;
-    mutex_unlock_wrapper(mutex);
-    mutex_delete_wrapper(mutex);
-    printf("====Test mutex sucess====\n");
+    g_wifi_osi_funcs._mutex_unlock(mutex);
+    g_wifi_osi_funcs._mutex_delete(mutex);
+    printf("====Test mutex sucess====\n");    
 }
 
 void test_recursive_mutex(void)
 {
-    void *mutex = recursive_mutex_create_wrapper();
+    void *mutex = g_wifi_osi_funcs._recursive_mutex_create();
     if(!mutex)
         printf("mutex is NULL\n");
-    static int num = 0; 
-    mutex_lock_wrapper(mutex);
-    mutex_lock_wrapper(mutex);
+    static int num = 0;  
+    g_wifi_osi_funcs._mutex_lock(mutex);
+    g_wifi_osi_funcs._mutex_lock(mutex);
     num++;
-    mutex_unlock_wrapper(mutex);
-    mutex_unlock_wrapper(mutex);
-    mutex_delete_wrapper(mutex);
-    printf("====Test recursive mutex sucess====\n");
+    g_wifi_osi_funcs._mutex_unlock(mutex);
+    g_wifi_osi_funcs._mutex_unlock(mutex);
+    g_wifi_osi_funcs._mutex_delete(mutex);
+    printf("====Test recursive mutex sucess====\n");  
 }
 
 
 void test_sem(void)
 {
-    void *sem = semphr_create_wrapper(1, 1);
+    void *sem = g_wifi_osi_funcs._semphr_create(1, 1);
     if(!sem)
         printf("sem is NULL\n");
-    static int num = 0; 
-    semphr_take_wrapper(sem, 100000);
+    static int num = 0;
+    g_wifi_osi_funcs._semphr_take(sem, 100000);
     num++;
-    semphr_give_wrapper(sem);
-    semphr_delete_wrapper(sem);
+    g_wifi_osi_funcs._semphr_give(sem);
+    g_wifi_osi_funcs._semphr_delete(sem);
     printf("====Test sem sucess====\n");
+
 }
 
 int handle; 
 void *taskfunc(void *parm)
 {
-    int32_t ticks = task_ms_to_tick_wrapper();
+    int32_t ticks = g_wifi_osi_funcs._task_ms_to_tick(1000);
     if(ticks != 100)
-        printf("task_ms_to_tick_wrapper error\n");
-    int32_t maxprio = task_get_max_priority_wrapper();
+        printf("task_ms_to_tick error\n");
+    int32_t maxprio = g_wifi_osi_funcs._task_get_max_priority();
     
     if(maxprio != 255)
-        printf("task_get_max_priority_wrapper error\n");
-    void *taskhandle = task_get_current_task_wrapper();
+        printf("task_get_max_priority error\n");
+    void *taskhandle = g_wifi_osi_funcs._task_get_current_task();
     
     int pid = *(int*)taskhandle;
     if(pid < 0)
-        printf("task_get_current_task_wrapper error\n");
+        printf("task_get_current_task error\n");
 
-    task_delay_wrapper(100);      
-    if(is_in_isr_wrapper() != 0)
+    g_wifi_osi_funcs._task_delay(100);      
+    if(g_wifi_osi_funcs._is_in_isr() != 0)
         printf("Test isr error\n");
-    task_delete_wrapper(&handle);
+    g_wifi_osi_funcs._task_delete(&handle);      
     printf("====Test task success====\n");
+    return NULL;
 }
 
 void test_task(void)
 {
-    task_create_wrapper(taskfunc, "test_task_control", 1024, NULL, 100, &handle);
+    g_wifi_osi_funcs._task_create(taskfunc, "test_task_control", 1024, NULL, 100, &handle);
         
 }
 
@@ -126,21 +130,22 @@ ETSTimer mytimer;
 
 void *timer_func(void *parm)
 {
-    timer_disarm_wrapper(&mytimer);
-    timer_done_wrapper(&mytimer);
+    g_wifi_osi_funcs._timer_disarm(&mytimer);
+    g_wifi_osi_funcs._timer_done(&mytimer);
     printf("===Test timer success====\n");
+    return NULL;
 }
 
 void test_timer(void)
 {
-  timer_arm_wrapper(&mytimer, 10, 0);
-  timer_setfn_wrapper(&mytimer, timer_func, NULL);
+  g_wifi_osi_funcs._timer_arm(&mytimer, 10, 0);
+  g_wifi_osi_funcs._timer_setfn(&mytimer, timer_func, NULL);
 }
 
 void test_time(void)
 { 
   struct timeval t;    
-  get_time_wrapper(&t);
+  g_wifi_osi_funcs._get_time(&t);
   //printf("%ds, %dus\n", t.tv_sec, t.tv_usec);  
   //int64_t period = get_instant_time();
   //printf("elapsed time from booting %lu\n", period);
