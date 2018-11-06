@@ -307,7 +307,6 @@ static void i2c_interrupts_disable(i2c_port_t i2c_num)
 static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
 {
 	int i2c_num = priv->i2c_num;
-    int flags = 0;
 
 	//configure ctrl register
 	I2C[i2c_num]->ctr.rx_lsb_first = I2C_DATA_MODE_MSB_FIRST;	//set rx data msb first
@@ -342,14 +341,14 @@ static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
 	printf("I2c_%d_ISR: cpu=%d, periph=%d, cpuint=%d\n", i2c_num, cpu, priv->config->periph, priv->cpuint);
 #endif
 	/* Attach the GPIO peripheral to the allocated CPU interrupt */
-	flags = irqsave();
+	up_disable_irq(priv->cpuint);
 	esp32_attach_peripheral(cpu, priv->config->periph, priv->cpuint);
 
 	/* Attach and enable the IRQ */
 	int ret = irq_attach(priv->config->irq_num, i2c_esp32_isr, priv);
 	if (ret == OK) {
 		/* Enable the CPU interrupt */
-		irqrestore(flags);
+		up_enable_irq(priv->cpuint);
 	}
 
 	return OK;
