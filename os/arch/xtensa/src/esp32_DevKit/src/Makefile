@@ -39,7 +39,7 @@ SCRIPTDIR = $(TOPDIR)$(DELIM)..$(DELIM)build$(DELIM)configs$(DELIM)$(CONFIG_ARCH
 CONFIGFILE = $(TOPDIR)$(DELIM)include$(DELIM)tinyara$(DELIM)config.h
 
 ASRCS =
-CSRCS = esp32_boot.c esp32_bringup.c
+CSRCS = esp32_boot.c esp32_bringup.c esp32_led.c
 
 ifeq ($(CONFIG_LIB_BOARDCTL),y)
 CSRCS += esp32_appinit.c
