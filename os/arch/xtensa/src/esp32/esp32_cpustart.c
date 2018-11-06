@@ -190,7 +190,7 @@ void xtensa_appcpu_start(void)
 	sp = (uint32_t) tcb->adj_stack_ptr;
 	__asm__ __volatile__("mov sp, %0\n"::"r"(sp));
 
-	sinfo("CPU%d Started\n", up_cpu_index());
+	vdbg("CPU%d Started\n", up_cpu_index());
 
 #ifdef CONFIG_SCHED_INSTRUMENTATION
 	/* Notify that this CPU has started */
@@ -289,7 +289,7 @@ int up_cpu_start(int cpu)
 
 		/* Start CPU1 */
 
-		sinfo("Starting CPU%d\n", cpu);
+		vdbg("Starting CPU%d\n", cpu);
 
 #ifdef CONFIG_SCHED_INSTRUMENTATION
 		/* Notify of the start event */
