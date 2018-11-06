@@ -106,15 +106,15 @@ static void _xtensa_dumponexit(FAR struct tcb_s *tcb, FAR void *arg)
 	int i;
 #endif
 
-	sinfo("  TCB=%p name=%s pid=%d\n", tcb, tcb->argv[0], tcb->pid);
-	sinfo("    priority=%d state=%d\n", tcb->sched_priority, tcb->task_state);
+	vdbg("  TCB=%p name=%s pid=%d\n", tcb, tcb->argv[0], tcb->pid);
+	vdbg("    priority=%d state=%d\n", tcb->sched_priority, tcb->task_state);
 
 #if CONFIG_NFILE_DESCRIPTORS > 0
 	filelist = tcb->group->tg_filelist;
 	for (i = 0; i < CONFIG_NFILE_DESCRIPTORS; i++) {
 		struct inode *inode = filelist->fl_files[i].f_inode;
 		if (inode) {
-			sinfo("      fd=%d refcount=%d\n", i, inode->i_crefs);
+			vdbg("      fd=%d refcount=%d\n", i, inode->i_crefs);
 		}
 	}
 #endif
@@ -126,11 +126,11 @@ static void _xtensa_dumponexit(FAR struct tcb_s *tcb, FAR void *arg)
 		if (filep->fs_fd >= 0) {
 #ifndef CONFIG_STDIO_DISABLE_BUFFERING
 			if (filep->fs_bufstart != NULL) {
-				sinfo("      fd=%d nbytes=%d\n", filep->fs_fd, filep->fs_bufpos - filep->fs_bufstart);
+				vdbg("      fd=%d nbytes=%d\n", filep->fs_fd, filep->fs_bufpos - filep->fs_bufstart);
 			} else
 #endif
 			{
-				sinfo("      fd=%d\n", filep->fs_fd);
+				vdbg("      fd=%d\n", filep->fs_fd);
 			}
 		}
 	}
@@ -163,10 +163,10 @@ void _exit(int status)
 
 	(void)up_irq_save();
 
-	//sinfo("TCB=%p exiting\n", this_task());
+	vdbg("TCB=%p exiting\n", this_task());
 
 #ifdef CONFIG_DUMP_ON_EXIT
-	//sinfo("Other tasks:\n");
+	vdbg("Other tasks:\n");
 	sched_foreach(_xtensa_dumponexit, NULL);
 #endif
 
