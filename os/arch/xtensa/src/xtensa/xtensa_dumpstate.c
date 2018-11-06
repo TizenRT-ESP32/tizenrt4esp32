@@ -131,12 +131,13 @@ static inline void up_showtasks(void)
 
 static void xtensa_stackdump(uint32_t sp, uint32_t stack_base)
 {
+#if defined(CONFIG_DEBUG) && defined(CONFIG_DEBUG_ERROR)
 	uint32_t stack;
-
 	for (stack = sp & ~0x1f; stack < stack_base; stack += 32) {
 		uint32_t *ptr = (uint32_t *) stack;
-		lldbg("%08x: %08x %08x %08x %08x %08x %08x %08x %08x\n",stack, ptr[0], ptr[1], ptr[2], ptr[3],ptr[4], ptr[5], ptr[6], ptr[7]);
+		lldbg("%08x: %08x %08x %08x %08x %08x %08x %08x %08x\n",stack, *ptr, *(ptr+1), *(ptr+2), *(ptr+3),*(ptr+4), *(ptr+5), *(ptr+6), *(ptr+7));
 	}
+#endif
 }
 
 /****************************************************************************
@@ -205,7 +206,6 @@ void xtensa_dumpstate(void)
 
 	/* Get the limits on the interrupt stack memory */
 
-#warning REVISIT interrupt stack
 #ifdef HAVE_INTERRUPTSTACK
 	istackbase = (uint32_t) & g_intstack[INTERRUPT_STACKWORDS - 1];
 	istacksize = INTERRUPTSTACK_SIZE;
