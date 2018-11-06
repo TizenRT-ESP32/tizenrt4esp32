@@ -79,6 +79,7 @@
 
 #include <arch/chip/i2c_struct.h>
 #include "chip/esp32_i2c_reg.h"
+#include "esp32_cpuint.h"
 #include "esp32_gpio.h"
 #include "esp32_i2c.h"
 #include "rom/esp32_gpio.h"
@@ -162,7 +163,7 @@ struct i2c_esp32_cmd {
 static const i2c_config_t esp32_i2c0_config = {
 	.periph = ESP32_PERIPH_I2C_EXT0,
 
-#if CONFIG_ESP32_I2C0_MODE_SLAVE
+#if defined(CONFIG_ESP32_I2C0_MODE_SLAVE) && (0 < CONFIG_ESP32_I2C0_MODE_SLAVE)
 	.mode = I2C_MODE_SLAVE,
 #else
 	.mode = I2C_MODE_MASTER,
@@ -207,7 +208,7 @@ static struct esp32_i2c_priv_s esp32_i2c0_priv = {
 
 static const i2c_config_t esp32_i2c1_config = {
 	.periph = ESP32_PERIPH_I2C_EXT1,
-#if CONFIG_ESP32_I2C1_MODE_SLAVE
+#if defined(CONFIG_ESP32_I2C0_MODE_SLAVE) && (0 < CONFIG_ESP32_I2C0_MODE_SLAVE)
 	.mode = I2C_MODE_SLAVE,
 #else
 	.mode = I2C_MODE_MASTER,
@@ -306,6 +307,7 @@ static void i2c_interrupts_disable(i2c_port_t i2c_num)
 static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
 {
 	int i2c_num = priv->i2c_num;
+    int flags = 0;
 
 	//configure ctrl register
 	I2C[i2c_num]->ctr.rx_lsb_first = I2C_DATA_MODE_MSB_FIRST;	//set rx data msb first
@@ -340,14 +342,14 @@ static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
 	printf("I2c_%d_ISR: cpu=%d, periph=%d, cpuint=%d\n", i2c_num, cpu, priv->config->periph, priv->cpuint);
 #endif
 	/* Attach the GPIO peripheral to the allocated CPU interrupt */
-	up_disable_irq(priv->cpuint);
+	flags = irqsave();
 	esp32_attach_peripheral(cpu, priv->config->periph, priv->cpuint);
 
 	/* Attach and enable the IRQ */
 	int ret = irq_attach(priv->config->irq_num, i2c_esp32_isr, priv);
 	if (ret == OK) {
 		/* Enable the CPU interrupt */
-		up_enable_irq(priv->cpuint);
+		irqrestore(flags);
 	}
 
 	return OK;
@@ -401,6 +403,7 @@ static int i2c_hw_disable(i2c_port_t i2c_num)
 * Slave mode of ESP32 might also get in wrong state that held the SDA low,
 * in this case, master device could send a stop signal to make esp32 slave release the bus.
 **/
+#if 0
 static int i2c_hw_clear_bus(const i2c_config_t *config)
 {
 	i2c_hw_setpins(config);
@@ -413,7 +416,9 @@ static int i2c_hw_clear_bus(const i2c_config_t *config)
 		esp32_gpiowrite(config->scl_pin, 1);
 	}
 	esp32_gpiowrite(config->sda_pin, 1);
+    return OK;
 }
+#endif
 
 static inline void i2c_esp32_reset_txfifo(i2c_port_t i2c_num)
 {
