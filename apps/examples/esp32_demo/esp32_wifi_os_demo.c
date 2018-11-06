@@ -416,6 +416,7 @@ void event_group_demo(void)
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
+    test_ledc_soft();
     test_rand();
     test_mutex();
     test_recursive_mutex();
