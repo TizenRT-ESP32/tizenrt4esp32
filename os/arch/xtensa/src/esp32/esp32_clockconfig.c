@@ -50,8 +50,6 @@
 #include "xtensa.h"
 
 #ifndef CONFIG_SUPPRESS_CLOCK_CONFIG
-#warning REVISIT ... function prototypes
-
 void phy_get_romfunc_addr(void);
 void rtc_init_lite(void);
 void rtc_set_cpu_freq(xtal_freq_t xtal_freq, enum xtal_freq_e cpu_freq);
@@ -92,9 +90,8 @@ enum xtal_freq_e {
 
 void esp32_clockconfig(void)
 {
-#ifdef CONFIG_SUPPRESS_CLOCK_CONFIG
-#warning WARNING: Clock configuration disabled
-#else
+#ifndef CONFIG_SUPPRESS_CLOCK_CONFIG
+
 	uint32_t freq_mhz = CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ;
 	enum xtal_freq_e freq;
 

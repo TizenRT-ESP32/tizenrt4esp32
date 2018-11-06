@@ -165,16 +165,15 @@ static void xtensa_assert(int errorcode)
 
 void up_assert(const uint8_t *filename, int lineno)
 {
-#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
-	struct tcb_s *rtcb = this_task();
-#endif
-
 	board_autoled_on(LED_ASSERTION);
 
+#if defined(CONFIG_DEBUG)
 #if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
+	struct tcb_s *rtcb = this_task();
 	lldbg("Assertion failed at file:%s line: %d task: %s\n",filename, lineno, rtcb->name);
 #else
 	lldbg("Assertion failed at file:%s line: %d\n",filename, lineno);
+#endif
 #endif
 
 	xtensa_assert(EXIT_FAILURE);
@@ -204,18 +203,17 @@ void up_assert(const uint8_t *filename, int lineno)
 
 void xtensa_panic(int xptcode, uint32_t *regs)
 {
-#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
-	struct tcb_s *rtcb = this_task();
-#endif
-
 	/* We get here when a un-dispatch-able, irrecoverable exception occurs */
 
 	board_autoled_on(LED_ASSERTION);
 
+#if defined(CONFIG_DEBUG)
 #if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
+	struct tcb_s *rtcb = this_task();
 	lldbg("Unhandled Exception %d task: %s\n", xptcode, rtcb->name);
 #else
 	lldbg("Unhandled Exception %d\n", xptcode);
+#endif
 #endif
 
 	CURRENT_REGS = regs;
@@ -304,18 +302,17 @@ void xtensa_panic(int xptcode, uint32_t *regs)
 
 void xtensa_user(int exccause, uint32_t *regs)
 {
-#if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
-	struct tcb_s *rtcb = this_task();
-#endif
-
 	/* We get here when a un-dispatch-able, irrecoverable exception occurs */
 
 	board_autoled_on(LED_ASSERTION);
 
+#if defined(CONFIG_DEBUG)
 #if CONFIG_TASK_NAME_SIZE > 0 && defined(CONFIG_DEBUG_ERROR)
+	struct tcb_s *rtcb = this_task();
 	lldbg("User Exception: EXCCAUSE=%04x task: %s\n", exccause, rtcb->name);
 #else
 	lldbg("User Exception: EXCCAUSE=%04x\n", exccause);
+#endif
 #endif
 
 	CURRENT_REGS = regs;
