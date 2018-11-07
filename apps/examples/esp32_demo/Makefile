@@ -68,7 +68,12 @@ CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 
 ASRCS =
 CSRCS =
-MAINSRC = esp32_tash_main.c esp32_wifi_os_demo.c esp32_ledc.c
+MAINSRC = esp32_tash_main.c esp32_wifi_os_demo.c 
+
+ifeq ($(CONFIG_LEDC),y)
+CSRCS += esp32_ledc.c
+endif
+
 
 AOBJS = $(ASRCS:.S=$(OBJEXT))
 COBJS = $(CSRCS:.c=$(OBJEXT))
