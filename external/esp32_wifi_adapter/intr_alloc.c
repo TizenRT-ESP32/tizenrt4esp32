@@ -37,13 +37,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include "esp_attr.h"
+#include "esp_system.h"
 
 #define portNUM_PROCESSORS 1
-
-static inline xPortGetCoreID(void)
-{
-	return 0;
-}
 
 //This bitmask has an 1 if the int should be disabled when the flash is disabled.
 static uint32_t non_iram_int_mask[portNUM_PROCESSORS];
@@ -54,7 +50,7 @@ static bool non_iram_int_disabled_flag[portNUM_PROCESSORS];
 void IRAM_ATTR esp_intr_noniram_disable(void)
 {
 	int oldint;
-	int cpu = xPortGetCoreID();
+	int cpu = smp_processor_id();
 	int intmask = ~non_iram_int_mask[cpu];
 	if (non_iram_int_disabled_flag[cpu]) {
 		abort();
@@ -70,7 +66,7 @@ void IRAM_ATTR esp_intr_noniram_disable(void)
 
 void IRAM_ATTR esp_intr_noniram_enable(void)
 {
-	int cpu = xPortGetCoreID();
+	int cpu = smp_processor_id();
 	int intmask = non_iram_int_disabled[cpu];
 	if (!non_iram_int_disabled_flag[cpu]) {
 		abort();

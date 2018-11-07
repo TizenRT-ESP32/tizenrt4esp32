@@ -58,6 +58,7 @@ unsigned portENTER_CRITICAL_NESTED(void);
 void portEXIT_CRITICAL_NESTED(unsigned state);
 int os_get_random(unsigned char *buf, size_t len);
 uint32_t IRAM_ATTR esp_log_timestamp(void);
+int smp_processor_id(void);
 
 /**
   * @attention  application don't need to call this function anymore. It do nothing and will
