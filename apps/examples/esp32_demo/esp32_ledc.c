@@ -3,6 +3,7 @@
 #include <fcntl.h>
 
 /* select gpio pin4 as ledc pwm output, connect to LED power*/
+
 void test_ledc_soft(void)
 {
     int fd1;
@@ -17,6 +18,7 @@ void test_ledc_soft(void)
     ledc_info.ishwfade = 0;
     int dutys1[] = {256, 1024, 4096, 8191};
     for( int i = 0; i < 4; i++) {   
+
         ledc_info.duty = dutys1[i];  
         ioctl(fd1, LEDCIOC_SETCHARACTERISTICS, (unsigned long)((uintptr_t)&ledc_info));
         ioctl(fd1, LEDCIOC_START);
