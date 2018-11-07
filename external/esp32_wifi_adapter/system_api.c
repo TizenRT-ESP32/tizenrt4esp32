@@ -93,6 +93,16 @@ extern uint32_t xthal_get_ccount(void);
 
 static uint8_t base_mac_addr[6] = { 0 };
 
+int smp_processor_id(void)
+{
+#ifdef CONFIG_SMP
+       return up_cpu_index(); 
+#else
+    return 0; // PRO CPU
+#endif
+
+}
+
 esp_err_t esp_base_mac_addr_get(uint8_t *mac)
 {
 	uint8_t null_mac[6] = { 0 };

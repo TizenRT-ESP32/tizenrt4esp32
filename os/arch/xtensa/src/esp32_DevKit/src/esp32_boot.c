@@ -87,6 +87,8 @@
  *   and mapped but before any devices have been initialized.
  *
  ************************************************************************************/
+extern int board_ledc_setup(void);
+
 
 void esp32_board_initialize(void)
 {
@@ -158,5 +160,7 @@ void board_initialize(void)
 	board_gpio_initialize();
 
 	board_i2c_initialize();
+        
+    board_ledc_setup();
 }
 #endif
