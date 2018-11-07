@@ -11,6 +11,7 @@ FAR struct ledc_lowerhalf_s *esp32_ledcinitialize(int i);
 
 int board_ledc_setup(void)
 {
+#ifdef CONFIG_LEDC
     FAR struct ledc_lowerhalf_s *ledc;
     char path[10];
     int ret = 0;
@@ -33,6 +34,6 @@ int board_ledc_setup(void)
             return ret;
         }   
     }   
-
+#endif
     return OK; 
 }
