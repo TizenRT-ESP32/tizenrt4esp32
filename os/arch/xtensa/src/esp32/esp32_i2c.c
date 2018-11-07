@@ -208,7 +208,7 @@ static struct esp32_i2c_priv_s esp32_i2c0_priv = {
 
 static const i2c_config_t esp32_i2c1_config = {
 	.periph = ESP32_PERIPH_I2C_EXT1,
-#if defined(CONFIG_ESP32_I2C0_MODE_SLAVE) && (0 < CONFIG_ESP32_I2C0_MODE_SLAVE)
+#if defined(CONFIG_ESP32_I2C1_MODE_SLAVE) && (0 < CONFIG_ESP32_I2C1_MODE_SLAVE)
 	.mode = I2C_MODE_SLAVE,
 #else
 	.mode = I2C_MODE_MASTER,
