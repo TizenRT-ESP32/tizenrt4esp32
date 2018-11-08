@@ -65,8 +65,8 @@ typedef void *EventGroupHandle_t;
 
 /*
  * The type that holds event bits always matches TickType_t - therefore the
- * number of bits it holds is set by configUSE_16_BIT_TICKS (16 bits if set to 1,
- * 32 bits if set to 0.
+ * number of bits it holds is set by CONFIG_USE_16_BIT_TICKS (16 bits if defined
+ *  in .config, 32 bits if not.
  *
  * \ingroup EventGroup
  */
@@ -75,11 +75,10 @@ typedef TickType_t EventBits_t;
 /**
  * Create a new event group.
  *
- * Internally, within the FreeRTOS implementation, event groups use a [small]
- * block of memory, in which the event group's structure is stored.  If an event
- * groups is created using xEventGroupCreate() then the required memory is
- * automatically dynamically allocated inside the xEventGroupCreate() function.
- * (see http://www.freertos.org/a00111.html).  If an event group is created
+ * Internally, event groups use a [small] block of memory, in which the event
+ * group's structure is stored.  If an event groups is created using
+ * xEventGroupCreate() then the required memory is automatically dynamically
+ * allocated inside the xEventGroupCreate() function. If an event group is created
  * using xEventGropuCreateStatic() then the application writer must instead
  * provide the memory that will get used by the event group.
  * xEventGroupCreateStatic() therefore allows an event group to be created
@@ -87,15 +86,15 @@ typedef TickType_t EventBits_t;
  *
  * Although event groups are not related to ticks, for internal implementation
  * reasons the number of bits available for use in an event group is dependent
- * on the configUSE_16_BIT_TICKS setting in FreeRTOSConfig.h.  If
- * configUSE_16_BIT_TICKS is 1 then each event group contains 8 usable bits (bit
- * 0 to bit 7).  If configUSE_16_BIT_TICKS is set to 0 then each event group has
+ * on the CONFIG_USE_16_BIT_TICKS setting in FreeRTOSConfig.h.  If
+ * CONFIG_USE_16_BIT_TICKS is 1 then each event group contains 8 usable bits (bit
+ * 0 to bit 7).  If CONFIG_USE_16_BIT_TICKS is set to 0 then each event group has
  * 24 usable bits (bit 0 to bit 23).  The EventBits_t type is used to store
  * event bits within an event group.
  *
  * @return If the event group was created then a handle to the event group is
- * returned.  If there was insufficient FreeRTOS heap available to create the
- * event group then NULL is returned.  See http://www.freertos.org/a00111.html
+ * returned.  If there was insufficient heap available to create the
+ * event group then NULL is returned.
  *
  * Example usage:
  * @code{c}

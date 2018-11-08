@@ -72,7 +72,7 @@
 
 #include "event_groups.h"
 
-#if configUSE_16_BIT_TICKS == 1
+#if defined(CONFIG_USE_16_BIT_TICKS)
 #define eventCLEAR_EVENTS_ON_EXIT_BIT	0x0100U
 #define eventUNBLOCKED_DUE_TO_BIT_SET	0x0200U
 #define eventWAIT_FOR_ALL_BITS			0x0400U

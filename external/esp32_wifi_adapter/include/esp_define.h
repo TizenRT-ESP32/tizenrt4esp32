@@ -36,7 +36,7 @@ typedef _uint32_t uint32_t;
 typedef _int64_t int64_t;
 typedef _uint64_t uint64_t;
 
-#endif	/* 
+#endif	/*
  */
 
 #define portCHAR		int8_t
@@ -51,23 +51,23 @@ typedef portSTACK_TYPE StackType_t;
 typedef portBASE_TYPE BaseType_t;
 typedef unsigned portBASE_TYPE UBaseType_t;
 
-#if( configUSE_16_BIT_TICKS == 1 )
+#if defined(CONFIG_USE_16_BIT_TICKS)
 typedef uint16_t TickType_t;
 
-#define portMAX_DELAY ( TickType_t ) 0xffff
-#else	/* 
+#define portMAX_DELAY (TickType_t) 0xffff
+#else	/*
  */
 typedef uint32_t TickType_t;
 
-#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
-#endif	/* 
+#define portMAX_DELAY (TickType_t) 0xffffffffUL
+#endif	/*
  */
 
 
-#define pdFALSE			( ( BaseType_t ) 0 )
-#define pdTRUE			( ( BaseType_t ) 1 )
-#define pdPASS          ( pdTRUE )
-#define pdFAIL          ( pdFALSE)
+#define pdFALSE			((BaseType_t)0)
+#define pdTRUE			((BaseType_t)1)
+#define pdPASS          (pdTRUE)
+#define pdFAIL          (pdFALSE)
 
 
 
