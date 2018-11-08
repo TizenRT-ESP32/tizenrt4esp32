@@ -320,6 +320,7 @@ typedef struct _ETSTIMER_ {
 
 typedef struct _ETSTIMER_ {
 	WDOG_ID wdog;
+    wdentry_t func;
 } ETSTimer;
 
 /**
