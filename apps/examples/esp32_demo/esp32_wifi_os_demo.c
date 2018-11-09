@@ -138,8 +138,8 @@ void *timer_func(void *parm)
 
 void test_timer(void)
 {
-  g_wifi_osi_funcs._timer_arm(&mytimer, 10, 0);
   g_wifi_osi_funcs._timer_setfn(&mytimer, timer_func, NULL);
+  g_wifi_osi_funcs._timer_arm(&mytimer, 10, 0);
 }
 
 void test_time(void)
@@ -430,7 +430,6 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
     test_timer();
     //wait timer handler exit
     sleep(2);
-
     queue_operate_demo();
     usleep(3*1000*1000);
     event_group_demo();

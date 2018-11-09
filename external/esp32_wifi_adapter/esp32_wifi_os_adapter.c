@@ -426,7 +426,7 @@ static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat
 		return;
 	}
 	int delay = MSEC2TICK(tmout);
-	wd_start(etimer->wdog, delay, NULL, 0, NULL);
+    wd_start(etimer->wdog, delay, etimer->func, 0, NULL);
 
 }
 
@@ -447,6 +447,7 @@ static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 		dbg("timer is NULL\n");
 		return;
 	}
+    etimer->func = NULL;
 	wd_delete(etimer->wdog);
 }
 
@@ -461,7 +462,7 @@ static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *p
 	if (!etimer->wdog) {
 		return;
 	}
-	wd_start(etimer->wdog, 0, pfunction, 1, parg);
+    etimer->func = (wdentry_t)pfunction;
 }
 
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
@@ -472,7 +473,7 @@ static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repea
 		return;
 	}
 	int delay = USEC2TICK(us);
-	wd_start(etimer->wdog, delay, NULL, 0, NULL);
+    wd_start(etimer->wdog, delay, etimer->func, 0, NULL);
 }
 
 static inline int32_t IRAM_ATTR get_time_wrapper(void *t)
