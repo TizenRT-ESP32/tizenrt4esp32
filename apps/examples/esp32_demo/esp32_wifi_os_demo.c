@@ -58,12 +58,12 @@ void test_mutex(void)
     void *mutex = g_wifi_osi_funcs._mutex_create();
     if(!mutex)
         printf("mutex is NULL\n");
-    static int num = 0;  
+    static int num = 0;
     g_wifi_osi_funcs._mutex_lock(mutex);
     num++;
     g_wifi_osi_funcs._mutex_unlock(mutex);
     g_wifi_osi_funcs._mutex_delete(mutex);
-    printf("====Test mutex sucess====\n");    
+    printf("====Test mutex sucess====\n");
 }
 
 void test_recursive_mutex(void)
@@ -71,14 +71,14 @@ void test_recursive_mutex(void)
     void *mutex = g_wifi_osi_funcs._recursive_mutex_create();
     if(!mutex)
         printf("mutex is NULL\n");
-    static int num = 0;  
+    static int num = 0;
     g_wifi_osi_funcs._mutex_lock(mutex);
     g_wifi_osi_funcs._mutex_lock(mutex);
     num++;
     g_wifi_osi_funcs._mutex_unlock(mutex);
     g_wifi_osi_funcs._mutex_unlock(mutex);
     g_wifi_osi_funcs._mutex_delete(mutex);
-    printf("====Test recursive mutex sucess====\n");  
+    printf("====Test recursive mutex sucess====\n");
 }
 
 
@@ -96,26 +96,26 @@ void test_sem(void)
 
 }
 
-int handle; 
+int handle;
 void *taskfunc(void *parm)
 {
     int32_t ticks = g_wifi_osi_funcs._task_ms_to_tick(1000);
     if(ticks != 100)
         printf("task_ms_to_tick error\n");
     int32_t maxprio = g_wifi_osi_funcs._task_get_max_priority();
-    
+
     if(maxprio != 255)
         printf("task_get_max_priority error\n");
     void *taskhandle = g_wifi_osi_funcs._task_get_current_task();
-    
+
     int pid = *(int*)taskhandle;
     if(pid < 0)
         printf("task_get_current_task error\n");
 
-    g_wifi_osi_funcs._task_delay(100);      
+    g_wifi_osi_funcs._task_delay(100);
     if(g_wifi_osi_funcs._is_in_isr() != 0)
         printf("Test isr error\n");
-    g_wifi_osi_funcs._task_delete(&handle);      
+    g_wifi_osi_funcs._task_delete(&handle);
     printf("====Test task success====\n");
     return NULL;
 }
@@ -123,7 +123,7 @@ void *taskfunc(void *parm)
 void test_task(void)
 {
     g_wifi_osi_funcs._task_create(taskfunc, "test_task_control", 1024, NULL, 100, &handle);
-        
+
 }
 
 ETSTimer mytimer;
@@ -143,10 +143,10 @@ void test_timer(void)
 }
 
 void test_time(void)
-{ 
-  struct timeval t;    
+{
+  struct timeval t;
   g_wifi_osi_funcs._get_time(&t);
-  //printf("%ds, %dus\n", t.tv_sec, t.tv_usec);  
+  //printf("%ds, %dus\n", t.tv_sec, t.tv_usec);
   //int64_t period = get_instant_time();
   //printf("elapsed time from booting %lu\n", period);
   printf("===Test gettime success====\n");
@@ -285,18 +285,18 @@ void queue_operate_demo(void)
 
 //event group test code
 
-static EventGroupHandle_t test_event_group;
+static event_group_handle_t test_event_group;
 
 static void *event_group_setbit_thread(void *param)
 {
-	EventGroupHandle_t xEventGroup = (EventGroupHandle_t)param;
+	event_group_handle_t event_group = (event_group_handle_t)param;
 
-	EventBits_t event_bit[10] = {BIT9,BIT8,BIT7,BIT6,BIT5,BIT4,BIT3,BIT2,BIT1,BIT0};
+	event_bits_t event_bit[10] = {BIT9,BIT8,BIT7,BIT6,BIT5,BIT4,BIT3,BIT2,BIT1,BIT0};
 
-	if (xEventGroup) {
+	if (event_group) {
 		for (int i=0;i<10;i++) {
 			printf("Setbit_thread: %x\n",event_bit[i]);
-			xEventGroupSetBits(xEventGroup, event_bit[i]);
+			event_group_set_bits(event_group, event_bit[i]);
 		}
 	}
 	return NULL;
@@ -305,11 +305,11 @@ static void *event_group_setbit_thread(void *param)
 
 
 typedef struct {
-	EventGroupHandle_t xEventGroup;
-	EventBits_t uxBitsToWaitFor;
-	BaseType_t xClearOnExit;
-	BaseType_t xWaitForAllBits;
-	TickType_t xTicksToWait;
+	event_group_handle_t event_group;
+	event_bits_t bits_to_wait_for;
+	base_type_t clear_on_exit;
+	base_type_t wait_for_all_bits;
+	tick_type_t ticks_to_wait;
 }test_group_event_struct_t;
 
 
@@ -318,12 +318,12 @@ static void *event_group_waitbit_thread(void *param)
 {
 	test_group_event_struct_t *test_group_event_parameter = (test_group_event_struct_t *)param;
 	if (test_group_event_parameter) {
-		printf("Wait for 0x%x!, zzzZZZZ!\n",test_group_event_parameter->uxBitsToWaitFor);
-		xEventGroupWaitBits(test_group_event_parameter->xEventGroup,test_group_event_parameter->uxBitsToWaitFor,
-			                test_group_event_parameter->xClearOnExit,test_group_event_parameter->xWaitForAllBits,
-			                test_group_event_parameter->xTicksToWait);
+		printf("Wait for 0x%x!, zzzZZZZ!\n",test_group_event_parameter->bits_to_wait_for);
+		event_group_wait_bits(test_group_event_parameter->event_group,test_group_event_parameter->bits_to_wait_for,
+			                test_group_event_parameter->clear_on_exit,test_group_event_parameter->wait_for_all_bits,
+			                test_group_event_parameter->ticks_to_wait);
 
-		printf("Week up because 0x%x!, do nothing!\n",test_group_event_parameter->uxBitsToWaitFor);
+		printf("Week up because 0x%x!, do nothing!\n",test_group_event_parameter->bits_to_wait_for);
 	}
 	return NULL;
 }
@@ -338,7 +338,7 @@ static void create_wait_event_threads(void)
 	pthread_attr_t attr;
 
 
-	EventBits_t event_bit[10] = {BIT0,BIT1,BIT2,BIT3,BIT4,BIT5,BIT6,BIT7,BIT8,BIT9};
+	event_bits_t event_bit[10] = {BIT0,BIT1,BIT2,BIT3,BIT4,BIT5,BIT6,BIT7,BIT8,BIT9};
 	if (pthread_attr_init(&attr) != 0) {
 		printf("Error: Cannot initialize ptread attribute\n");
 		return;
@@ -349,11 +349,11 @@ static void create_wait_event_threads(void)
 
 	if(test_event_group) {
 		for (int i =0;i<10;i++) {
-			test_group_event_parameter[i].xEventGroup = test_event_group;
-			test_group_event_parameter[i].uxBitsToWaitFor = event_bit[i];
-			test_group_event_parameter[i].xClearOnExit = true;
-			test_group_event_parameter[i].xWaitForAllBits = false;
-			test_group_event_parameter[i].xTicksToWait = 0xffff;
+			test_group_event_parameter[i].event_group = test_event_group;
+			test_group_event_parameter[i].bits_to_wait_for = event_bit[i];
+			test_group_event_parameter[i].clear_on_exit = true;
+			test_group_event_parameter[i].wait_for_all_bits = false;
+			test_group_event_parameter[i].ticks_to_wait = 0xffff;
 			printf("creat event_group_waitbit_thread\n");
 			status = pthread_create(&event_group_waitbit_thread_handle[i],&attr, event_group_waitbit_thread, &test_group_event_parameter[i]);
 			if (status != 0) {
@@ -381,7 +381,7 @@ void event_group_demo(void)
 	int status = -1;
 	pthread_attr_t attr;
 
-	test_event_group = xEventGroupCreate();
+	test_event_group = event_group_create();
 	if (!test_event_group) {
 		printf("Create event group failed!\n");
 		return;
@@ -407,7 +407,7 @@ void event_group_demo(void)
 
 	join_wait_event_threads();
 
-	vEventGroupDelete(test_event_group);
+	event_group_delete(test_event_group);
 
 	printf("end event group test!\n");
 
