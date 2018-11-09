@@ -138,18 +138,26 @@ void *timer_func(void *parm)
 
 void test_timer(void)
 {
-  g_wifi_osi_funcs._timer_setfn(&mytimer, timer_func, NULL);
-  g_wifi_osi_funcs._timer_arm(&mytimer, 10, 0);
+    g_wifi_osi_funcs._timer_setfn(&mytimer, timer_func, NULL);
+    g_wifi_osi_funcs._timer_arm(&mytimer, 10, 0);
 }
 
 void test_time(void)
 {
-  struct timeval t;
-  g_wifi_osi_funcs._get_time(&t);
-  //printf("%ds, %dus\n", t.tv_sec, t.tv_usec);
-  //int64_t period = get_instant_time();
-  //printf("elapsed time from booting %lu\n", period);
-  printf("===Test gettime success====\n");
+/*rtc is not enabled, currently basetime is 2012-01-06, 00:00:00*/ 
+    struct timeval tv; 
+    struct tm* ptm;
+    char time_string[40];
+    long milliseconds; 
+    g_wifi_osi_funcs._get_time(&tv);    
+    ptm = localtime (&tv.tv_sec);
+    ptm = (struct tm *)localtime(&tv.tv_sec);
+    (void)strftime(time_string, 40, "%Y-%m-%d %H:%M:%SUTC", ptm);
+    milliseconds = tv.tv_usec / 1000;
+    printf("%s.%03ld\n", time_string, milliseconds);  
+    int64_t bootime_ms = g_wifi_osi_funcs._esp_timer_get_time();
+    printf("%lld\n", bootime_ms);  
+    printf("===Test gettime success====\n");
 }
 
 typedef struct {
