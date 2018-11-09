@@ -39,35 +39,35 @@ typedef _uint64_t uint64_t;
 #endif	/*
  */
 
-#define portCHAR		int8_t
-#define portFLOAT		float
-#define portDOUBLE		double
-#define portLONG		int32_t
-#define portSHORT		int16_t
-#define portSTACK_TYPE	uint8_t
-#define portBASE_TYPE	int
+#define port_char		int8_t
+#define port_float		float
+#define port_double		double
+#define port_long		int32_t
+#define port_short		int16_t
+#define port_stack_type	uint8_t
+#define port_base_type	int
 
-typedef portSTACK_TYPE StackType_t;
-typedef portBASE_TYPE BaseType_t;
-typedef unsigned portBASE_TYPE UBaseType_t;
+typedef port_stack_type stack_type_t;
+typedef port_base_type base_type_t;
+typedef unsigned port_base_type u_base_type_t;
 
 #if defined(CONFIG_USE_16_BIT_TICKS)
-typedef uint16_t TickType_t;
+typedef uint16_t tick_type_t;
 
-#define portMAX_DELAY (TickType_t) 0xffff
+#define port_max_delay (tick_type_t) 0xffff
 #else	/*
  */
-typedef uint32_t TickType_t;
+typedef uint32_t tick_type_t;
 
-#define portMAX_DELAY (TickType_t) 0xffffffffUL
+#define port_max_delay (tick_type_t) 0xffffffffUL
 #endif	/*
  */
 
 
-#define pdFALSE			((BaseType_t)0)
-#define pdTRUE			((BaseType_t)1)
-#define pdPASS          (pdTRUE)
-#define pdFAIL          (pdFALSE)
+#define WIFI_ADAPTER_FALSE			((base_type_t)0)
+#define WIFI_ADAPTER_TRUE			((base_type_t)1)
+#define pdPASS          (WIFI_ADAPTER_TRUE)
+#define pdFAIL          (WIFI_ADAPTER_FALSE)
 
 
 

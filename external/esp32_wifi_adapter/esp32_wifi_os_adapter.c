@@ -141,7 +141,7 @@ static void IRAM_ATTR semphr_delete_wrapper(void *semphr)
 static int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
 {
 
-	*(bool *) hptw = pdFALSE;
+	*(bool *) hptw = WIFI_ADAPTER_FALSE;
 	FAR struct tcb_s *stcb = NULL;
 	FAR struct tcb_s *rtcb = this_task();
 	sem_t *sem = (sem_t *) semphr;
@@ -168,7 +168,7 @@ static int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
 			for (stcb = (FAR struct tcb_s *)g_waitingforsemaphore.head; (stcb && stcb->waitsem != sem); stcb = stcb->flink) ;
 			if (stcb) {
 				if (stcb->sched_priority >= rtcb->sched_priority) {
-					*(bool *) hptw = pdTRUE;
+					*(bool *) hptw = WIFI_ADAPTER_TRUE;
 				}
 			}
 		}
@@ -242,7 +242,7 @@ static int32_t IRAM_ATTR semphr_give_wrapper(void *semphr)
 
 static int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
 {
-	*(int *)hptw = pdFALSE;
+	*(int *)hptw = WIFI_ADAPTER_FALSE;
 	return semphr_give_wrapper(semphr);
 }
 
@@ -609,10 +609,10 @@ static void IRAM_ATTR task_yield_from_isr_wrapper(void)
 static uint32_t IRAM_ATTR event_group_wait_bits_wrapper(void *event, uint32_t bits_to_wait_for, int32_t clear_on_exit, int32_t wait_for_all_bits, uint32_t block_time_tick)
 {
 	if (block_time_tick == OSI_FUNCS_TIME_BLOCKING) {
-		return (uint32_t) xEventGroupWaitBits(event, bits_to_wait_for, clear_on_exit, wait_for_all_bits, portMAX_DELAY);
-	} else {
-		return (uint32_t) xEventGroupWaitBits(event, bits_to_wait_for, clear_on_exit, wait_for_all_bits, block_time_tick);
+		return (uint32_t) event_group_wait_bits(event, bits_to_wait_for, clear_on_exit, wait_for_all_bits, port_max_delay);
 	}
+
+	return (uint32_t) event_group_wait_bits(event, bits_to_wait_for, clear_on_exit, wait_for_all_bits, block_time_tick);
 }
 
 uint32_t IRAM_ATTR esp_get_free_heap_size(void)
@@ -759,10 +759,10 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._queue_recv = queue_recv_wrapper,
 	//._queue_recv_from_isr = xQueueReceiveFromISR,
 	._queue_msg_waiting = queue_msg_waiting_wrapper,
-	._event_group_create = xEventGroupCreate,
-	._event_group_delete = vEventGroupDelete,
-	._event_group_set_bits = xEventGroupSetBits,
-	._event_group_clear_bits = xEventGroupClearBits,
+	._event_group_create = event_group_create,
+	._event_group_delete = event_group_delete,
+	._event_group_set_bits = event_group_set_bits,
+	._event_group_clear_bits = event_group_clear_bits,
 	._event_group_wait_bits = event_group_wait_bits_wrapper,
 	._task_create_pinned_to_core = task_create_pinned_to_core_wrapper,
 	._task_create = task_create_wrapper,
