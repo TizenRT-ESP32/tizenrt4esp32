@@ -6,26 +6,39 @@
 TizenRT is lightweight RTOS-based platform to support low-end IoT devices.  
 Please find project details at [Wiki](https://github.com/Samsung/TizenRT/wiki) especially **[documentations page](https://github.com/Samsung/TizenRT/wiki/Documentations)**.
 
-## Contents
 
-> [Quick Start](#quick-start)  
-> [Supported Board / Emulator](#supported-board--emulator)  
+## 1. Getting the toolchain
 
-## Quick Start
+### For ARM architecture:
 
-TizenRT provides the easiest way to build with the use of [Docker](https://www.docker.com/).  
-There is no need to install the required libraries and toolchains since the provided Docker container already includes everything required for TizenRT development.  
-However, if your development systems are not eligible for running the Docker container, all libraries and toolchains should be manually installed.  
-Please refer to [Manual Setup Build Environment](docs/HowToSetEnv.md).
+Install the OS specific toolchain. Supported OS Type's are "linux" and "mac".  
+Get the build in binaries and libraries, [gcc-arm-none-eabi-6-2017-q1-update-*OS Type*.tar.bz2](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads/6-2017-q1-update)  
+Untar the gcc-arm-none-eabi-6-2017-q1-update-*OS Type*.tar.bz2 and export the path like
 
-For more infomation of libraries in the TizenRT Docker Image, see https://hub.docker.com/r/tizenrt/tizenrt/.
+```bash
+tar xvjf gcc-arm-none-eabi-6-2017-q1-update-[OS Type].tar.bz2
+export PATH=<Your Toolchain PATH>:$PATH
+```
+Be aware that recommanded toolchain is fully working on 64bits machine.
 
-### 1. Install Docker
+### For Xtensa architecture, esp32 board:
 
-To install OS specific Docker engines, see https://docs.docker.com/install/linux/docker-ce/ubuntu/.  
-If you already have a Docker engine, please skip this step.
+Get the build in binaries and libraries
 
-### 2. Getting TizenRT source code
+64-bit Linux：
+
+[xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz](https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz)
+
+32-bit Linux：
+
+[xtensa-esp32-elf-linux32-1.22.0-80-g6c4433a-5.2.0.tar.gz](https://dl.espressif.com/dl/xtensa-esp32-elf-linux32-1.22.0-80-g6c4433a-5.2.0.tar.gz)
+
+```bash
+tar xvjf xtensa-esp32-elf-[linux*]-1.22.0-80-g6c4433a-5.2.0.tar.gz
+export PATH=<Your Toolchain PATH>:$PATH
+```
+
+## 2. Getting TizenRT source code
 
 ```bash
 git clone https://github.com/Samsung/TizenRT.git
@@ -35,7 +48,9 @@ TIZENRT_BASEDIR="$PWD"
 **Note**: To contribute in this community, you need to clone your forked private repository instead.  
           Github guides this by [working-with-forks](https://help.github.com/articles/working-with-forks).
 
-### 3. Configuration
+## 3. How to Build
+
+Configure the build from $TIZENRT_BASEDIR/os/tools directory
 
 ```bash
 cd os
@@ -50,68 +65,56 @@ To check all pre-defined configurations, type as follows:
 ./configure.sh --help
 ```
 
-#### 3.1 Additional Configuration
-
-After basic configuration by [3. Configuration](#3-configuration), you can customize configurations optionally with **menuconfig**.
-
-```bash
-./dbuild.sh menuconfig
-```
-
-This command might require ```sudo``` for root permission.  
-To run Docker without ```sudo```, refer to https://docs.docker.com/install/linux/linux-postinstall/.
-
-### 4. Compilation
+After configuring above, configuration can be modified through *make menuconfig* from *$TIZENRT_BASEDIR/os*.
+Howerver, menuconfig isn't ready for Xtensa architecture esp32 board. Please do not use it for esp32 board.
 
 ```bash
-./dbuild.sh
+cd ..
+make menuconfig
 ```
 
-Built binaries are located in *$TIZENRT_BASEDIR/build/output/bin*.
+Refer [kconfig-frontend installation](docs/HowtoInstallKconfigFrontend.md) to use *menuconfig*.
 
-#### 4.1 Clean
-
-There are two types of clean commands, clean and distclean.
+Export your toolchain:
 
 ```bash
-./dbuild.sh clean
+cd os
+source setenv.sh <Your Toolchain PATH>
 ```
-
-This command removes built files including objects, libraries, .depend, Make.dep, etc.  
-After modifying configuration with menuconfig, this command is required.
+Or, 
 
 ```bash
-./dbuild.sh distclean
+export PATH=<Your Toolchain PATH>:$PATH
 ```
 
-This command includes the *clean* option and additionally removes configured files including .config, Make.defs and linked folders / files.  
-Before changing basic configuration with ```./configure.sh``` command, this command is required to delete pre-set configurations.
-
-### 5. Programming
-
+Finally, initiate build by make from *$TIZENRT_BASEDIR/os*.
 ```bash
-./dbuild.sh download [OPTION]
+make
 ```
 
-TizenRT supports *download* command to program a binary into a board.  
-You might be required to set up usb driver. For more information, please refer to [Supported board / Emulator](#supported-board--emulator).
+## 4. How to burn images
 
-```OPTION``` designates which flash partitions are flashed.  
-For example, ```ALL``` means programming all of binaries. This also depends on each board.
+After compiling,  "tinyara.bin" are built in the $TIZENRT_BASEDIR/build/ directory.
+Burn the image by performing the following commands in $TIZENRT_BASEDIR/os/:
 
-## Supported Board / Emulator
+Burn ALL the images:
 
-TizenRT supports multiple boards as well as QEMU.  
-The linked page for each board includs board-specific environments, programming method, and board information.
+ ```bash
+cd $TIZENRT_BASEDIR/os
+make download ALL
+```
 
-ARTIK053 [[details]](build/configs/artik053/README.md)
+Burn the bootloader:
 
-ARTIK053S [[details]](build/configs/artik053s/README.md)
+ ```bash
+cd $TIZENRT_BASEDIR/os
+make download BOOTLOADER
+```
 
-ARTIK055S [[details]](build/configs/artik055s/README.md)
+Burn the TizenRT image:
 
-CY4390X [[details]](build/configs/cy4390x/README.txt)
+ ```bash
+cd $TIZENRT_BASEDIR/os
+make download APP
+```
 
-SIDK_S5JT200 [[details]](build/configs/sidk_s5jt200/README.md)
-
-QEMU [[details]](build/configs/qemu/README.md)
