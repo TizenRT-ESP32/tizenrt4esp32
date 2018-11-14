@@ -98,6 +98,16 @@ size_t up_progmem_npages(void);
 bool up_progmem_isuniform(void);
 
 /****************************************************************************
+ * Name: up_progmem_blocksize
+ *
+ * Description:
+ *   Return erase block size
+ *
+ ****************************************************************************/
+
+size_t up_progmem_blocksize(void);
+
+/****************************************************************************
  * Name: up_progmem_pagesize
  *
  * Description:
@@ -216,6 +226,36 @@ ssize_t up_progmem_ispageerased(size_t page);
  ****************************************************************************/
 
 ssize_t up_progmem_write(size_t addr, const void *buf, size_t count);
+
+/****************************************************************************
+ * Name: up_progmem_read
+ *
+ * Description:
+ *   Read data at given address
+ *
+ *   Note: this function is not limited to single page and nor it requires
+ *   the address be aligned inside the page boundaries.
+ *
+ * Input Parameters:
+ *   addr  - Address with or without flash offset (absolute or aligned to page0)
+ *   buf   - Pointer to buffer
+ *   count - Number of bytes to read *
+ *
+ * Returned Value:
+ *   Bytes read or negative value on error.  The following errors are
+ *   reported (errno is not set!)
+ *
+ *     EINVAL: if count is not aligned with the flash boundaries (i.e.
+ *        some MCU's require per half-word or even word access)
+ *     EFAULT: On invalid address
+ *     EIO: On unsuccessful write
+ *     EROFS: On access to read protected area
+ *     EACCES: Insufficient permissions (read/write protected)
+ *     EPERM: If operation is not permitted due to some other constraints
+ *        (i.e. some internal block is not running etc.)
+ *
+ ****************************************************************************/
+ssize_t up_progmem_read(size_t addr, void *buf, size_t count);
 
 /* TODO: Define the following functions and their options:
  *  - up_progmem_protect()
