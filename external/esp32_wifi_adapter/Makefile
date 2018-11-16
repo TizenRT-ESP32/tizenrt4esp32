@@ -41,7 +41,7 @@ CSRCS = esp32_wifi_os_adapter.c
 CSRCS += phy_init.c hw_random.c  system_api.c esp_ota_eps.c intr_alloc.c clk.c 
 CSRCS += event_groups.c esp32_queue_api.c 
 
-#CSRCS +=  $(wildcard ./spi_flash/*.c)
+CSRCS +=  $(wildcard ./spi_flash/*.c)
 
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 CFLAGS += -I./spi_flash/include

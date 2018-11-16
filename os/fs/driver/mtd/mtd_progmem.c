@@ -55,7 +55,7 @@
  ****************************************************************************/
 
 #include <tinyara/config.h>
-
+#include <stdio.h>
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -169,15 +169,17 @@ static int32_t progmem_log2(uint32_t num)
 
 static int progmem_erase(FAR struct mtd_dev_s *dev, off_t startblock, size_t nblocks)
 {
-	int page;
 	ssize_t result;
-	FAR struct progmem_dev_s *priv = (FAR struct progmem_dev_s *)dev;
-
 
 	/* Erase the specified blocks and return status (OK or a negated errno) */
 	while (nblocks > 0) {
-		page = startblock << (priv->blkshift - priv->pgshift);
+#ifdef CONFIG_MTD_ERASE_PAGE
+		FAR struct progmem_dev_s *priv = (FAR struct progmem_dev_s *)dev;
+		int page = startblock << (priv->blkshift - priv->pgshift);
 		result = up_progmem_erasepage(page);
+#else
+		result = up_progmem_erasepage(startblock);
+#endif
 		if (result < 0) {
 			return (int)result;
 		}
@@ -202,6 +204,7 @@ static int progmem_erase(FAR struct mtd_dev_s *dev, off_t startblock, size_t nbl
 static ssize_t progmem_bread(FAR struct mtd_dev_s *dev, off_t startblock, size_t nblocks, FAR uint8_t *buffer)
 {
 	FAR struct progmem_dev_s *priv = (FAR struct progmem_dev_s *)dev;
+#ifdef CONFIG_MTD_MEMMAP
 	FAR const uint8_t *src;
 
 	/* Read the specified blocks into the provided user buffer and return
@@ -212,6 +215,11 @@ static ssize_t progmem_bread(FAR struct mtd_dev_s *dev, off_t startblock, size_t
 	src = (FAR const uint8_t *)up_progmem_getaddress(startblock);
 	memcpy(buffer, src, nblocks << priv->pgshift);
 	return nblocks;
+#else
+	ssize_t result;
+	result = up_progmem_read(startblock << priv->pgshift, buffer, nblocks << priv->pgshift);
+	return result < 0 ? result : nblocks;
+#endif
 }
 
 /****************************************************************************
@@ -231,7 +239,7 @@ static ssize_t progmem_bwrite(FAR struct mtd_dev_s *dev, off_t startblock, size_
 	 * (The positive, number of blocks actually written or a negated errno)
 	 */
 
-	result = up_progmem_write(up_progmem_getaddress(startblock), buffer, nblocks << priv->pgshift);
+	result = up_progmem_write(startblock << priv->pgshift, buffer, nblocks << priv->pgshift);
 	return result < 0 ? result : nblocks;
 }
 
@@ -245,6 +253,7 @@ static ssize_t progmem_bwrite(FAR struct mtd_dev_s *dev, off_t startblock, size_
 
 static ssize_t progmem_read(FAR struct mtd_dev_s *dev, off_t offset, size_t nbytes, FAR uint8_t *buffer)
 {
+#ifdef CONFIG_MTD_MEMMAP
 	FAR struct progmem_dev_s *priv = (FAR struct progmem_dev_s *)dev;
 	FAR const uint8_t *src;
 	off_t block;
@@ -253,12 +262,14 @@ static ssize_t progmem_read(FAR struct mtd_dev_s *dev, off_t offset, size_t nbyt
 	 * status (The positive, number of bytes actually read or a negated
 	 * errno)
 	 */
-
 	block = offset >> priv->pgshift;
-	src = (FAR const uint8_t *)up_progmem_getaddress(block) +
-				(offset & ((1 << priv->pgshift) - 1));
+	src = (FAR const uint8_t *)up_progmem_getaddress(block) + (offset & ((1 << priv->pgshift) - 1));
 	memcpy(buffer, src, nbytes);
 	return nbytes;
+#else
+	ssize_t result = up_progmem_read(offset, (void *)buffer, nbytes);
+	return result < 0 ? result : nbytes;
+#endif
 }
 
 /****************************************************************************
@@ -282,8 +293,7 @@ static ssize_t progmem_write(FAR struct mtd_dev_s *dev, off_t offset, size_t nby
 	 */
 
 	block = offset >> priv->pgshift;
-	result = up_progmem_write(up_progmem_getaddress(block) +
-			(offset & ((1 << priv->pgshift) - 1)), buffer, nbytes);
+	result = up_progmem_write(up_progmem_getaddress(block) + (offset & ((1 << priv->pgshift) - 1)), buffer, nbytes);
 	return result < 0 ? result : nbytes;
 }
 #endif
@@ -296,7 +306,6 @@ static int progmem_ioctl(FAR struct mtd_dev_s *dev, int cmd, unsigned long arg)
 {
 	FAR struct progmem_dev_s *priv = (FAR struct progmem_dev_s *)dev;
 	int ret = -EINVAL;			/* Assume good command with bad parameters */
-
 	switch (cmd) {
 	case MTDIOC_GEOMETRY: {
 		FAR struct mtd_geometry_s *geo = (FAR struct mtd_geometry_s *)arg;
@@ -310,8 +319,8 @@ static int progmem_ioctl(FAR struct mtd_dev_s *dev, int cmd, unsigned long arg)
 			 * appear so.
 			 */
 
-			geo->blocksize = (1 << priv->pgshift);		/* Size of one read/write block */
-			geo->erasesize = (1 << priv->blkshift);		/* Size of one erase block */
+			geo->blocksize = (1 << priv->pgshift);	/* Size of one read/write block */
+			geo->erasesize = (1 << priv->blkshift);	/* Size of one erase block */
 			geo->neraseblocks = up_progmem_npages();	/* Number of erase blocks */
 			ret = OK;
 		}

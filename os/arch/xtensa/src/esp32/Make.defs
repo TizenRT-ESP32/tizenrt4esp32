@@ -107,8 +107,11 @@ ifeq ($(CONFIG_I2C),y)
 CHIP_CSRCS += esp32_i2c.c
 endif
 
-
-
+ifeq ($(CONFIG_FS_SMARTFS),y)
+CHIP_CSRCS += esp32_flash.c
+CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/include
+CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/spi_flash/include
+endif
 # Configuration-dependent ESP32 files
 
 ifeq ($(CONFIG_SMP),y)
