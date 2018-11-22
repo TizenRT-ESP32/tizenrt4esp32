@@ -25,12 +25,12 @@ VPATH = .
 CXXSRCS =
 
 # Include wireless drivers
-#CXXSRCS += nvs_flash/src/nvs_item_hash_list.cpp 
-#CXXSRCS += nvs_flash/src/nvs_page.cpp
-#CXXSRCS += nvs_flash/src/nvs_pagemanager.cpp
-#CXXSRCS += nvs_flash/src/nvs_storage.cpp
-#CXXSRCS += nvs_flash/src/nvs_types.cpp
-#CXXSRCS += nvs_flash/src/nvs_api.cpp 
+CXXSRCS += nvs_flash/src/nvs_item_hash_list.cpp 
+CXXSRCS += nvs_flash/src/nvs_page.cpp
+CXXSRCS += nvs_flash/src/nvs_pagemanager.cpp
+CXXSRCS += nvs_flash/src/nvs_storage.cpp
+CXXSRCS += nvs_flash/src/nvs_types.cpp
+CXXSRCS += nvs_flash/src/nvs_api.cpp 
 
 CXXFLAGS += -I./include
 CXXFLAGS += -I./nvs_flash/include

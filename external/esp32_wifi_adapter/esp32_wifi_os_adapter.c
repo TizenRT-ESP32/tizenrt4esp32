@@ -340,7 +340,7 @@ static int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, con
 #ifndef CONFIG_SMP
 	return task_create_wrapper(task_func, name, stack_depth, param, prio, task_handle);
 #else
-	/*currently TizenRT not support SMP*/
+	/*currently TizenRT not support SMP */
 	return pdFAIL;
 #endif
 }
@@ -426,7 +426,7 @@ static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat
 		return;
 	}
 	int delay = MSEC2TICK(tmout);
-    wd_start(etimer->wdog, delay, etimer->func, 0, NULL);
+	wd_start(etimer->wdog, delay, etimer->func, 0, NULL);
 
 }
 
@@ -447,7 +447,7 @@ static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 		dbg("timer is NULL\n");
 		return;
 	}
-    etimer->func = NULL;
+	etimer->func = NULL;
 	wd_delete(etimer->wdog);
 }
 
@@ -462,7 +462,7 @@ static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *p
 	if (!etimer->wdog) {
 		return;
 	}
-    etimer->func = (wdentry_t)pfunction;
+	etimer->func = (wdentry_t) pfunction;
 }
 
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
@@ -473,7 +473,7 @@ static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repea
 		return;
 	}
 	int delay = USEC2TICK(us);
-    wd_start(etimer->wdog, delay, etimer->func, 0, NULL);
+	wd_start(etimer->wdog, delay, etimer->func, 0, NULL);
 }
 
 static inline int32_t IRAM_ATTR get_time_wrapper(void *t)
@@ -791,18 +791,18 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._timer_setfn = timer_setfn_wrapper,
 	._timer_arm_us = timer_arm_us_wrapper,
 	._esp_timer_get_time = get_instant_time,
-//    ._nvs_set_i8 = nvs_set_i8,
-//    ._nvs_get_i8 = nvs_get_i8,
-	//  ._nvs_set_u8 = nvs_set_u8,
-	// ._nvs_get_u8 = nvs_get_u8,
-	// ._nvs_set_u16 = nvs_set_u16,
-	// ._nvs_get_u16 = nvs_get_u16,
-	// ._nvs_open = esp_nvs_open_wrapper,
-	// ._nvs_close = nvs_close,
-	// ._nvs_commit = nvs_commit,
-	// ._nvs_set_blob = nvs_set_blob,
-	// ._nvs_get_blob = nvs_get_blob,
-	// ._nvs_erase_key = nvs_erase_key,
+	._nvs_set_i8 = nvs_set_i8,
+	._nvs_get_i8 = nvs_get_i8,
+	._nvs_set_u8 = nvs_set_u8,
+	._nvs_get_u8 = nvs_get_u8,
+	._nvs_set_u16 = nvs_set_u16,
+	._nvs_get_u16 = nvs_get_u16,
+	._nvs_open = esp_nvs_open_wrapper,
+	._nvs_close = nvs_close,
+	._nvs_commit = nvs_commit,
+	._nvs_set_blob = nvs_set_blob,
+	._nvs_get_blob = nvs_get_blob,
+	._nvs_erase_key = nvs_erase_key,
 	._get_random = esp_os_get_random_wrapper,
 	._get_time = get_time_wrapper,
 	._random = esp_random,

@@ -33,13 +33,20 @@
 #include "esp32_queue_api.h"
 #include <rom/ets_sys.h>
 #include <time.h>
-
+#include <nvs.h>
 
 //Will enable later.
 #define QUEUE_SEND_HANDLER_STACKSIZE (1024 * 4)
 #define RANDOM_TEST_TIME (20)
 
 extern wifi_osi_funcs_t g_wifi_osi_funcs;
+
+void test_nvs(void)
+{
+    nvs_handle handle_1;
+    g_wifi_osi_funcs._nvs_open("test_namespace1", NVS_READONLY, &handle_1);
+}
+
 
 /*testcase*/
 void test_rand(void)
@@ -427,6 +434,7 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 #ifdef CONFIG_LEDC
     test_ledc_soft();
 #endif
+    test_nvs();
     test_rand();
     test_mutex();
     test_recursive_mutex();
