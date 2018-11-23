@@ -59,6 +59,17 @@
 #include <unistd.h>
 #include <apps/shell/tash.h>
 
+#include <tinyara/fs/fs.h>
+#include <tinyara/fs/ioctl.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <errno.h>
+
+#if defined(CONFIG_ADC)
+#include <tinyara/analog/adc.h>
+#define ADC_MAX_SAMPLES	4
+#define TEST_TIME_SEC   30
+#endif
 
 /****************************************************************************
  * Definitions
@@ -129,6 +140,103 @@ static int esp32_wifi_os_cb(int argc, char **args)
 
 }
 
+
+static int esp32_adc_os_cb(int argc, char **args)
+{
+#if defined(CONFIG_ADC)
+    int ret;
+    struct adc_msg_s samples[ADC_MAX_SAMPLES];
+    ssize_t nbytes;
+
+    int fd_adc = open("/dev/adc0", O_RDONLY);
+    if (fd_adc < 0) {
+        printf("%s: open failed: %d\n", __func__, errno);
+        return -1;
+    }
+
+    int i = 0;
+#if 1
+    ret = ioctl(fd_adc, ANIOC_TRIGGER, 0);
+    if (ret < 0) {
+        printf("%s: ioctl failed: %d\n", __func__, errno);
+        close(fd_adc);
+        return ret;
+    }
+    while (i++ < TEST_TIME_SEC) {
+        nbytes = read(fd_adc, samples, sizeof(samples));
+        if (nbytes < 0) {
+            if (errno != EINTR) {
+                printf("%s: read failed: %d\n", __func__, errno);
+                close(fd_adc);
+                return -2;
+            }
+        }
+        else if (nbytes == 0) {
+            printf("%s: No data read, Ignoring\n", __func__);
+        }
+        else {
+            int nsamples = nbytes / sizeof(struct adc_msg_s);
+            if (nsamples * sizeof(struct adc_msg_s) != nbytes) {
+                printf("%s: read size=%ld is not a multiple of sample size=%d, Ignoring\n", __func__, (long)nbytes, sizeof(struct adc_msg_s));
+            }
+            else {
+                printf("Sample:\n");
+                int i;
+                for (i = 0; i < nsamples; i++) {
+                    printf("%d: channel: %d, value: %d\n", i + 1, samples[i].am_channel, samples[i].am_data);
+                }
+                printf("\n\n");
+            }
+        }
+
+        sleep(1);
+    }
+#else
+    while (i++ < TEST_TIME_SEC){
+        ret = ioctl(fd_adc, ANIOC_TRIGGER, 0);
+        if (ret < 0) {
+            printf("%s: ioctl failed: %d\n", __func__, errno);
+            close(fd_adc);
+            return ret;
+        }
+
+        nbytes = read(fd_adc, samples, sizeof(struct adc_msg_s));//Read one
+        if (nbytes < 0) {
+            if (errno != EINTR) {
+                printf("%s: read failed: %d\n", __func__, errno);
+                close(fd_adc);
+                return -2;
+            }
+        }
+        else if (nbytes == 0) {
+            printf("%s: No data read, Ignoring\n", __func__);
+        }
+        else {
+            int nsamples = nbytes / sizeof(struct adc_msg_s);
+            if (nsamples * sizeof(struct adc_msg_s) != nbytes) {
+                printf("%s: read size=%ld is not a multiple of sample size=%d, Ignoring\n", __func__, (long)nbytes, sizeof(struct adc_msg_s));
+            }
+            else {
+                printf("Sample:\n");
+                int i;
+                for (i = 0; i < nsamples; i++) {
+                    printf("%d: channel: %d, value: %d\n", i + 1, samples[i].am_channel, samples[i].am_data);
+                }
+                printf("\n\n");
+            }
+        }
+
+        //usleep(3000000);
+        sleep(1);
+    }
+#endif
+    close(fd_adc);
+#endif
+    printf("ADC test ends!\n\n\n");
+    return 0;
+}
+
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -142,6 +250,7 @@ int main(int argc, FAR char *argv[])
 int esp32_tash_main(int argc, char **args)
 {
 	tash_cmd_install("esp32_demo", esp32_wifi_os_cb, TASH_EXECMD_ASYNC);
+	tash_cmd_install("esp32_adc_demo", esp32_adc_os_cb, TASH_EXECMD_ASYNC);
 
 	return 0;
 }
