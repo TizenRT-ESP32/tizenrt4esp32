@@ -100,7 +100,6 @@
 #define ESP_LOGD( tag, format, ... )
 #define ESP_LOGV( tag, format, ... )
 
-#if 0
 //static const char* TAG = "phy_init";
 static pthread_mutex_t s_phy_rf_init_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -602,4 +601,4 @@ void esp_phy_load_cal_and_init(phy_rf_module_t module)
 
 	free(cal_data);				// PHY maintains a copy of calibration data, so we can free this
 }
-#endif
+
