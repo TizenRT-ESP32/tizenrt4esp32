@@ -1,21 +1,3 @@
-/******************************************************************
- *
- * Copyright 2018 Samsung Electronics All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ******************************************************************/
-
 // Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +14,8 @@
 #ifndef _SOC_EFUSE_REG_H_
 #define _SOC_EFUSE_REG_H_
 
-#include "chip/esp32_soc.h"
+
+#include "esp32_soc.h"
 #define EFUSE_BLK0_RDATA0_REG          (DR_REG_EFUSE_BASE + 0x000)
 /* EFUSE_RD_FLASH_CRYPT_CNT : RO ;bitpos:[27:20] ;default: 8'b0 ; */
 /*description: read for flash_crypt_cnt*/
@@ -64,20 +47,20 @@
 #define EFUSE_RD_EFUSE_WR_DIS_S  0
 
 /* Write disable bits */
-#define EFUSE_WR_DIS_RD_DIS (1<<0)	/*< disable writing read disable reg */
-#define EFUSE_WR_DIS_WR_DIS (1<<1)	/*< disable writing write disable reg */
+#define EFUSE_WR_DIS_RD_DIS (1<<0) /*< disable writing read disable reg */
+#define EFUSE_WR_DIS_WR_DIS (1<<1) /*< disable writing write disable reg */
 #define EFUSE_WR_DIS_FLASH_CRYPT_CNT (1<<2)
-#define EFUSE_WR_DIS_MAC_SPI_CONFIG_HD (1<<3)	/*< disable writing MAC & SPI config hd efuses */
-#define EFUSE_WR_DIS_XPD_SDIO (1<<5)	/*< disable writing SDIO config efuses */
-#define EFUSE_WR_DIS_SPI_PAD_CONFIG (1<<6)	/*< disable writing SPI_PAD_CONFIG efuses */
-#define EFUSE_WR_DIS_BLK1 (1<<7)	/*< disable writing BLK1 efuses */
-#define EFUSE_WR_DIS_BLK2 (1<<8)	/*< disable writing BLK2 efuses */
-#define EFUSE_WR_DIS_BLK3 (1<<9)	/*< disable writing BLK3 efuses */
-#define EFUSE_WR_DIS_FLASH_CRYPT_CODING_SCHEME (1<<10)	/*< disable writing FLASH_CRYPT_CONFIG and CODING_SCHEME efuses */
-#define EFUSE_WR_DIS_ABS_DONE_0 (1<<12)	/*< disable writing ABS_DONE_0 efuse */
-#define EFUSE_WR_DIS_ABS_DONE_1 (1<<13)	/*< disable writing ABS_DONE_1 efuse */
-#define EFUSE_WR_DIS_JTAG_DISABLE (1<<14)	/*< disable writing JTAG_DISABLE efuse */
-#define EFUSE_WR_DIS_CONSOLE_DL_DISABLE (1<<15)	/*< disable writing CONSOLE_DEBUG_DISABLE, DISABLE_DL_ENCRYPT, DISABLE_DL_DECRYPT and DISABLE_DL_CACHE efuses */
+#define EFUSE_WR_DIS_MAC_SPI_CONFIG_HD (1<<3) /*< disable writing MAC & SPI config hd efuses */
+#define EFUSE_WR_DIS_XPD_SDIO (1<<5) /*< disable writing SDIO config efuses */
+#define EFUSE_WR_DIS_SPI_PAD_CONFIG (1<<6) /*< disable writing SPI_PAD_CONFIG efuses */
+#define EFUSE_WR_DIS_BLK1 (1<<7) /*< disable writing BLK1 efuses */
+#define EFUSE_WR_DIS_BLK2 (1<<8) /*< disable writing BLK2 efuses */
+#define EFUSE_WR_DIS_BLK3 (1<<9) /*< disable writing BLK3 efuses */
+#define EFUSE_WR_DIS_FLASH_CRYPT_CODING_SCHEME (1<<10) /*< disable writing FLASH_CRYPT_CONFIG and CODING_SCHEME efuses */
+#define EFUSE_WR_DIS_ABS_DONE_0 (1<<12) /*< disable writing ABS_DONE_0 efuse */
+#define EFUSE_WR_DIS_ABS_DONE_1 (1<<13) /*< disable writing ABS_DONE_1 efuse */
+#define EFUSE_WR_DIS_JTAG_DISABLE (1<<14) /*< disable writing JTAG_DISABLE efuse */
+#define EFUSE_WR_DIS_CONSOLE_DL_DISABLE (1<<15) /*< disable writing CONSOLE_DEBUG_DISABLE, DISABLE_DL_ENCRYPT, DISABLE_DL_DECRYPT and DISABLE_DL_CACHE efuses */
 
 #define EFUSE_BLK0_RDATA1_REG          (DR_REG_EFUSE_BASE + 0x004)
 /* EFUSE_RD_WIFI_MAC_CRC_LOW : RO ;bitpos:[31:0] ;default: 32'b0 ; */
@@ -1161,4 +1144,9 @@
 #define EFUSE_DATE_V  0xFFFFFFFF
 #define EFUSE_DATE_S  0
 
+
+
+
 #endif /*_SOC_EFUSE_REG_H_ */
+
+
