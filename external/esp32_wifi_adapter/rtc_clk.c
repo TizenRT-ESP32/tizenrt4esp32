@@ -732,11 +732,11 @@ void rtc_init_clk(rtc_clk_config_t cfg)
     rtc_clk_xtal_freq_update(xtal_freq);
     rtc_clk_apb_freq_update(xtal_freq * MHZ);
     /* Set CPU frequency */
-    rtc_clk_cpu_freq_set(cfg.cpu_freq);
+    rtc_clk_cpu_freq_set(cfg.cpu_freq_mhz);
     
     /* Re-calculate the ccount to make time calculation correct. */    
     uint32_t freq_before = rtc_clk_cpu_freq_value(cpu_source_before) / MHZ;
-    uint32_t freq_after = rtc_clk_cpu_freq_value(cfg.cpu_freq) / MHZ;
+    uint32_t freq_after = rtc_clk_cpu_freq_value(cfg.cpu_freq_mhz) / MHZ;
     XTHAL_SET_CCOUNT( XTHAL_GET_CCOUNT() * freq_after / freq_before );
 
     /* Slow & fast clocks setup */
