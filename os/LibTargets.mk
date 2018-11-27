@@ -262,3 +262,42 @@ ifeq ($(CONFIG_WL_BCM4390X),y)
 $(LIBRARIES_DIR)$(DELIM)libbcmexternal$(LIBEXT): $(EXTDIR)$(DELIM)WICED$(DELIM)libbcmexternal$(LIBEXT)
 	$(Q) install $(EXTDIR)$(DELIM)WICED$(DELIM)libbcmexternal$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libbcmexternal$(LIBEXT)
 endif
+
+# External esp32 wifi static Lib
+ifeq ($(CONFIG_ESP32_WIFI_SUPPORT),y)
+$(LIBRARIES_DIR)$(DELIM)libcoexist$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libcoexist$(LIBEXT)
+	$(Q)install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libcoexist$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libcoexist$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libcore$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libcore$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libcore$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libcore$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libespnow$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libespnow$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libespnow$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libespnow$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libmesh$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libmesh$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libmesh$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libmesh$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libnet80211$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libnet80211$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libnet80211$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libnet80211$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libphy$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libphy$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libphy$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libphy$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libpp$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libpp$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libpp$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libpp$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)librtc$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)librtc$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)librtc$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)librtc$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libsmartconfig$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libsmartconfig$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libsmartconfig$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libsmartconfig$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libwpa2$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libwpa2$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libwpa2$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libwpa2$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libwpa$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libwpa$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libwpa$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libwpa$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libwps$(LIBEXT): $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libwps$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp32_wifi_adapter$(DELIM)wifi_libs$(DELIM)libwps$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libwps$(LIBEXT)
+endif
