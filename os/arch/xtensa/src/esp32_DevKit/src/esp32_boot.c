@@ -70,7 +70,7 @@
 #include "esp32-core.h"
 #include "esp32_i2c.h"
 #include <tinyara/gpio.h>
-
+#include <esp_heap_caps.h>
 /************************************************************************************
  * Pre-processor Definitions
  ************************************************************************************/
@@ -292,5 +292,27 @@ void board_initialize(void)
 	board_gpio_initialize();
 	board_i2c_initialize();
 	board_ledc_setup();
+
+/*Init SPI RAM*/
+#ifdef CONFIG_SPIRAM_SUPPORT
+    esp_spiram_init_cache();
+    esp_spiram_init();
+#endif
+
+/*no-os heap configure*/
+#ifdef CONFIG_SPIRAM_USE_CAPS_ALLOC
+   // heap_caps_init();
+    esp_spiram_add_to_heapalloc();
+    //Assgin DMA memory for drivers*/
+    uint8_t *dma_heap = malloc(CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL);
+    if (!dma_heap)
+        return;
+    uint32_t caps[]={ MALLOC_CAP_DMA|MALLOC_CAP_INTERNAL, 0, MALLOC_CAP_8BIT|MALLOC_CAP_32BIT};
+    heap_caps_add_region_with_caps(caps, (intptr_t) dma_heap, (intptr_t) dma_heap+CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL-1);
+
+    /*enable heaps*/
+    heap_caps_enable_nonos_stack_heaps();
+#endif
+
 }
 #endif
