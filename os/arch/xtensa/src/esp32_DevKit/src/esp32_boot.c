@@ -94,6 +94,7 @@
  ************************************************************************************/
 extern int board_ledc_setup(void);
 
+#if defined(CONFIG_ESP32_FLASH_PART) && (CONFIG_ESP32_FLASH_PART == 1)
 void esp32_devKit_config_partions(void)
 {
 	int partno;
@@ -217,6 +218,7 @@ void esp32_devKit_mount_partions(void)
 #endif
 
 }
+#endif
 
 void esp32_board_initialize(void)
 {
@@ -283,8 +285,10 @@ void board_initialize(void)
 {
 	/* Perform board-specific initialization */
 	(void)esp32_bringup();
+#if defined(CONFIG_ESP32_FLASH_PART) && (CONFIG_ESP32_FLASH_PART == 1)	
 	esp32_devKit_config_partions();
 	esp32_devKit_mount_partions();
+#endif
 	board_gpio_initialize();
 	board_i2c_initialize();
 	board_ledc_setup();
