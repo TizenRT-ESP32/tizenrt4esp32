@@ -372,7 +372,7 @@ class ESPLoader(object):
         # Work-around for adapters on Windows using the usbser.sys driver:
         # generate a dummy change to DTR so that the set-control-line-state
         # request is sent with the updated RTS state and the same DTR state
-        self._port.setDTR(self._port.dtr)
+        #self._port.setDTR(self._port.dtr)
 
     def _connect_attempt(self, mode='default_reset', esp32r0_delay=False):
         """ A single connection attempt, with esp32r0 workaround options """
