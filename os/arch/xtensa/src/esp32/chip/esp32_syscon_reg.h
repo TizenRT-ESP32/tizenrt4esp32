@@ -305,9 +305,4 @@
 #define SYSCON_DATE_V  0xFFFFFFFF
 #define SYSCON_DATE_S  0
 
-
-
-
 #endif /*_SOC_SYSCON_REG_H_ */
-
-

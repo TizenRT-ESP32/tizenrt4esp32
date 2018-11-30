@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 // Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,10 +42,10 @@ extern "C" {
 #endif
 
 typedef enum {
-    RTC_GPIO_MODE_INPUT_ONLY , /*!< Pad input */
-    RTC_GPIO_MODE_OUTPUT_ONLY, /*!< Pad output */
-    RTC_GPIO_MODE_INPUT_OUTPUT, /*!< Pad pull input + output */
-    RTC_GPIO_MODE_DISABLED,    /*!< Pad (output + input) disable */
+	RTC_GPIO_MODE_INPUT_ONLY,	/*!< Pad input */
+	RTC_GPIO_MODE_OUTPUT_ONLY,	/*!< Pad output */
+	RTC_GPIO_MODE_INPUT_OUTPUT,	/*!< Pad pull input + output */
+	RTC_GPIO_MODE_DISABLED,	/*!< Pad (output + input) disable */
 } rtc_gpio_mode_t;
 
 /**
@@ -38,12 +56,9 @@ typedef enum {
  */
 inline static bool rtc_gpio_is_valid_gpio(gpio_num_t gpio_num)
 {
-    return gpio_num < GPIO_PIN_COUNT
-        && rtc_gpio_desc[gpio_num].reg != 0;
+	return gpio_num < GPIO_PIN_COUNT && rtc_gpio_desc[gpio_num].reg != 0;
 }
-
-#define RTC_GPIO_IS_VALID_GPIO(gpio_num) rtc_gpio_is_valid_gpio(gpio_num) // Deprecated, use rtc_gpio_is_valid_gpio()
-
+#define RTC_GPIO_IS_VALID_GPIO(gpio_num) rtc_gpio_is_valid_gpio(gpio_num)	// Deprecated, use rtc_gpio_is_valid_gpio()
 /**
  * @brief Init a GPIO as RTC GPIO
  *
@@ -243,7 +258,7 @@ esp_err_t rtc_gpio_set_drive_capability(gpio_num_t gpio_num, gpio_drive_cap_t st
  *     - ESP_OK Success
  *     - ESP_ERR_INVALID_ARG Parameter error
  */
-esp_err_t rtc_gpio_get_drive_capability(gpio_num_t gpio_num, gpio_drive_cap_t* strength);
+esp_err_t rtc_gpio_get_drive_capability(gpio_num_t gpio_num, gpio_drive_cap_t *strength);
 
 /**
  * @brief Enable wakeup from sleep mode using specific GPIO
@@ -265,8 +280,6 @@ esp_err_t rtc_gpio_wakeup_enable(gpio_num_t gpio_num, gpio_int_type_t intr_type)
  *      - ESP_ERR_INVALID_ARG if gpio_num is not an RTC IO
  */
 esp_err_t rtc_gpio_wakeup_disable(gpio_num_t gpio_num);
-
-
 
 #ifdef __cplusplus
 }

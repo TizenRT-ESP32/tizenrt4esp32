@@ -37,7 +37,6 @@
 #include "chip/esp32_rtc_adc.h"
 #include "esp32_adc.h"
 
-
 #ifdef CONFIG_ESP32_ADC
 
 #define ESP32_ADC_MAX_CHANNELS ADC1_CHANNEL_MAX
@@ -50,7 +49,7 @@
 #undef adcinfo
 #define adcinfo(format, ...)   printf(format, ##__VA_ARGS__)
 
-
+#define CONVERT_ONECHANNEL		1
 /****************************************************************************
  * Private Types
  ****************************************************************************/
@@ -64,8 +63,8 @@ struct esp32_dev_s {
 	uint8_t cchannels;			/* Number of configured channels */
 	uint8_t current;			/* Current ADC channel being converted */
 
-    WDOG_ID work;			/* Supports the IRQ handling */
-    adc_channel_t chanlist[ESP32_ADC_MAX_CHANNELS];
+	WDOG_ID work;				/* Supports the IRQ handling */
+	adc_channel_t chanlist[ESP32_ADC_MAX_CHANNELS];
 };
 
 /****************************************************************************
@@ -100,13 +99,12 @@ static void adc_conversion(int argc, uint32_t arg)
 	uint16_t sample = 0;
 	struct esp32_dev_s *priv = (struct esp32_dev_s *)arg;
 
-#if 1
+#if defined(CONVERT_ONECHANNEL) && (0 < CONVERT_ONECHANNEL)
 	/* Read the ADC sample and pass it to the upper-half */
-    sample = adc1_get_raw((adc1_channel_t)priv->chanlist[priv->current]);
+	sample = adc1_get_raw((adc1_channel_t) priv->chanlist[priv->current]);
 
-    adcinfo("[ADC] conversion %d %d: %d\n", priv->current, priv->chanlist[priv->current], sample);
+	adcinfo("[ADC] conversion %d %d: %d\n", priv->current, priv->chanlist[priv->current], sample);
 	if (priv->cb != NULL && priv->cb->au_receive != NULL) {
-		//DEBUGASSERT(priv->cb->au_receive != NULL);
 		priv->cb->au_receive(priv->dev, priv->chanlist[priv->current], sample);
 	}
 
@@ -117,30 +115,28 @@ static void adc_conversion(int argc, uint32_t arg)
 		priv->current = 0;
 	}
 
-    /*next conversion*/
-    int ret = wd_start(priv->work, PeroidPerChannel, (wdentry_t)&adc_conversion, 1, (uint32_t)priv);
+	/*next conversion */
+	int ret = wd_start(priv->work, PeroidPerChannel, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
 #else
-    if (priv->current >= priv->nchannels) {
-        priv->current = 0;
-    }
+	if (priv->current >= priv->nchannels) {
+		priv->current = 0;
+	}
 
-    while(priv->current < priv->nchannels) 
-    {
-        /* Read the ADC sample and pass it to the upper-half */
-        sample = adc1_get_raw((adc1_channel_t)priv->chanlist[priv->current]);
+	while (priv->current < priv->nchannels) {
+		/* Read the ADC sample and pass it to the upper-half */
+		sample = adc1_get_raw((adc1_channel_t) priv->chanlist[priv->current]);
 
-        adcinfo("[ADC] conversion %d %d: %d\n", priv->current, priv->chanlist[priv->current], sample);
-        if (priv->cb != NULL && priv->cb->au_receive != NULL) {
-            //DEBUGASSERT(priv->cb->au_receive != NULL);
-            priv->cb->au_receive(priv->dev, priv->chanlist[priv->current], sample);
-        }
-        /* Set the next channel to be sampled */
-        priv->current++;
-    }
-    priv->current = 0;
+		adcinfo("[ADC] conversion %d %d: %d\n", priv->current, priv->chanlist[priv->current], sample);
+		if (priv->cb != NULL && priv->cb->au_receive != NULL) {
+			priv->cb->au_receive(priv->dev, priv->chanlist[priv->current], sample);
+		}
+		/* Set the next channel to be sampled */
+		priv->current++;
+	}
+	priv->current = 0;
 
-    int ret = wd_start(priv->work, PeroidPerChannel, (wdentry_t)&adc_conversion, 1, (uint32_t)priv);
-#endif 
+	int ret = wd_start(priv->work, PeroidPerChannel, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
+#endif
 }
 
 /****************************************************************************
@@ -159,14 +155,14 @@ static void adc_conversion(int argc, uint32_t arg)
  ****************************************************************************/
 static void adc_startconv(FAR struct esp32_dev_s *priv, bool enable)
 {
-    int ret = 0;
+	int ret = 0;
 	if (enable) {
-        ret = wd_cancel(priv->work);
-        ret = wd_start(priv->work, ESP32_ADC_MIN_PEROID, (wdentry_t)&adc_conversion, 1, (uint32_t)priv);
+		ret = wd_cancel(priv->work);
+		ret = wd_start(priv->work, ESP32_ADC_MIN_PEROID, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
 	} else {
-        ret = wd_cancel(priv->work);
+		ret = wd_cancel(priv->work);
 	}
-    //adcinfo("[ADC] conv %d: %d %d\n", enable, ret, get_errno());
+	//adcinfo("[ADC] conv %d: %d %d\n", enable, ret, get_errno());
 }
 
 /****************************************************************************
@@ -207,7 +203,7 @@ static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
 		priv->nchannels = 1;
 	}
 
-    adc1_config_channel_atten(priv->chanlist[priv->current], ADC_ATTEN_0db);
+	adc1_config_channel_atten(priv->chanlist[priv->current], ADC_ATTEN_0db);
 
 	return OK;
 }
@@ -244,7 +240,7 @@ static int adc_bind(FAR struct adc_dev_s *dev, FAR const struct adc_callback_s *
  ****************************************************************************/
 static void adc_reset(FAR struct adc_dev_s *dev)
 {
-    FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
+	FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 	irqstate_t flags;
 
 	flags = irqsave();
@@ -282,17 +278,17 @@ static int adc_setup(FAR struct adc_dev_s *dev)
 	/* Make sure that the ADC device is in the powered up, reset state */
 	adc_reset(dev);
 
-	/* Enable the ADC interrupt	*/
+	/* Enable the ADC interrupt */
 	//up_enable_irq(IRQ_ADC);
 
-    adcinfo("[ADC] adc_setup: %d, %d...\n\t",priv->cchannels,priv->nchannels);
-    for (ret = 0; ret < priv->nchannels; ret++) {
-        adcinfo("%d ", priv->chanlist[ret]);
-    }
-    adcinfo("\n");
+	adcinfo("[ADC] adc_setup: %d, %d...\n\t", priv->cchannels, priv->nchannels);
+	for (ret = 0; ret < priv->nchannels; ret++) {
+		adcinfo("%d ", priv->chanlist[ret]);
+	}
+	adcinfo("\n");
 
-    ret = adc1_config_width(ADC_WIDTH_12Bit);
-    adcinfo("[ADC] adc1_config_width:%d\n\n",ret);
+	ret = adc1_config_width(ADC_WIDTH_12Bit);
+	adcinfo("[ADC] adc1_config_width:%d\n\n", ret);
 
 	return OK;
 }
@@ -311,10 +307,10 @@ static int adc_setup(FAR struct adc_dev_s *dev)
  ****************************************************************************/
 static void adc_shutdown(FAR struct adc_dev_s *dev)
 {
-    FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
+	FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 
-    int ret = wd_cancel(priv->work);
-    adc_power_off();
+	int ret = wd_cancel(priv->work);
+	adc_power_off();
 }
 
 /****************************************************************************
@@ -422,12 +418,12 @@ struct adc_dev_s *esp32_adc_initialize(FAR const adc_channel_t *chanlist, int cc
 		return NULL;
 	}
 
-	memcpy(priv->chanlist, chanlist, cchannels*sizeof(adc_channel_t));
-    adcinfo("ESP32 ADC channel count %d\n",cchannels);
- 
-    adc1_config_width(ADC_WIDTH_12Bit);
+	memcpy(priv->chanlist, chanlist, cchannels * sizeof(adc_channel_t));
+	adcinfo("ESP32 ADC channel count %d\n", cchannels);
 
-    priv->work = wd_create();
+	adc1_config_width(ADC_WIDTH_12Bit);
+
+	priv->work = wd_create();
 
 	return &g_adcdev;
 }

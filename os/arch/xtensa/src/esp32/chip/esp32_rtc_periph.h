@@ -36,7 +36,6 @@
 #include "arch/chip/rtc_gpio_channel.h"
 #include "esp32_rtc_cntl_reg.h"
 #include "esp32_rtc_io_reg.h"
-//#include "soc/gpio_pins.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -48,40 +47,29 @@ extern "C" {
  *
  */
 typedef enum {
-	GPIO_INTR_DISABLE = 0, /*!< Disable GPIO interrupt                             */
-	GPIO_INTR_POSEDGE = 1, /*!< GPIO interrupt type : rising edge                  */
-	GPIO_INTR_NEGEDGE = 2, /*!< GPIO interrupt type : falling edge                 */
-	GPIO_INTR_ANYEDGE = 3, /*!< GPIO interrupt type : both rising and falling edge */
-	GPIO_INTR_LOW_LEVEL = 4, /*!< GPIO interrupt type : input low level trigger      */
-	GPIO_INTR_HIGH_LEVEL = 5, /*!< GPIO interrupt type : input high level trigger     */
+	GPIO_INTR_DISABLE = 0,	/*!< Disable GPIO interrupt                             */
+	GPIO_INTR_POSEDGE = 1,	/*!< GPIO interrupt type : rising edge                  */
+	GPIO_INTR_NEGEDGE = 2,	/*!< GPIO interrupt type : falling edge                 */
+	GPIO_INTR_ANYEDGE = 3,	/*!< GPIO interrupt type : both rising and falling edge */
+	GPIO_INTR_LOW_LEVEL = 4,	/*!< GPIO interrupt type : input low level trigger      */
+	GPIO_INTR_HIGH_LEVEL = 5,	/*!< GPIO interrupt type : input high level trigger     */
 	GPIO_INTR_MAX,
 } gpio_int_type_t;
 
-
 typedef enum {
-	GPIO_DRIVE_CAP_0 = 0, /*!< Pad drive capability: weak          */
-	GPIO_DRIVE_CAP_1 = 1, /*!< Pad drive capability: stronger      */
-	GPIO_DRIVE_CAP_2 = 2, /*!< Pad drive capability: default value */
-	GPIO_DRIVE_CAP_DEFAULT = 2, /*!< Pad drive capability: default value */
-	GPIO_DRIVE_CAP_3 = 3, /*!< Pad drive capability: strongest     */
+	GPIO_DRIVE_CAP_0 = 0,	/*!< Pad drive capability: weak          */
+	GPIO_DRIVE_CAP_1 = 1,	/*!< Pad drive capability: stronger      */
+	GPIO_DRIVE_CAP_2 = 2,	/*!< Pad drive capability: default value */
+	GPIO_DRIVE_CAP_DEFAULT = 2,	/*!< Pad drive capability: default value */
+	GPIO_DRIVE_CAP_3 = 3,	/*!< Pad drive capability: strongest     */
 	GPIO_DRIVE_CAP_MAX,
 } gpio_drive_cap_t;
-
-
-#if 0
-typedef enum {
-	RTC_GPIO_MODE_INPUT_ONLY, /*!< Pad input */
-	RTC_GPIO_MODE_OUTPUT_ONLY, /*!< Pad output */
-	RTC_GPIO_MODE_INPUT_OUTPUT, /*!< Pad pull input + output */
-	RTC_GPIO_MODE_DISABLED, /*!< Pad (output + input) disable */
-} rtc_gpio_mode_t;
-#endif
 
 typedef int esp_err_t;
 
 typedef int gpio_num_t;
 
-typedef void(*intr_handler_t)(void *arg);
+typedef void (*intr_handler_t)(void *arg);
 
 /**
  * @brief Pin function information for a single GPIO pad's RTC functions.

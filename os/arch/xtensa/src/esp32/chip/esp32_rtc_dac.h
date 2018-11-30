@@ -1,3 +1,21 @@
+/******************************************************************
+ *
+ * Copyright 2018 Samsung Electronics All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************/
+
 // Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,21 +41,21 @@ extern "C" {
 #include "arch/chip/dac_channel.h"
 
 typedef enum {
-    DAC_CHANNEL_1 = 1,  /*!< DAC channel 1 is GPIO25 */
-    DAC_CHANNEL_2,      /*!< DAC channel 2 is GPIO26 */
-    DAC_CHANNEL_MAX,
+	DAC_CHANNEL_1 = 1,		/*!< DAC channel 1 is GPIO25 */
+	DAC_CHANNEL_2,			/*!< DAC channel 2 is GPIO26 */
+	DAC_CHANNEL_MAX,
 } dac_channel_t;
 
 /**
  * @brief Get the gpio number of a specific DAC channel.
- * 
+ *
  * @param channel Channel to get the gpio number
- * 
+ *
  * @param gpio_num output buffer to hold the gpio number
- * 
- * @return 
+ *
+ * @return
  *   - ESP_OK if success
- *   - ESP_ERR_INVALID_ARG if channal not valid 
+ *   - ESP_ERR_INVALID_ARG if channal not valid
  */
 esp_err_t dac_pad_get_io_num(dac_channel_t channel, gpio_num_t *gpio_num);
 
@@ -107,6 +125,4 @@ esp_err_t dac_i2s_disable(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif  /*_DRIVER_DAC_H_*/
-
+#endif	/*_DRIVER_DAC_H_*/

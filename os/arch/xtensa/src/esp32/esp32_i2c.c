@@ -116,7 +116,6 @@
 
 #define WAIT_ISR        1
 
-
 #undef i2cinfo
 #if 0
 #define i2cinfo(format, ...)   printf(format, ##__VA_ARGS__)
@@ -303,7 +302,7 @@ static void i2c_interrupts_enable(i2c_port_t i2c_num)
 	intr_mask |= I2C_ARBITRATION_LOST_INT_ENA_M | I2C_TIME_OUT_INT_ST_M;
 	intr_mask |= (I2C_TRANS_COMPLETE_INT_ENA_M | I2C_ACK_ERR_INT_ENA_M);
 	I2C[i2c_num]->int_clr.val = intr_mask;
-	I2C[i2c_num]->int_ena.val = intr_mask;	
+	I2C[i2c_num]->int_ena.val = intr_mask;
 }
 
 static void i2c_interrupts_disable(i2c_port_t i2c_num)
@@ -324,19 +323,19 @@ static int hsi2c_setup(struct esp32_i2c_priv_s *priv)
 	I2C[i2c_num]->ctr.scl_force_out = 1;	// set open-drain output mode
 	I2C[i2c_num]->ctr.sample_scl_level = 0;	//sample at high level of clock
 
-    i2cinfo("[i2c] %d mode %d\n", i2c_num, I2C[i2c_num]->ctr.ms_mode);
+	i2cinfo("[i2c] %d mode %d\n", i2c_num, I2C[i2c_num]->ctr.ms_mode);
 	//configure speed
 	esp32_i2c_setclock((FAR struct i2c_dev_s *)priv, ESP32_DEFAULT_I2CXFER_CLOCK);
 
 	/* Use FIFO to transmit data */
 	I2C[i2c_num]->fifo_conf.nonfifo_en = 0;
-    i2c_interrupts_disable(i2c_num);
+	i2c_interrupts_disable(i2c_num);
 
 	/*register isr */
 	priv->cpuint = esp32_alloc_levelint(1);
 	if (priv->cpuint < 0) {
 		/* Failed to allocate a CPU interrupt of this type */
-        i2cinfo("[i2c] %d fail to alloc intr %d\n", i2c_num, priv->cpuint);
+		i2cinfo("[i2c] %d fail to alloc intr %d\n", i2c_num, priv->cpuint);
 		return priv->cpuint;
 	}
 
@@ -426,7 +425,7 @@ static int i2c_hw_clear_bus(const i2c_config_t *config)
 		esp32_gpiowrite(config->scl_pin, 1);
 	}
 	esp32_gpiowrite(config->sda_pin, 1);
-    return OK;
+	return OK;
 }
 #endif
 
@@ -521,26 +520,26 @@ static int i2c_esp32_wait(struct i2c_dev_s *dev, volatile struct i2c_esp32_cmd *
 {
 	struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev;
 #if WAIT_ISR
-    int count = 0;
+	int count = 0;
 	/*wait for cmd done */
 	if (wait_cmd) {
 		while (!wait_cmd->done) {
 			usleep(10000);
-            if (count++ > 100) {
-                i2cinfo("[i2c drv] wait_cmd timeout!\n");
-                return -ETIMEDOUT;
-            }
+			if (count++ > 100) {
+				i2cinfo("[i2c drv] wait_cmd timeout!\n");
+				return -ETIMEDOUT;
+			}
 		}
 	}
 
 	/* Wait for I2C bus to finish its business */
-    count = 0;
+	count = 0;
 	while (I2C[priv->i2c_num]->status_reg.bus_busy) {
 		usleep(10000);
-        if (count++ > 100) {
-            i2cinfo("[i2c drv] status_reg.bus_busy timeout!\n");
-            return -ETIMEDOUT;
-        }
+		if (count++ > 100) {
+			i2cinfo("[i2c drv] status_reg.bus_busy timeout!\n");
+			return -ETIMEDOUT;
+		}
 	}
 #else
 	int time = 0;
@@ -768,11 +767,10 @@ static int esp32_i2c_initialize(struct esp32_i2c_priv_s *priv)
 
 	/* Chip level configure */
 	int ret = hsi2c_setup(priv);
-    if (ret != OK) {
-        i2c_hw_disable(priv->i2c_num);
-        return ERROR;
-    }
-
+	if (ret != OK) {
+		i2c_hw_disable(priv->i2c_num);
+		return ERROR;
+	}
 	//end of initallize!!
 	priv->initialized = 1;
 
@@ -991,7 +989,7 @@ struct i2c_dev_s *up_i2cinitialize(int port)
 	if (g_esp32_i2c_priv[port] != NULL) {
 		priv = g_esp32_i2c_priv[port];
 		priv->refs++;
-        i2cinfo("I2C port %d already initiallized: %d\n", port, priv->refs);
+		i2cinfo("I2C port %d already initiallized: %d\n", port, priv->refs);
 		return (FAR struct i2c_dev_s *)priv;
 	}
 
