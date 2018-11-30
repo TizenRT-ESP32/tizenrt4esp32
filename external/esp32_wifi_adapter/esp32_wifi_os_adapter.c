@@ -335,7 +335,7 @@ static int32_t IRAM_ATTR task_create_wrapper(void *task_func, const char *name, 
 	return pdPASS;
 }
 
-static int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle, uint32_t core_id)
+int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle, uint32_t core_id)
 {
 #ifndef CONFIG_SMP
 	return task_create_wrapper(task_func, name, stack_depth, param, prio, task_handle);
