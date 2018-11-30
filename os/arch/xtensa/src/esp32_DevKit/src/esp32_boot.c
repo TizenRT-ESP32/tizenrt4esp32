@@ -70,7 +70,9 @@
 #include "esp32-core.h"
 #include "esp32_i2c.h"
 #include <tinyara/gpio.h>
+#ifdef CONFIG_SPIRAM_USE_CAPS_ALLOC
 #include <esp_heap_caps.h>
+#endif
 /************************************************************************************
  * Pre-processor Definitions
  ************************************************************************************/

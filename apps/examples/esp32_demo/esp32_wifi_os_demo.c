@@ -34,7 +34,7 @@
 #include <rom/ets_sys.h>
 #include <time.h>
 #include <nvs.h>
-
+#include <esp_event.h>
 //Will enable later.
 #define QUEUE_SEND_HANDLER_STACKSIZE (1024 * 4)
 #define RANDOM_TEST_TIME (20)
@@ -420,6 +420,7 @@ void event_group_demo(void)
 
 }
 
+#ifdef CONFIG_SPIRAM_USE_CAPS_ALLOC
 extern int _sheap;
 void test_spiram_alloc()
 {
@@ -441,11 +442,45 @@ void test_spiram_alloc()
 	}
 	heap_caps_free(p);
 }
+#endif
+
+static int event_handler(void *ctx, system_event_t *event)
+{
+    switch (event->event_id) {
+        case SYSTEM_EVENT_STA_START:
+            printf("Receive event SYSTEM_EVENT_STA_START\n");
+            break;
+        default:
+            break;
+    }   
+    return OK;
+}
+
+void *sendevent_func(void *arg)
+{
+    system_event_t event;
+    for( int i = 0; i < 10; i++) {
+        event.event_id = SYSTEM_EVENT_STA_START;
+        esp_event_send(&event);
+        printf("send event SYSTEM_EVENT_STA_START\n");
+    }
+    sleep(10);
+
+}
+
+void test_event_loop()
+{
+    esp_event_loop_init(event_handler, NULL);
+    pthread_t thread_handle = NULL;
+    pthread_create(&thread_handle, NULL, sendevent_func, NULL);
+    pthread_join(thread_handle, NULL); 
+}
 
 extern esp_spiram_test();
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
+
 #ifdef CONFIG_SPIRAM_SUPPORT
 	esp_spiram_test();
 #endif
@@ -472,5 +507,8 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 	queue_operate_demo();
 	usleep(3 * 1000 * 1000);
 	event_group_demo();
+
+/*  event loop test*/
+    test_event_loop();
 	return NULL;
 }
