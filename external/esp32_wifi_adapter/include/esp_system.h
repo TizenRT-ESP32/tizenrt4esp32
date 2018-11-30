@@ -37,6 +37,7 @@
 #include <stdbool.h>
 #include "esp_err.h"
 #include "esp_sleep.h"
+#include "esp_attr.h"
 
 #ifdef __cplusplus
 extern "C" {

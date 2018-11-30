@@ -70,13 +70,14 @@
 #include "esp32-core.h"
 #include "esp32_i2c.h"
 #include <tinyara/gpio.h>
+#ifdef CONFIG_SPIRAM_USE_CAPS_ALLOC
 #include <esp_heap_caps.h>
+#endif
 
 #if defined(CONFIG_ADC)
 #include "esp32_adc.h"
 #include <tinyara/analog/adc.h>
 #endif
-
 /************************************************************************************
  * Pre-processor Definitions
  ************************************************************************************/
@@ -273,9 +274,9 @@ static void board_i2c_initialize(void)
 #endif
 }
 
+#if defined(CONFIG_ADC)
 static void board_adc_initialize(void)
 {
-#if defined(CONFIG_ADC)
     static bool adc_initialized;
     struct adc_dev_s* adc;
     const adc_channel_t chanlist[] = {
@@ -306,8 +307,8 @@ static void board_adc_initialize(void)
 
         adc_initialized = true;
     }
-#endif
 }
+#endif
 
 /****************************************************************************
  * Name: board_initialize
@@ -335,7 +336,9 @@ void board_initialize(void)
 	board_i2c_initialize();
 	board_ledc_setup();
 
+#if defined(CONFIG_ADC)
 	board_adc_initialize();
+#endif
 
 /*Init SPI RAM*/
 #ifdef CONFIG_SPIRAM_SUPPORT

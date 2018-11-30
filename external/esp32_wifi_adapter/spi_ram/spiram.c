@@ -57,7 +57,7 @@ we add more types of external RAM memory, this can be made into a more intellige
 #error "FLASH speed can only be equal to or higher than SRAM speed while SRAM is enabled!"
 #endif
 
-static bool spiram_inited = false;
+static bool spiram_inited=false;
 
 /*
  Simple RAM test. Writes a word every 32 bytes. Takes about a second to complete for 4MiB. Returns
@@ -92,6 +92,30 @@ bool esp_spiram_test()
 		//ESP_EARLY_LOGI(TAG, "SPI SRAM memory test OK");
 		return true;
 	}
+    volatile int *spiram=(volatile int*)SOC_EXTRAM_DATA_LOW;
+    size_t p;
+    size_t s=CONFIG_SPIRAM_SIZE;
+    int errct=0;
+    int initial_err=-1;
+    for (p=0; p<(s/sizeof(int)); p+=8) {
+        spiram[p]=p^0xAAAAAAAA;
+    }
+    for (p=0; p<(s/sizeof(int)); p+=8) {
+        if (spiram[p]!=(p^0xAAAAAAAA)) {
+            errct++;
+            if (errct==1) initial_err=p*4;
+        }
+    }
+    printf("read spiram over\n");
+    if (errct) {
+        printf("SPI SRAM test failed\n");
+        //ESP_EARLY_LOGE(TAG, "SPI SRAM memory test fail. %d/%d writes failed, first @ %X\n", errct, s/32, initial_err+SOC_EXTRAM_DATA_LOW);
+        return false;
+    } else {
+        printf("SPI SRAM test OK\n");
+        //ESP_EARLY_LOGI(TAG, "SPI SRAM memory test OK");
+        return true;
+    }
 }
 
 void IRAM_ATTR esp_spiram_init_cache()
@@ -153,6 +177,51 @@ esp_err_t esp_spiram_reserve_dma_pool(size_t size)
 	return heap_caps_add_region_with_caps(caps, (intptr_t) dma_heap, (intptr_t) dma_heap + size - 1);
 }
 
+esp_err_t esp_spiram_init()
+{
+    esp_err_t r;
+    r = psram_enable(PSRAM_SPEED, PSRAM_MODE);
+    if (r != ESP_OK) {
+#if CONFIG_SPIRAM_IGNORE_NOTFOUND
+        ESP_EARLY_LOGE(TAG, "SPI RAM enabled but initialization failed. Bailing out.");
+#endif
+        printf("SPI RAM enabled but initialization failed. Bailing out.");
+        return r;
+    }
+
+    //ESP_EARLY_LOGI(TAG, "SPI RAM mode: %s", PSRAM_SPEED == PSRAM_CACHE_F40M_S40M ? "flash 40m sram 40m" : \
+                                          PSRAM_SPEED == PSRAM_CACHE_F80M_S40M ? "flash 80m sram 40m" : \
+                                          PSRAM_SPEED == PSRAM_CACHE_F80M_S80M ? "flash 80m sram 80m" : "ERROR");
+    //ESP_EARLY_LOGI(TAG, "PSRAM initialized, cache is in %s mode.", \
+                                          (PSRAM_MODE==PSRAM_VADDR_MODE_EVENODD)?"even/odd (2-core)": \
+                                          (PSRAM_MODE==PSRAM_VADDR_MODE_LOWHIGH)?"low/high (2-core)": \
+                                          (PSRAM_MODE==PSRAM_VADDR_MODE_NORMAL)?"normal (1-core)":"ERROR");
+    spiram_inited=true;
+    return ESP_OK;
+}
+
+
+esp_err_t esp_spiram_add_to_heapalloc()
+{
+    //ESP_EARLY_LOGI(TAG, "Adding pool of %dK of external SPI memory to heap allocator", CONFIG_SPIRAM_SIZE/1024);
+    //Add entire external RAM region to heap allocator. Heap allocator knows the capabilities of this type of memory, so there's
+    //no need to explicitly specify them.
+    uint32_t caps[]={MALLOC_CAP_SPIRAM, 0, MALLOC_CAP_8BIT|MALLOC_CAP_32BIT};
+    return heap_caps_add_region_with_caps(caps,(intptr_t)SOC_EXTRAM_DATA_LOW, (intptr_t)SOC_EXTRAM_DATA_LOW + CONFIG_SPIRAM_SIZE-1);
+}
+
+
+static uint8_t *dma_heap;
+
+esp_err_t esp_spiram_reserve_dma_pool(size_t size) {
+    if (size==0) return ESP_OK; //no-op
+    //ESP_EARLY_LOGI(TAG, "Reserving pool of %dK of internal memory for DMA/internal allocations", size/1024);
+    dma_heap=heap_caps_malloc(size, MALLOC_CAP_DMA|MALLOC_CAP_INTERNAL);
+    if (!dma_heap) return ESP_ERR_NO_MEM;
+    uint32_t caps[]={MALLOC_CAP_DMA|MALLOC_CAP_INTERNAL, 0, MALLOC_CAP_8BIT|MALLOC_CAP_32BIT};
+    return heap_caps_add_region_with_caps(caps, (intptr_t) dma_heap, (intptr_t) dma_heap+size-1);
+}
+
 size_t esp_spiram_get_size()
 {
 	return CONFIG_SPIRAM_SIZE;
@@ -212,5 +281,4 @@ void IRAM_ATTR esp_spiram_writeback_cache()
 	}
 #endif
 }
-
 #endif
