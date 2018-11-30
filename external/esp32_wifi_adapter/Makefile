@@ -53,6 +53,18 @@ CFLAGS += -I./nvs_flash/include
 CFLAGS += -Iinclude
 CFLAGS += -I$(TOPDIR)/kernel
 
+
+#ESP32 external SPIRAM and heap allocator support
+ifeq ($(CONFIG_SPIRAM_SUPPORT), y)
+CFLAGS += -I./esp32_heap/include
+CSRCS += spi_ram/spiram.c  spi_ram/spiram_psram.c gpio_periph.c
+endif
+
+#ESP32 heap allocator support
+ifeq ($(CONFIG_SPIRAM_USE_CAPS_ALLOC), y)
+CSRCS += esp32_heap/heap_caps.c  esp32_heap/heap_caps_init.c  esp32_heap/multi_heap.c esp32_heap/soc_memory_layout.c
+endif
+
 CXXOBJS = $(CXXSRCS:.cpp=$(OBJEXT))
 COBJS   = $(CSRCS:.c=$(OBJEXT))
 
