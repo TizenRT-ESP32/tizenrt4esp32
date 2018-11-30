@@ -37,7 +37,7 @@ CXXFLAGS += -I./nvs_flash/include
 CXXFLAGS += -I./spi_flash/include
 CXXFLAGS +=  -std=c++11 -Wall -Werror
 
-CSRCS += esp32_wifi_os_adapter.c 
+CSRCS += esp32_wifi_os_adapter.c
 CSRCS += phy_init.c hw_random.c  system_api.c esp_ota_eps.c intr_alloc.c
 CSRCS += clk.c rtc_clk.c rtc_time.c rtc_init.c rtc_presleep.c
 CSRCS += lib_printf.c
@@ -64,6 +64,10 @@ endif
 ifeq ($(CONFIG_SPIRAM_USE_CAPS_ALLOC), y)
 CSRCS += esp32_heap/heap_caps.c  esp32_heap/heap_caps_init.c  esp32_heap/multi_heap.c esp32_heap/soc_memory_layout.c
 endif
+
+#ESP32 event loop module
+CSRCS +=  event_loop/event_loop.c
+CFLAGS += -I./tcpip_adapter/include
 
 CXXOBJS = $(CXXSRCS:.cpp=$(OBJEXT))
 COBJS   = $(CSRCS:.c=$(OBJEXT))
