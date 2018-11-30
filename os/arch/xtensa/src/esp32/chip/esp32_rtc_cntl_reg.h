@@ -1,60 +1,41 @@
 /******************************************************************
- *
- * Copyright 2018 Samsung Electronics All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ******************************************************************/
+*
+* Copyright 2018 Samsung Electronics All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+******************************************************************/
 
-/****************************************************************************
- * arch/xtensa/src/esp32/chip/esp32_rtccnt.h
- *
- * Adapted from use in NuttX by:
- *
- *   Copyright (C) 2016 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * Derives from logic originally provided by Espressif Systems:
- *
- *    Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ****************************************************************************/
+// Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 
-#ifndef __ARCH_XTENSA_SRC_ESP32_CHIP_XTENSA_ESP32_H
-#define __ARCH_XTENSA_SRC_ESP32_CHIP_XTENSA_ESP32_H
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+#ifndef _SOC_RTC_CNTL_REG_H_
+#define _SOC_RTC_CNTL_REG_H_
 
-/****************************************************************************
- * Included Files
- ****************************************************************************/
+/* The value that needs to be written to RTC_CNTL_WDT_WKEY to write-enable the wdt registers */
+#define RTC_CNTL_WDT_WKEY_VALUE 0x50D83AA1
 
-#include "chip/esp32_soc.h"
-
-/****************************************************************************
- * Pre-processor Definitions
- ****************************************************************************/
-
+#include "esp32_soc.h"
 #define RTC_CNTL_OPTIONS0_REG          (DR_REG_RTCCNTL_BASE + 0x0)
 /* RTC_CNTL_SW_SYS_RST : WO ;bitpos:[31] ;default: 1'd0 ; */
 /*description: SW system reset*/
@@ -354,18 +335,21 @@
 #define RTC_CNTL_PLL_BUF_WAIT_M  ((RTC_CNTL_PLL_BUF_WAIT_V)<<(RTC_CNTL_PLL_BUF_WAIT_S))
 #define RTC_CNTL_PLL_BUF_WAIT_V  0xFF
 #define RTC_CNTL_PLL_BUF_WAIT_S  24
+#define RTC_CNTL_PLL_BUF_WAIT_DEFAULT  20
 /* RTC_CNTL_XTL_BUF_WAIT : R/W ;bitpos:[23:14] ;default: 10'd80 ; */
 /*description: XTAL wait cycles in slow_clk_rtc*/
 #define RTC_CNTL_XTL_BUF_WAIT  0x000003FF
 #define RTC_CNTL_XTL_BUF_WAIT_M  ((RTC_CNTL_XTL_BUF_WAIT_V)<<(RTC_CNTL_XTL_BUF_WAIT_S))
 #define RTC_CNTL_XTL_BUF_WAIT_V  0x3FF
 #define RTC_CNTL_XTL_BUF_WAIT_S  14
+#define RTC_CNTL_XTL_BUF_WAIT_DEFAULT  20
 /* RTC_CNTL_CK8M_WAIT : R/W ;bitpos:[13:6] ;default: 8'h10 ; */
 /*description: CK8M wait cycles in slow_clk_rtc*/
 #define RTC_CNTL_CK8M_WAIT  0x000000FF
 #define RTC_CNTL_CK8M_WAIT_M  ((RTC_CNTL_CK8M_WAIT_V)<<(RTC_CNTL_CK8M_WAIT_S))
 #define RTC_CNTL_CK8M_WAIT_V  0xFF
 #define RTC_CNTL_CK8M_WAIT_S  6
+#define RTC_CNTL_CK8M_WAIT_DEFAULT  20
 /* RTC_CNTL_CPU_STALL_WAIT : R/W ;bitpos:[5:1] ;default: 5'd1 ; */
 /*description: CPU stall wait cycles in fast_clk_rtc*/
 #define RTC_CNTL_CPU_STALL_WAIT  0x0000001F
@@ -465,6 +449,7 @@
 #define RTC_CNTL_MIN_SLP_VAL_M  ((RTC_CNTL_MIN_SLP_VAL_V)<<(RTC_CNTL_MIN_SLP_VAL_S))
 #define RTC_CNTL_MIN_SLP_VAL_V  0xFF
 #define RTC_CNTL_MIN_SLP_VAL_S  8
+#define RTC_CNTL_MIN_SLP_VAL_MIN 2
 /* RTC_CNTL_ULP_CP_SUBTIMER_PREDIV : R/W ;bitpos:[7:0] ;default: 8'd1 ; */
 /*description: */
 #define RTC_CNTL_ULP_CP_SUBTIMER_PREDIV  0x000000FF
@@ -947,6 +932,7 @@
 #define RTC_CNTL_CK8M_DFREQ_M  ((RTC_CNTL_CK8M_DFREQ_V)<<(RTC_CNTL_CK8M_DFREQ_S))
 #define RTC_CNTL_CK8M_DFREQ_V  0xFF
 #define RTC_CNTL_CK8M_DFREQ_S  17
+#define RTC_CNTL_CK8M_DFREQ_DEFAULT 172
 /* RTC_CNTL_CK8M_FORCE_NOGATING : R/W ;bitpos:[16] ;default: 1'd0 ; */
 /*description: CK8M force no gating during sleep*/
 #define RTC_CNTL_CK8M_FORCE_NOGATING  (BIT(16))
@@ -1101,7 +1087,7 @@
 #define RTC_CNTL_DBG_ATTEN_M  ((RTC_CNTL_DBG_ATTEN_V)<<(RTC_CNTL_DBG_ATTEN_S))
 #define RTC_CNTL_DBG_ATTEN_V  0x3
 #define RTC_CNTL_DBG_ATTEN_S  24
-
+#define RTC_CNTL_DBG_ATTEN_DEFAULT  3
 #define RTC_CNTL_REG          (DR_REG_RTCCNTL_BASE + 0x7c)
 /* RTC_CNTL_FORCE_PU : R/W ;bitpos:[31] ;default: 1'd1 ; */
 /*description: RTC_REG force power up*/
@@ -1146,6 +1132,7 @@
 #define RTC_CNTL_SCK_DCAP_M  ((RTC_CNTL_SCK_DCAP_V)<<(RTC_CNTL_SCK_DCAP_S))
 #define RTC_CNTL_SCK_DCAP_V  0xFF
 #define RTC_CNTL_SCK_DCAP_S  14
+#define RTC_CNTL_SCK_DCAP_DEFAULT   255
 /* RTC_CNTL_DIG_DBIAS_WAK : R/W ;bitpos:[13:11] ;default: 3'd4 ; */
 /*description: DIG_REG_DBIAS during wakeup*/
 #define RTC_CNTL_DIG_DBIAS_WAK  0x00000007
@@ -1166,9 +1153,9 @@
 #define RTC_CNTL_SCK_DCAP_FORCE_S  7
 
 /* Approximate mapping of voltages to RTC_CNTL_DBIAS_WAK, RTC_CNTL_DBIAS_SLP,
-* RTC_CNTL_DIG_DBIAS_WAK, RTC_CNTL_DIG_DBIAS_SLP values.
-* Valid if RTC_CNTL_DBG_ATTEN is 0.
-*/
+ * RTC_CNTL_DIG_DBIAS_WAK, RTC_CNTL_DIG_DBIAS_SLP values.
+ * Valid if RTC_CNTL_DBG_ATTEN is 0.
+ */
 #define RTC_CNTL_DBIAS_0V90 0
 #define RTC_CNTL_DBIAS_0V95 1
 #define RTC_CNTL_DBIAS_1V00 2
@@ -1306,6 +1293,24 @@
 #define RTC_CNTL_FASTMEM_FORCE_NOISO_M  (BIT(0))
 #define RTC_CNTL_FASTMEM_FORCE_NOISO_V  0x1
 #define RTC_CNTL_FASTMEM_FORCE_NOISO_S  0
+
+/* Useful groups of RTC_CNTL_PWC_REG bits */
+#define RTC_CNTL_MEM_FORCE_ISO    \
+    (RTC_CNTL_SLOWMEM_FORCE_ISO | RTC_CNTL_FASTMEM_FORCE_ISO)
+#define RTC_CNTL_MEM_FORCE_NOISO  \
+    (RTC_CNTL_SLOWMEM_FORCE_NOISO | RTC_CNTL_FASTMEM_FORCE_NOISO)
+#define RTC_CNTL_MEM_PD_EN        \
+    (RTC_CNTL_SLOWMEM_PD_EN | RTC_CNTL_FASTMEM_PD_EN)
+#define RTC_CNTL_MEM_FORCE_PU     \
+    (RTC_CNTL_SLOWMEM_FORCE_PU | RTC_CNTL_FASTMEM_FORCE_PU)
+#define RTC_CNTL_MEM_FORCE_PD     \
+    (RTC_CNTL_SLOWMEM_FORCE_PD | RTC_CNTL_FASTMEM_FORCE_PD)
+#define RTC_CNTL_MEM_FOLW_CPU     \
+    (RTC_CNTL_SLOWMEM_FOLW_CPU | RTC_CNTL_FASTMEM_FOLW_CPU)
+#define RTC_CNTL_MEM_FORCE_LPU    \
+    (RTC_CNTL_SLOWMEM_FORCE_LPU | RTC_CNTL_FASTMEM_FORCE_LPU)
+#define RTC_CNTL_MEM_FORCE_LPD    \
+    (RTC_CNTL_SLOWMEM_FORCE_LPD | RTC_CNTL_FASTMEM_FORCE_LPD)
 
 #define RTC_CNTL_DIG_PWC_REG          (DR_REG_RTCCNTL_BASE + 0x84)
 /* RTC_CNTL_DG_WRAP_PD_EN : R/W ;bitpos:[31] ;default: 0 ; */
@@ -1465,6 +1470,20 @@
 #define RTC_CNTL_LSLP_MEM_FORCE_PD_V  0x1
 #define RTC_CNTL_LSLP_MEM_FORCE_PD_S  3
 
+/* Useful groups of RTC_CNTL_DIG_PWC_REG bits */
+#define RTC_CNTL_CPU_ROM_RAM_PD_EN \
+    (RTC_CNTL_INTER_RAM4_PD_EN | RTC_CNTL_INTER_RAM3_PD_EN |\
+     RTC_CNTL_INTER_RAM2_PD_EN | RTC_CNTL_INTER_RAM1_PD_EN |\
+     RTC_CNTL_INTER_RAM0_PD_EN | RTC_CNTL_ROM0_PD_EN)
+#define RTC_CNTL_CPU_ROM_RAM_FORCE_PU \
+    (RTC_CNTL_INTER_RAM4_FORCE_PU | RTC_CNTL_INTER_RAM3_FORCE_PU |\
+     RTC_CNTL_INTER_RAM2_FORCE_PU | RTC_CNTL_INTER_RAM1_FORCE_PU |\
+     RTC_CNTL_INTER_RAM0_FORCE_PU | RTC_CNTL_ROM0_FORCE_PU)
+#define RTC_CNTL_CPU_ROM_RAM_FORCE_PD \
+    (RTC_CNTL_INTER_RAM4_FORCE_PD | RTC_CNTL_INTER_RAM3_FORCE_PD |\
+     RTC_CNTL_INTER_RAM2_FORCE_PD | RTC_CNTL_INTER_RAM1_FORCE_PD |\
+     RTC_CNTL_INTER_RAM0_FORCE_PD | RTC_CNTL_ROM0_FORCE_PD
+
 #define RTC_CNTL_DIG_ISO_REG          (DR_REG_RTCCNTL_BASE + 0x88)
 /* RTC_CNTL_DG_WRAP_FORCE_NOISO : R/W ;bitpos:[31] ;default: 1'd1 ; */
 /*description: digital core force no ISO*/
@@ -1617,6 +1636,16 @@
 #define RTC_CNTL_DIG_ISO_FORCE_OFF_V  0x1
 #define RTC_CNTL_DIG_ISO_FORCE_OFF_S  7
 
+/* Useful groups of RTC_CNTL_DIG_ISO_REG bits */
+#define RTC_CNTL_CPU_ROM_RAM_FORCE_ISO   \
+    (RTC_CNTL_INTER_RAM4_FORCE_ISO | RTC_CNTL_INTER_RAM3_FORCE_ISO |\
+     RTC_CNTL_INTER_RAM2_FORCE_ISO | RTC_CNTL_INTER_RAM1_FORCE_ISO |\
+     RTC_CNTL_INTER_RAM0_FORCE_ISO | RTC_CNTL_ROM0_FORCE_ISO)
+#define RTC_CNTL_CPU_ROM_RAM_FORCE_NOISO \
+    (RTC_CNTL_INTER_RAM4_FORCE_NOISO | RTC_CNTL_INTER_RAM3_FORCE_NOISO |\
+     RTC_CNTL_INTER_RAM2_FORCE_NOISO | RTC_CNTL_INTER_RAM1_FORCE_NOISO |\
+     RTC_CNTL_INTER_RAM0_FORCE_NOISO | RTC_CNTL_ROM0_FORCE_NOISO)
+
 #define RTC_CNTL_WDTCONFIG0_REG          (DR_REG_RTCCNTL_BASE + 0x8c)
 /* RTC_CNTL_WDT_EN : R/W ;bitpos:[31] ;default: 1'h0 ; */
 /*description: enable RTC WDT*/
@@ -1700,6 +1729,13 @@
 #define RTC_CNTL_WDT_PAUSE_IN_SLP_M  (BIT(7))
 #define RTC_CNTL_WDT_PAUSE_IN_SLP_V  0x1
 #define RTC_CNTL_WDT_PAUSE_IN_SLP_S  7
+/* RTC_CNTL_WDT_STGX : */
+/*description: stage action selection values */
+#define RTC_WDT_STG_SEL_OFF             0
+#define RTC_WDT_STG_SEL_INT             1
+#define RTC_WDT_STG_SEL_RESET_CPU       2
+#define RTC_WDT_STG_SEL_RESET_SYSTEM    3
+#define RTC_WDT_STG_SEL_RESET_RTC       4
 
 #define RTC_CNTL_WDTCONFIG1_REG          (DR_REG_RTCCNTL_BASE + 0x90)
 /* RTC_CNTL_WDT_STG0_HOLD : R/W ;bitpos:[31:0] ;default: 32'd128000 ; */
@@ -1811,7 +1847,16 @@
 #define RTC_CNTL_SCRATCH7_V  0xFFFFFFFF
 #define RTC_CNTL_SCRATCH7_S  0
 
-#define RTC_CNTL_DIAG0_REG          (DR_REG_RTCCNTL_BASE + 0xc0)
+#define RTC_CNTL_LOW_POWER_ST_REG          (DR_REG_RTCCNTL_BASE + 0xc0)
+/* RTC_CNTL_RDY_FOR_WAKEUP : R/0; bitpos:[19]; default: 0 */
+/*description: 1 if RTC controller is ready to execute WAKE instruction, 0 otherwise */
+#define RTC_CNTL_RDY_FOR_WAKEUP  (BIT(19))
+#define RTC_CNTL_RDY_FOR_WAKEUP_M  (BIT(19))
+#define RTC_CNTL_RDY_FOR_WAKEUP_V  0x1
+#define RTC_CNTL_RDY_FOR_WAKEUP_S  19
+
+/* Compatibility definition */
+#define RTC_CNTL_DIAG0_REG RTC_CNTL_LOW_POWER_ST_REG
 /* RTC_CNTL_LOW_POWER_DIAG0 : RO ;bitpos:[31:0] ;default: 0 ; */
 /*description: */
 #define RTC_CNTL_LOW_POWER_DIAG0  0xFFFFFFFF
@@ -2036,4 +2081,4 @@
 #define RTC_CNTL_CNTL_DATE_S  0
 #define RTC_CNTL_RTC_CNTL_DATE_VERSION 0x1604280
 
-#endif /*__ARCH_XTENSA_SRC_ESP32_CHIP_XTENSA_ESP32_H */
+#endif /*_SOC_RTC_CNTL_REG_H_ */

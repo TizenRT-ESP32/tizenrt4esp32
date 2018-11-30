@@ -1019,7 +1019,7 @@ unsigned int get_output_frames_to_byte(unsigned int frames)
 	return pcm_frames_to_bytes(g_audio_out_cards[g_actual_audio_out_card_id].pcm, frames);
 }
 
-uint32_t get_output_bytes_to_frame(unsigned int bytes)
+unsigned int get_output_bytes_to_frame(unsigned int bytes)
 {
 	if ((g_actual_audio_out_card_id < 0) || (bytes == 0)) {
 		return 0;

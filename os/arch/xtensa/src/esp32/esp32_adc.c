@@ -17,57 +17,6 @@
  ******************************************************************/
 
 /****************************************************************************
- *
- * Copyright 2016 Samsung Electronics All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the License.
- *
- ****************************************************************************/
-/****************************************************************************
- * arch/arm/src/s5j/s5j_adc.c
- *
- *   Copyright (C) 2017 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name tinyara nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- ****************************************************************************/
-/****************************************************************************
  * Included Files
  ****************************************************************************/
 #include <tinyara/config.h>
@@ -77,23 +26,37 @@
 #include <assert.h>
 #include <debug.h>
 #include <errno.h>
+#include <stdio.h>
 
 #include <tinyara/irq.h>
 #include <tinyara/wqueue.h>
+#include <tinyara/wdog.h>
 #include <tinyara/analog/adc.h>
 #include <tinyara/analog/ioctl.h>
 
-#include "up_arch.h"
-#include "s5j_adc.h"
+#include "chip/esp32_rtc_adc.h"
+#include "esp32_adc.h"
 
-#ifdef CONFIG_S5J_ADC
+
+#ifdef CONFIG_ESP32_ADC
+
+#define ESP32_ADC_MAX_CHANNELS ADC1_CHANNEL_MAX
+
+//Depends on TICK; Default is 100ms(10ms*10)!
+#define ESP32_ADC_DEFAULT_PEROID  10
+#define ESP32_ADC_MIN_PEROID    1
+#define ESP32_ADC_MAX_PEROID    1000000
+
+#undef adcinfo
+#define adcinfo(format, ...)   printf(format, ##__VA_ARGS__)
+
 
 /****************************************************************************
  * Private Types
  ****************************************************************************/
 
 /* This structure describes the state of one ADC block */
-struct s5j_dev_s {
+struct esp32_dev_s {
 	FAR const struct adc_callback_s *cb;
 
 	struct adc_dev_s *dev;		/* A reference to the outer (parent) */
@@ -101,13 +64,19 @@ struct s5j_dev_s {
 	uint8_t cchannels;			/* Number of configured channels */
 	uint8_t current;			/* Current ADC channel being converted */
 
-	struct work_s work;			/* Supports the IRQ handling */
-	uint8_t chanlist[S5J_ADC_MAX_CHANNELS];
+    WDOG_ID work;			/* Supports the IRQ handling */
+    adc_channel_t chanlist[ESP32_ADC_MAX_CHANNELS];
 };
 
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
+#if !defined(CONFIG_ESP32_ADC_PEROID) || (CONFIG_ESP32_ADC_PEROID<ESP32_ADC_MIN_PEROID) || (CONFIG_ESP32_ADC_PEROID>ESP32_ADC_MAX_PEROID)
+const int PeroidPerChannel = ESP32_ADC_DEFAULT_PEROID;
+#else
+const int PeroidPerChannel = CONFIG_ESP32_ADC_PEROID;
+#endif
+
 /****************************************************************************
  * Name: adc_conversion
  *
@@ -125,16 +94,19 @@ struct s5j_dev_s {
  *   None
  *
  ****************************************************************************/
-static void adc_conversion(void *arg)
+
+static void adc_conversion(int argc, uint32_t arg)
 {
-	uint16_t sample;
-	struct s5j_dev_s *priv = (struct s5j_dev_s *)arg;
+	uint16_t sample = 0;
+	struct esp32_dev_s *priv = (struct esp32_dev_s *)arg;
 
+#if 1
 	/* Read the ADC sample and pass it to the upper-half */
-	sample = getreg32(S5J_ADC_DAT) & ADC_DAT_ADCDAT_MASK;
+    sample = adc1_get_raw((adc1_channel_t)priv->chanlist[priv->current]);
 
-	if (priv->cb != NULL) {
-		DEBUGASSERT(priv->cb->au_receive != NULL);
+    adcinfo("[ADC] conversion %d %d: %d\n", priv->current, priv->chanlist[priv->current], sample);
+	if (priv->cb != NULL && priv->cb->au_receive != NULL) {
+		//DEBUGASSERT(priv->cb->au_receive != NULL);
 		priv->cb->au_receive(priv->dev, priv->chanlist[priv->current], sample);
 	}
 
@@ -145,47 +117,30 @@ static void adc_conversion(void *arg)
 		priv->current = 0;
 	}
 
-	/* Change to the next channel */
-	modifyreg32(S5J_ADC_CON2, ADC_CON2_ACHSEL_MASK, priv->chanlist[priv->current]);
+    /*next conversion*/
+    int ret = wd_start(priv->work, PeroidPerChannel, (wdentry_t)&adc_conversion, 1, (uint32_t)priv);
+#else
+    if (priv->current >= priv->nchannels) {
+        priv->current = 0;
+    }
 
-	/* Exit, start a new conversion */
-	modifyreg32(S5J_ADC_CON1, 0, ADC_CON1_STCEN_ENABLE);
-}
+    while(priv->current < priv->nchannels) 
+    {
+        /* Read the ADC sample and pass it to the upper-half */
+        sample = adc1_get_raw((adc1_channel_t)priv->chanlist[priv->current]);
 
-/****************************************************************************
- * Name: adc_interrupt
- *
- * Description:
- *   Common ADC interrupt handler.
- *
- * Input Parameters:
- *
- * Returned Value:
- *
- ****************************************************************************/
-static int adc_interrupt(int irq, FAR void *context, void *arg)
-{
-	int ret;
-	FAR struct s5j_dev_s *priv = (FAR struct s5j_dev_s *)arg;
+        adcinfo("[ADC] conversion %d %d: %d\n", priv->current, priv->chanlist[priv->current], sample);
+        if (priv->cb != NULL && priv->cb->au_receive != NULL) {
+            //DEBUGASSERT(priv->cb->au_receive != NULL);
+            priv->cb->au_receive(priv->dev, priv->chanlist[priv->current], sample);
+        }
+        /* Set the next channel to be sampled */
+        priv->current++;
+    }
+    priv->current = 0;
 
-	if (getreg32(S5J_ADC_INT_STATUS) & ADC_INT_STATUS_PENDING) {
-		/* Clear interrupt pending */
-		putreg32(ADC_INT_STATUS_PENDING, S5J_ADC_INT_STATUS);
-
-		/*
-		 * Check if interrupt work is already queued. If it is already
-		 * busy, then we already have interrupt processing in the
-		 * pipeline and we need to do nothing more.
-		 */
-		if (work_available(&priv->work)) {
-			ret = work_queue(LPWORK, &priv->work, adc_conversion, priv, 0);
-			if (ret != 0) {
-				lldbg("ERROR: failed to queue work: %d\n", ret);
-			}
-		}
-	}
-
-	return OK;
+    int ret = wd_start(priv->work, PeroidPerChannel, (wdentry_t)&adc_conversion, 1, (uint32_t)priv);
+#endif 
 }
 
 /****************************************************************************
@@ -202,28 +157,16 @@ static int adc_interrupt(int irq, FAR void *context, void *arg)
  *   None
  *
  ****************************************************************************/
-static void adc_startconv(FAR struct s5j_dev_s *priv, bool enable)
+static void adc_startconv(FAR struct esp32_dev_s *priv, bool enable)
 {
+    int ret = 0;
 	if (enable) {
-		modifyreg32(S5J_ADC_CON1, 0, ADC_CON1_STCEN_ENABLE);
+        ret = wd_cancel(priv->work);
+        ret = wd_start(priv->work, ESP32_ADC_MIN_PEROID, (wdentry_t)&adc_conversion, 1, (uint32_t)priv);
 	} else {
-		modifyreg32(S5J_ADC_CON1, ADC_CON1_STCEN_ENABLE, 0);
+        ret = wd_cancel(priv->work);
 	}
-}
-
-/****************************************************************************
- * Name: adc_setmode
- *
- * Description
- *   ADC conversion mode selection
- *
- * Returned Value:
- *   None
- *
- ****************************************************************************/
-static void adc_setmode(FAR struct s5j_dev_s *priv, adc_conversion_mode_t mode)
-{
-	modifyreg32(S5J_ADC_CON2, ADC_CON2_CTIME_MASK, mode);
+    //adcinfo("[ADC] conv %d: %d %d\n", enable, ret, get_errno());
 }
 
 /****************************************************************************
@@ -243,7 +186,7 @@ static void adc_setmode(FAR struct s5j_dev_s *priv, adc_conversion_mode_t mode)
 static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
 {
 	int i;
-	FAR struct s5j_dev_s *priv = (FAR struct s5j_dev_s *)dev->ad_priv;
+	FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 
 	if (ch == 0) {
 		/*
@@ -254,7 +197,6 @@ static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
 		priv->nchannels = priv->cchannels;
 	} else {
 		/* REVISIT: changing channel is not supported for now */
-
 		for (i = 0; i < priv->cchannels && priv->chanlist[i] != ch - 1; i++) ;
 
 		if (i >= priv->cchannels) {
@@ -265,7 +207,7 @@ static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
 		priv->nchannels = 1;
 	}
 
-	modifyreg32(S5J_ADC_CON2, ADC_CON2_ACHSEL_MASK, priv->chanlist[priv->current]);
+    adc1_config_channel_atten(priv->chanlist[priv->current], ADC_ATTEN_0db);
 
 	return OK;
 }
@@ -280,7 +222,7 @@ static int adc_set_ch(FAR struct adc_dev_s *dev, uint8_t ch)
  ****************************************************************************/
 static int adc_bind(FAR struct adc_dev_s *dev, FAR const struct adc_callback_s *callback)
 {
-	FAR struct s5j_dev_s *priv = (FAR struct s5j_dev_s *)dev->ad_priv;
+	FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 
 	DEBUGASSERT(priv != NULL);
 	priv->cb = callback;
@@ -302,15 +244,14 @@ static int adc_bind(FAR struct adc_dev_s *dev, FAR const struct adc_callback_s *
  ****************************************************************************/
 static void adc_reset(FAR struct adc_dev_s *dev)
 {
+    FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 	irqstate_t flags;
 
 	flags = irqsave();
 
 	/* Reset ADC */
-	putreg32(ADC_CON1_SOFTRESET_RESET, S5J_ADC_CON1);
 
 	/* Release ADC from reset state */
-	putreg32(ADC_CON1_SOFTRESET_NONRESET, S5J_ADC_CON1);
 
 	/* Configuration of the channel conversions */
 	adc_set_ch(dev, 0);
@@ -334,24 +275,24 @@ static void adc_reset(FAR struct adc_dev_s *dev)
 static int adc_setup(FAR struct adc_dev_s *dev)
 {
 	int ret;
-	FAR struct s5j_dev_s *priv = (FAR struct s5j_dev_s *)dev->ad_priv;
+	FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 
 	/* Attach the ADC interrupt */
-	ret = irq_attach(IRQ_ADC, adc_interrupt, priv);
-	if (ret < 0) {
-		lldbg("irq_attach failed: %d\n", ret);
-		return ret;
-	}
 
 	/* Make sure that the ADC device is in the powered up, reset state */
 	adc_reset(dev);
 
-	/*
-	 * Enable the ADC interrupt, but it will not be generated until we
-	 * request to start the conversion.
-	 */
-	llwdbg("Enable the ADC interrupt: irq=%d\n", IRQ_ADC);
-	up_enable_irq(IRQ_ADC);
+	/* Enable the ADC interrupt	*/
+	//up_enable_irq(IRQ_ADC);
+
+    adcinfo("[ADC] adc_setup: %d, %d...\n\t",priv->cchannels,priv->nchannels);
+    for (ret = 0; ret < priv->nchannels; ret++) {
+        adcinfo("%d ", priv->chanlist[ret]);
+    }
+    adcinfo("\n");
+
+    ret = adc1_config_width(ADC_WIDTH_12Bit);
+    adcinfo("[ADC] adc1_config_width:%d\n\n",ret);
 
 	return OK;
 }
@@ -370,15 +311,10 @@ static int adc_setup(FAR struct adc_dev_s *dev)
  ****************************************************************************/
 static void adc_shutdown(FAR struct adc_dev_s *dev)
 {
-	/* Disable interrupt */
-	putreg32(ADC_INT_DISABLE, S5J_ADC_INT);
+    FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 
-	/* Disable ADC interrupts and detach the ADC interrupt handler */
-	up_disable_irq(IRQ_ADC);
-	irq_detach(IRQ_ADC);
-
-	/* Reset ADC */
-	putreg32(ADC_CON1_SOFTRESET_RESET, S5J_ADC_CON1);
+    int ret = wd_cancel(priv->work);
+    adc_power_off();
 }
 
 /****************************************************************************
@@ -395,7 +331,6 @@ static void adc_shutdown(FAR struct adc_dev_s *dev)
 static void adc_rxint(FAR struct adc_dev_s *dev, bool enable)
 {
 	/* Enable or Disable ADC interrupt */
-	putreg32(enable ? ADC_INT_ENABLE : ADC_INT_DISABLE, S5J_ADC_INT);
 }
 
 /****************************************************************************
@@ -414,7 +349,7 @@ static void adc_rxint(FAR struct adc_dev_s *dev, bool enable)
  ****************************************************************************/
 static int adc_ioctl(FAR struct adc_dev_s *dev, int cmd, unsigned long arg)
 {
-	FAR struct s5j_dev_s *priv = (FAR struct s5j_dev_s *)dev->ad_priv;
+	FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 	int ret = OK;
 
 	switch (cmd) {
@@ -442,7 +377,7 @@ static const struct adc_ops_s g_adcops = {
 	.ao_ioctl = adc_ioctl,
 };
 
-static struct s5j_dev_s g_adcpriv = {
+static struct esp32_dev_s g_adcpriv = {
 	.cb = NULL,
 	.current = 0,
 };
@@ -454,12 +389,12 @@ static struct adc_dev_s g_adcdev;
  ****************************************************************************/
 
 /****************************************************************************
- * Name: s5j_adc_initialize
+ * Name: esp32_adc_initialize
  *
  * Description:
  *   Initialize the ADC. As the pins of each ADC channel are exported through
  *   configurable GPIO and it is board-specific, information on available
- *   ADC channels should be passed to s5j_adc_initialize().
+ *   ADC channels should be passed to esp32_adc_initialize().
  *
  * Input Parameters:
  *   chanlist  - The list of channels
@@ -469,9 +404,9 @@ static struct adc_dev_s g_adcdev;
  *   Valid ADC device structure reference on succcess; a NULL on failure
  *
  ****************************************************************************/
-struct adc_dev_s *s5j_adc_initialize(FAR const uint8_t *chanlist, int cchannels)
+struct adc_dev_s *esp32_adc_initialize(FAR const adc_channel_t *chanlist, int cchannels)
 {
-	FAR struct s5j_dev_s *priv = &g_adcpriv;
+	FAR struct esp32_dev_s *priv = &g_adcpriv;
 
 	/* Initialize the public ADC device data structure */
 	g_adcdev.ad_ops = &g_adcops;
@@ -482,13 +417,18 @@ struct adc_dev_s *s5j_adc_initialize(FAR const uint8_t *chanlist, int cchannels)
 	priv->dev = &g_adcdev;
 	priv->cchannels = cchannels;
 
-	if (cchannels > S5J_ADC_MAX_CHANNELS) {
-		lldbg("S5J has maximum %d ADC channels.\n", S5J_ADC_MAX_CHANNELS);
+	if (cchannels > ESP32_ADC_MAX_CHANNELS) {
+		lldbg("ESP32 ADC1 has maximum %d ADC channels.\n", ESP32_ADC_MAX_CHANNELS);
 		return NULL;
 	}
 
-	memcpy(priv->chanlist, chanlist, cchannels);
+	memcpy(priv->chanlist, chanlist, cchannels*sizeof(adc_channel_t));
+    adcinfo("ESP32 ADC channel count %d\n",cchannels);
+ 
+    adc1_config_width(ADC_WIDTH_12Bit);
+
+    priv->work = wd_create();
 
 	return &g_adcdev;
 }
-#endif							/* CONFIG_S5J_ADC */
+#endif							/* CONFIG_ESP32_ADC */
