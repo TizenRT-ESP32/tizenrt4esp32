@@ -179,27 +179,27 @@ typedef enum {
     return ESP_FAIL;\
 } }while (0)
 
-#define RTC_GPIO_ENABLE         0
-#define RTC_TOUCHPAD_ENABLE     0
-#define RTC_ADC_ENABLE          1
-#define RTC_DAC_ENABLE          0
-#define RTC_HALLSENSOR_ENABLE   0
-#define RTC_CORE_ISR_ENABLE     0
+#define CONFIG_RTC_GPIO_ENABLE         0
+#define CONFIG_RTC_TOUCHPAD_ENABLE     0
+#define CONFIG_RTC_ADC_ENABLE          1
+#define CONFIG_RTC_DAC_ENABLE          0
+#define CONFIG_RTC_HALLSENSOR_ENABLE   0
+#define CONFIG_RTC_CORE_ISR_ENABLE     0
 
-#if (RTC_TOUCHPAD_ENABLE>0) ||(RTC_ADC_ENABLE>0)||(RTC_DAC_ENABLE>0)
-#undef RTC_GPIO_ENABLE
-#define RTC_GPIO_ENABLE         1
+#if (CONFIG_RTC_TOUCHPAD_ENABLE > 0) || (CONFIG_RTC_ADC_ENABLE > 0) || (CONFIG_RTC_DAC_ENABLE > 0)
+#undef CONFIG_RTC_GPIO_ENABLE
+#define CONFIG_RTC_GPIO_ENABLE         1
 #endif
 
-#if (RTC_ADC_ENABLE>0) || (RTC_DAC_ENABLE>0)
-#undef RTC_HALLSENSOR_ENABLE
-#define RTC_HALLSENSOR_ENABLE   1
+#if (CONFIG_RTC_ADC_ENABLE > 0) || (CONFIG_RTC_DAC_ENABLE > 0)
+#undef CONFIG_RTC_HALLSENSOR_ENABLE
+#define CONFIG_RTC_HALLSENSOR_ENABLE   1
 #endif
 
 /****************************************************************************
 *
 ****************************************************************************/
-static const char *RTC_MODULE_TAG = "RTC_MODULE";
+const char *RTC_MODULE_TAG = "RTC_MODULE";
 portMUX_TYPE rtc_spinlock = portMUX_INITIALIZER_UNLOCKED;
 const uint32_t GPIO_PIN_MUX_REG[GPIO_PIN_COUNT] = {
 	IO_MUX_GPIO0_REG,
@@ -244,7 +244,7 @@ const uint32_t GPIO_PIN_MUX_REG[GPIO_PIN_COUNT] = {
 	IO_MUX_GPIO39_REG,
 };
 
-#if RTC_ADC_ENABLE
+#if (CONFIG_RTC_ADC_ENABLE > 0)
 /*
 In ADC2, there're two locks used for different cases:
 1. lock shared with app and WIFI:
@@ -270,7 +270,7 @@ static _lock_t adc1_i2s_lock = portLOCK_INITIALIZER_UNLOCKED;;
 static const char ADC_TAG[] = "adc";
 #endif
 
-#if RTC_TOUCHPAD_ENABLE
+#if (CONFIG_RTC_TOUCHPAD_ENABLE > 0)
 static SemaphoreHandle_t rtc_touch_mux = NULL;
 typedef struct {
 	TimerHandle_t timer;
@@ -289,8 +289,12 @@ static filter_cb_t s_filter_cb = NULL;
 /****************************************************************************
 *
 ****************************************************************************/
+#if (CONFIG_RTC_DAC_ENABLE > 0)
 static inline void dac_output_set_enable(dac_channel_t channel, bool enable);
+#endif
+#if (CONFIG_RTC_HALLSENSOR_ENABLE > 0)
 static inline void adc1_hall_enable(bool enable);
+#endif
 
 /****************************************************************************
 * Private Functions
@@ -311,7 +315,8 @@ void vSemaphoreDelete(SemaphoreHandle_t sem)
 	sem_destroy(sem);
 }
 
-#if (RTC_GPIO_ENABLE>0)
+
+#if (CONFIG_RTC_GPIO_ENABLE > 0)
 /*---------------------------------------------------------------
                         RTC IO
 ---------------------------------------------------------------*/
@@ -663,7 +668,7 @@ esp_err_t gpio_set_pull_mode(gpio_num_t gpio_num, gpio_pull_mode_t pull)
 }
 #endif
 
-#if RTC_TOUCHPAD_ENABLE
+#if (CONFIG_RTC_TOUCHPAD_ENABLE > 0)
 /*---------------------------------------------------------------
                     Touch Pad
 ---------------------------------------------------------------*/
@@ -1294,7 +1299,7 @@ esp_err_t touch_pad_get_wakeup_status(touch_pad_t *pad_num)
 }
 #endif
 
-#if RTC_ADC_ENABLE
+#if (CONFIG_RTC_ADC_ENABLE > 0)
 /*---------------------------------------------------------------
                     ADC Common
 ---------------------------------------------------------------*/
@@ -1926,11 +1931,13 @@ static inline void adc2_config_width(adc_bits_width_t width_bit)
 
 static inline void adc2_dac_disable(adc2_channel_t channel)
 {
+#ifdef CONFIG_ADC2_DISABLE_DAC
 	if (channel == ADC2_CHANNEL_8) {	// the same as DAC channel 1
 		dac_output_set_enable(DAC_CHANNEL_1, false);
 	} else if (channel == ADC2_CHANNEL_9) {
 		dac_output_set_enable(DAC_CHANNEL_2, false);
 	}
+#endif
 }
 
 //registers in critical section with adc1:
@@ -2007,7 +2014,7 @@ esp_err_t adc2_vref_to_gpio(gpio_num_t gpio)
 }
 #endif
 
-#if RTC_DAC_ENABLE
+#if (CONFIG_RTC_DAC_ENABLE > 0)
 /*---------------------------------------------------------------
                     DAC
 ---------------------------------------------------------------*/
@@ -2141,7 +2148,7 @@ esp_err_t dac_i2s_disable(void)
 }
 #endif
 
-#if RTC_HALLSENSOR_ENABLE
+#if (CONFIG_RTC_HALLSENSOR_ENABLE > 0)
 /*---------------------------------------------------------------
                         HALL SENSOR
 ---------------------------------------------------------------*/
@@ -2190,7 +2197,7 @@ int hall_sensor_read(void)
 }
 #endif
 
-#if RTC_CORE_ISR_ENABLE
+#if (CONFIG_RTC_CORE_ISR_ENABLE > 0)
 /*---------------------------------------------------------------
                         INTERRUPT HANDLER
 ---------------------------------------------------------------*/

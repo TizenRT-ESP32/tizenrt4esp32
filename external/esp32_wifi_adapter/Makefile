@@ -52,7 +52,8 @@ CFLAGS += -I./spi_flash/include
 CFLAGS += -I./nvs_flash/include
 CFLAGS += -Iinclude
 CFLAGS += -I$(TOPDIR)/kernel
-
+CFLAGS += -I$(TOPDIR)/include/net
+CFLAGS += -I./lwip_port/include
 
 #ESP32 external SPIRAM and heap allocator support
 ifeq ($(CONFIG_SPIRAM_SUPPORT), y)
@@ -66,8 +67,11 @@ CSRCS += esp32_heap/heap_caps.c  esp32_heap/heap_caps_init.c  esp32_heap/multi_h
 endif
 
 #ESP32 event loop module
-CSRCS +=  event_loop/event_loop.c
+CSRCS +=  event_loop/event_loop.c event_default_handlers.c
 CFLAGS += -I./tcpip_adapter/include
+
+#ESP32 tcpip adapter
+CSRCS += tcpip_adapter/tcpip_adapter_lwip.c lwip_port/wlanif.c
 
 CXXOBJS = $(CXXSRCS:.cpp=$(OBJEXT))
 COBJS   = $(CSRCS:.c=$(OBJEXT))

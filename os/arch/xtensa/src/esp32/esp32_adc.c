@@ -46,8 +46,13 @@
 #define ESP32_ADC_MIN_PEROID    1
 #define ESP32_ADC_MAX_PEROID    1000000
 
+#define DEBUG_ADC	0
 #undef adcinfo
+#if defined(DEBUG_ADC) && DEBUG_ADC > 0
 #define adcinfo(format, ...)   printf(format, ##__VA_ARGS__)
+#else
+#define adcinfo(format, ...)
+#endif
 
 #define CONVERT_ONECHANNEL		1
 /****************************************************************************
@@ -116,7 +121,7 @@ static void adc_conversion(int argc, uint32_t arg)
 	}
 
 	/*next conversion */
-	int ret = wd_start(priv->work, PeroidPerChannel, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
+	wd_start(priv->work, PeroidPerChannel, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
 #else
 	if (priv->current >= priv->nchannels) {
 		priv->current = 0;
@@ -135,7 +140,7 @@ static void adc_conversion(int argc, uint32_t arg)
 	}
 	priv->current = 0;
 
-	int ret = wd_start(priv->work, PeroidPerChannel, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
+	wd_start(priv->work, PeroidPerChannel, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
 #endif
 }
 
@@ -155,14 +160,13 @@ static void adc_conversion(int argc, uint32_t arg)
  ****************************************************************************/
 static void adc_startconv(FAR struct esp32_dev_s *priv, bool enable)
 {
-	int ret = 0;
 	if (enable) {
-		ret = wd_cancel(priv->work);
-		ret = wd_start(priv->work, ESP32_ADC_MIN_PEROID, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
+		wd_cancel(priv->work);
+		wd_start(priv->work, ESP32_ADC_MIN_PEROID, (wdentry_t) & adc_conversion, 1, (uint32_t) priv);
 	} else {
-		ret = wd_cancel(priv->work);
+		wd_cancel(priv->work);
 	}
-	//adcinfo("[ADC] conv %d: %d %d\n", enable, ret, get_errno());
+	adcinfo("[ADC] conv %d: %d\n", enable, get_errno());
 }
 
 /****************************************************************************
@@ -240,7 +244,6 @@ static int adc_bind(FAR struct adc_dev_s *dev, FAR const struct adc_callback_s *
  ****************************************************************************/
 static void adc_reset(FAR struct adc_dev_s *dev)
 {
-	FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 	irqstate_t flags;
 
 	flags = irqsave();
@@ -309,7 +312,7 @@ static void adc_shutdown(FAR struct adc_dev_s *dev)
 {
 	FAR struct esp32_dev_s *priv = (FAR struct esp32_dev_s *)dev->ad_priv;
 
-	int ret = wd_cancel(priv->work);
+	wd_cancel(priv->work);
 	adc_power_off();
 }
 
