@@ -722,10 +722,14 @@ int32_t IRAM_ATTR get_random_wrapper(uint8_t *buf, size_t len)
 	return (int32_t) os_get_random(buf, len);
 }
 
+unsigned long os_random(void)
+{
+    return esp_random();
+}
+
+
 extern void xtensa_enable_cpuint(uint32_t mask);
 extern void xtensa_disable_cpuint(uint32_t mask);
-extern int os_get_random(unsigned char *buf, size_t len);
-extern unsigned long os_random(void);
 
 /*=================espwifi os adapter interface =====================*/
 
@@ -805,7 +809,7 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._nvs_erase_key = nvs_erase_key,
 	._get_random = esp_os_get_random_wrapper,
 	._get_time = get_time_wrapper,
-	._random = esp_random,
+	._random = os_random,
 	._log_write = log_write_wrapper,
 	._log_timestamp = esp_log_timestamp,
 	._malloc_internal = malloc_internal_wrapper,

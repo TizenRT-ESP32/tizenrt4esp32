@@ -46,8 +46,6 @@ static void select_rtc_slow_clk(rtc_slow_freq_t slow_clk);
 extern uint32_t g_ticks_per_us_pro;
 extern uint32_t g_ticks_per_us_app;
 
-static const char* TAG = "clk";
-
 void esp_clk_slowclk_cal_set(uint32_t new_cal)
 {
 #ifdef WITH_RTC
@@ -68,7 +66,7 @@ void esp_clk_slowclk_cal_set(uint32_t new_cal)
     REG_WRITE(RTC_SLOW_CLK_CAL_REG, new_cal);
 }
 
-
+void uart_tx_wait_idle(uint8_t uart_no);
 void esp_clk_init(void)
 {
     rtc_config_t cfg = RTC_CONFIG_DEFAULT();
@@ -116,7 +114,7 @@ void esp_clk_init(void)
 
     // Wait for UART TX to finish, otherwise some UART output will be lost
     // when switching APB frequency
-    //uart_tx_wait_idle(CONFIG_CONSOLE_UART_NUM);
+    uart_tx_wait_idle(CONFIG_CONSOLE_UART_NUM);
     
     uint32_t freq_before = rtc_clk_cpu_freq_value(rtc_clk_cpu_freq_get()) / MHZ ;
     
@@ -277,7 +275,7 @@ void esp_perip_clk_init(void)
                         DPORT_I2S1_CLK_EN |
                         DPORT_SPI_DMA_CLK_EN;
 
-#if CONFIG_SPIRAM_SPEED_80M
+#ifdef CONFIG_SPIRAM_SPEED_80M
 //80MHz SPIRAM uses SPI3 as well; it's initialized before this is called. Because it is used in
 //a weird mode where clock to the peripheral is disabled but reset is also disabled, it 'hangs'
 //in a state where it outputs a continuous 80MHz signal. Mask its bit here because we should

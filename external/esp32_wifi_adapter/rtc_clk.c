@@ -18,8 +18,7 @@
 #include <assert.h>
 #include "rom/ets_sys.h"
 #include "rom/rtc.h"
-//#include "rom/uart.h"
-//#include "rom/gpio.h"
+#include "esp32_gpio.h"
 #include "soc/rtc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "soc/rtc_io_reg.h"
@@ -40,8 +39,6 @@
 #define RTC_SLOW_CLK_FREQ_150K      150000
 #define RTC_SLOW_CLK_FREQ_8MD256    (RTC_FAST_CLK_FREQ_8M / 256)
 #define RTC_SLOW_CLK_FREQ_32K       32768
-
-static const char* TAG = "rtc_clk";
 
 /* Various constants related to the analog internals of the chip.
  * Defined here because they don't have any use outside of this file.
@@ -666,9 +663,9 @@ uint32_t rtc_clk_apb_freq_get()
     return freq_hz - remainder;
 }
 
+void uart_tx_wait_idle(uint8_t uart_no);
 
-//void rtc_clk_init(rtc_clk_config_t cfg)
-void rtc_init_clk(rtc_clk_config_t cfg)
+void rtc_clk_init(rtc_clk_config_t cfg)
 {
     rtc_cpu_freq_t cpu_source_before = rtc_clk_cpu_freq_get();
     

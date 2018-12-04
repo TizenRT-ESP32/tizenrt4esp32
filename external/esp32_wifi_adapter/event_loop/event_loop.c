@@ -22,13 +22,12 @@
 #include "esp_event_loop.h"
 #include "esp_task.h"
 #include "esp_mesh.h"
-
+#include "esp_wifi_os_adapter.h"
 
 //#include "esp_log.h"
 //#include "sdkconfig.h"
 
 #define portMAX_DELAY 0xFFFFFFFF
-static const char* TAG = "event";
 static bool s_event_init_flag = false;
 static void *s_event_queue = NULL;
 static system_event_cb_t s_event_handler_cb = NULL;
@@ -46,17 +45,16 @@ static void esp_event_loop_task(void *pvParameters)
 {
     while (1) {
         system_event_t evt;
-        //if (queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY) == pdPASS) {
+        //if (queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY) == pdPASS) 
         queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY);
-          //  esp_err_t ret = esp_event_process_default(&evt);
-          //  if (ret != ESP_OK) {
+        esp_err_t ret = esp_event_process_default(&evt);
+        if (ret != ESP_OK) {
             //    ESP_LOGE(TAG, "default event handler failed!");
-           // }
-           //
-            esp_err_t ret = esp_event_post_to_user(&evt);
-            if (ret != ESP_OK) {
+        }
+        ret = esp_event_post_to_user(&evt);
+        if (ret != ESP_OK) {
           //      ESP_LOGE(TAG, "post event to user fail!");
-            }
+        }
     } 
 }
 
@@ -114,7 +112,7 @@ esp_err_t esp_event_loop_init(system_event_cb_t cb, void *ctx)
     s_event_ctx = ctx;
     s_event_queue = queue_create_wrapper(CONFIG_SYSTEM_EVENT_QUEUE_SIZE, sizeof(system_event_t));
 
-    task_create_pinned_to_core_wrapper(esp_event_loop_task, "eventTask",
+    g_wifi_osi_funcs._task_create_pinned_to_core(esp_event_loop_task, "eventTask",
             ESP_TASKD_EVENT_STACK, NULL, ESP_TASKD_EVENT_PRIO, NULL, 0); 
 
     s_event_init_flag = true;

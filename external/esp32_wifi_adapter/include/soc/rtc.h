@@ -316,7 +316,7 @@ rtc_fast_freq_t rtc_clk_fast_freq_get();
  *
  * @param cpu_freq  new CPU frequency
  */
-void rtc_clk_cpu_freq_set(rtc_cpu_freq_t cpu_freq) __attribute__((deprecated));
+void rtc_clk_cpu_freq_set(rtc_cpu_freq_t cpu_freq);
 
 /**
  * @brief Switch CPU frequency
@@ -338,7 +338,7 @@ void rtc_clk_cpu_freq_set(rtc_cpu_freq_t cpu_freq) __attribute__((deprecated));
  *
  * @param cpu_freq  new CPU frequency
  */
-void rtc_clk_cpu_freq_set_fast(rtc_cpu_freq_t cpu_freq) __attribute__((deprecated));
+void rtc_clk_cpu_freq_set_fast(rtc_cpu_freq_t cpu_freq);
 
 /**
  * @brief Get the currently selected CPU frequency
@@ -354,7 +354,7 @@ void rtc_clk_cpu_freq_set_fast(rtc_cpu_freq_t cpu_freq) __attribute__((deprecate
  *
  * @return CPU frequency (one of rtc_cpu_freq_t values)
  */
-rtc_cpu_freq_t rtc_clk_cpu_freq_get()  __attribute__((deprecated));
+rtc_cpu_freq_t rtc_clk_cpu_freq_get();
 
 /**
  * @brief Get corresponding frequency value for rtc_cpu_freq_t enum value
@@ -365,7 +365,7 @@ rtc_cpu_freq_t rtc_clk_cpu_freq_get()  __attribute__((deprecated));
  * @param cpu_freq  CPU frequency, on of rtc_cpu_freq_t values
  * @return CPU frequency, in HZ
  */
-uint32_t rtc_clk_cpu_freq_value(rtc_cpu_freq_t cpu_freq)  __attribute__((deprecated));
+uint32_t rtc_clk_cpu_freq_value(rtc_cpu_freq_t cpu_freq);
 
 /**
  * @brief Get rtc_cpu_freq_t enum value for given CPU frequency
@@ -377,7 +377,7 @@ uint32_t rtc_clk_cpu_freq_value(rtc_cpu_freq_t cpu_freq)  __attribute__((depreca
  * @param[out] out_val output, rtc_cpu_freq_t value corresponding to the frequency
  * @return true if the given frequency value matches one of enum values
  */
- bool rtc_clk_cpu_freq_from_mhz(int cpu_freq_mhz, rtc_cpu_freq_t* out_val) __attribute__((deprecated));
+ bool rtc_clk_cpu_freq_from_mhz(int cpu_freq_mhz, rtc_cpu_freq_t* out_val);
 
 /**
  * @brief Get CPU frequency config corresponding to a rtc_cpu_freq_t value

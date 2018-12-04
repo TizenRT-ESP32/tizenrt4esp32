@@ -12,38 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef __ESP_LOG_H__
+#define __ESP_LOG_H__
 
-#ifndef _WLAN_LWIP_IF_H_
-#define _WLAN_LWIP_IF_H_
-
-#include "esp_wifi.h"
-
-#include "esp_wifi_internal.h"
-
-#include "lwip/err.h"
+#include <stdint.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef CONFIG_LWIP_IRAM_OPTIMIZATION
-#define ESP_IRAM_ATTR                   IRAM_ATTR
-#else
-#define ESP_IRAM_ATTR                   
-#endif
+#undef nvdbg
+#define nvdbg printf
 
+#define ESP_LOGE( tag, format, ... ) nvdbg(format, ##__VA_ARGS__)
+#define ESP_LOGW( tag, format, ... ) nvdbg(format, ##__VA_ARGS__)
+#define ESP_LOGI( tag, format, ... ) nvdbg(format, ##__VA_ARGS__)
+#define ESP_LOGD( tag, format, ... ) nvdbg(format, ##__VA_ARGS__)
+#define ESP_LOGV( tag, format, ... ) nvdbg(format, ##__VA_ARGS__)
 
-err_t wlanif_init_ap(struct netif *netif);
-err_t wlanif_init_sta(struct netif *netif);
-
-void wlanif_input(struct netif *netif, void *buffer, u16_t len, void* eb);
-
-wifi_interface_t wifi_get_interface(void *dev);
-
-void netif_reg_addr_change_cb(void* cb);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /*  _WLAN_LWIP_IF_H_ */
+#endif /* __ESP_LOG_H__ */

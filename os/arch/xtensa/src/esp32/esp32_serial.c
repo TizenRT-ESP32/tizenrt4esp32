@@ -371,6 +371,15 @@ static uart_dev_t g_uart2port = {
 };
 #endif
 
+void uart_tx_wait_idle(uint8_t uart_no) {
+    
+    int status = getreg32(UART_STATUS_REG(uart_no));
+
+    while((status >> 24) & UART_ST_UTX_OUT) {
+        ;   
+    }   
+}
+
 /****************************************************************************
  * Private Functions
  ****************************************************************************/

@@ -21,12 +21,12 @@
 #include "lwip/mem.h"
 #include "lwip/ip_addr.h"
 #include "tcpip_adapter.h"
+#include "lwip/def.h"
+#include "dhcpserver.h"
+#include "dhcpserver_options.h"
+#include <arpa/inet.h>
 
-#include "dhcpserver/dhcpserver.h"
-#include "dhcpserver/dhcpserver_options.h"
-
-#if ESP_DHCP
-
+#if CONFIG_ESP_DHCP_SERVER
 #define BOOTP_BROADCAST 0x8000
 
 #define DHCP_REQUEST        1
@@ -72,6 +72,14 @@
 #define DHCPS_STATE_IDLE 5
 #define DHCPS_STATE_RELEASE 6
 
+
+struct _dhcps_handle 
+{
+    struct netif* interface;
+    struct udp_pcb *dhcps_pcb;
+}dhcps_handle[TCPIP_ADAPTER_IF_MAX];
+static int netifnum = 0;
+
 typedef struct _list_node {
 	void *pnode;
 	struct _list_node *pnext;
@@ -96,7 +104,9 @@ static dhcps_time_t dhcps_lease_time = DHCPS_LEASE_TIME_DEF;  //minute
 static dhcps_offer_t dhcps_offer = 0xFF;
 static dhcps_offer_t dhcps_dns = 0x00;
 static dhcps_cb_t dhcps_cb;
-
+static void add_netif_dhcps(struct netif *iface, struct udp_pcb* dhcps_pcb);
+static struct udp_pcb *get_netif_dhcps(struct netif *iface);
+static void reset_netif_dhcps(struct netif *iface); 
 /******************************************************************************
  * FunctionName : dhcps_option_info
  * Description  : get the DHCP message option info
@@ -104,6 +114,33 @@ static dhcps_cb_t dhcps_cb;
  *                opt_len -- DHCP message option length
  * Returns      : DHCP message option addr
 *******************************************************************************/
+static void add_netif_dhcps(struct netif *iface, struct udp_pcb* dhcps_pcb)
+{
+    dhcps_handle[netifnum].interface = iface;
+    dhcps_handle[netifnum++].dhcps_pcb = dhcps_pcb;
+    if(netifnum >= TCPIP_ADAPTER_IF_MAX ) {
+        DHCPS_LOG("dhcps: overflow\n");
+    }
+}
+static struct udp_pcb *get_netif_dhcps(struct netif *iface)
+{
+    for( int i = 0; i < TCPIP_ADAPTER_IF_MAX; i++)
+    {
+        if(dhcps_handle[i].interface == iface)
+            return dhcps_handle[i].dhcps_pcb; 
+    }
+    return NULL;
+}
+
+static void reset_netif_dhcps(struct netif *iface)
+{
+    for( int i = 0; i < TCPIP_ADAPTER_IF_MAX; i++)
+    {
+        if(dhcps_handle[i].interface == iface)
+            dhcps_handle[i].dhcps_pcb = NULL; 
+    }
+}
+
 void *dhcps_option_info(u8_t op_id, u32_t opt_len)
 {
     void *option_arg = NULL;
@@ -1121,12 +1158,13 @@ void dhcps_set_new_lease_cb(dhcps_cb_t cb)
  *              : info  -- The current ip info
  * Returns      : none
 *******************************************************************************/
-void dhcps_start(struct netif *netif, ip4_addr_t ip)
+void esp_dhcps_start(struct netif *netif, ip4_addr_t ip)
 {
     struct netif *apnetif = netif;
-
-    if (apnetif->dhcps_pcb != NULL) {
-        udp_remove(apnetif->dhcps_pcb);
+    
+    struct udp_pcb *dhcps_pcb = get_netif_dhcps(apnetif); 
+    if (dhcps_pcb != NULL) {
+        udp_remove(dhcps_pcb);
     }
 
     pcb_dhcps = udp_new();
@@ -1135,7 +1173,7 @@ void dhcps_start(struct netif *netif, ip4_addr_t ip)
         printf("dhcps_start(): could not obtain pcb\n");
     }
 
-    apnetif->dhcps_pcb = pcb_dhcps;
+    add_netif_dhcps(apnetif, pcb_dhcps);
 
     IP4_ADDR(&broadcast_dhcps, 255, 255, 255, 255);
 
@@ -1144,7 +1182,7 @@ void dhcps_start(struct netif *netif, ip4_addr_t ip)
 
     client_address_plus.addr = dhcps_poll.start_ip.addr;
 
-    udp_bind(pcb_dhcps, &netif->ip_addr, DHCPS_SERVER_PORT);
+    udp_bind(pcb_dhcps, &apnetif->ip_addr, DHCPS_SERVER_PORT);
     udp_recv(pcb_dhcps, handle_dhcp, NULL);
 #if DHCPS_DEBUG
     DHCPS_LOG("dhcps:dhcps_start->udp_recv function Set a receive callback handle_dhcp for UDP_PCB pcb_dhcps\n");
@@ -1158,7 +1196,7 @@ void dhcps_start(struct netif *netif, ip4_addr_t ip)
  * Parameters   : netif -- The current netif addr
  * Returns      : none
 *******************************************************************************/
-void dhcps_stop(struct netif *netif)
+void esp_dhcps_stop(struct netif *netif)
 {
     struct netif *apnetif = netif;
 
@@ -1167,10 +1205,11 @@ void dhcps_stop(struct netif *netif)
         return;
     }
 
-    if (apnetif->dhcps_pcb != NULL) {
-        udp_disconnect(apnetif->dhcps_pcb);
-        udp_remove(apnetif->dhcps_pcb);
-        apnetif->dhcps_pcb = NULL;
+    struct udp_pcb *dhcps_pcb = get_netif_dhcps(netif);
+    if (dhcps_pcb != NULL) {
+        udp_disconnect(dhcps_pcb);
+        udp_remove(dhcps_pcb);
+        reset_netif_dhcps(netif); 
     }
 
     list_node *pnode = NULL;
@@ -1314,5 +1353,6 @@ dhcps_dns_getserver()
 {
     return dns_server;
 }
+
 #endif
 

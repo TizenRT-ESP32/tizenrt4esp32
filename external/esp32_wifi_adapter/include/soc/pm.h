@@ -1,9 +1,9 @@
-// Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
+// Copyright 2016-2017 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -13,37 +13,30 @@
 // limitations under the License.
 
 
-#ifndef _WLAN_LWIP_IF_H_
-#define _WLAN_LWIP_IF_H_
+#pragma once
+#include <stdint.h>
+#include <stdbool.h>
+#include "esp_err.h"
 
-#include "esp_wifi.h"
-
-#include "esp_wifi_internal.h"
-
-#include "lwip/err.h"
+#include "soc/rtc.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef CONFIG_LWIP_IRAM_OPTIMIZATION
-#define ESP_IRAM_ATTR                   IRAM_ATTR
-#else
-#define ESP_IRAM_ATTR                   
-#endif
 
+/**
+ * @brief Power management config for ESP32
+ *
+ * Pass a pointer to this structure as an argument to esp_pm_configure function.
+ */
+typedef struct {
+    rtc_cpu_freq_t max_cpu_freq;    /*!< Maximum CPU frequency to use */
+    rtc_cpu_freq_t min_cpu_freq;    /*!< Minimum CPU frequency to use when no frequency locks are taken */
+    bool light_sleep_enable;        /*!< Enter light sleep when no locks are taken */
+} esp_pm_config_esp32_t;
 
-err_t wlanif_init_ap(struct netif *netif);
-err_t wlanif_init_sta(struct netif *netif);
-
-void wlanif_input(struct netif *netif, void *buffer, u16_t len, void* eb);
-
-wifi_interface_t wifi_get_interface(void *dev);
-
-void netif_reg_addr_change_cb(void* cb);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /*  _WLAN_LWIP_IF_H_ */

@@ -101,7 +101,7 @@ endif
 
 ARCHCFLAGS = -fno-builtin 
 ARCHCXXFLAGS =  -fno-builtin
-ARCHWARNINGS = -Wall -Wstrict-prototypes -Wundef
+ARCHWARNINGS = -Wall -Wundef
 ARCHWARNINGSXX = -Wall  
 ARCHDEFINES =
 ARCHPICFLAGS = -fpic

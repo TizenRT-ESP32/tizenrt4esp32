@@ -39,7 +39,7 @@ CXXFLAGS +=  -std=c++11 -Wall -Werror
 
 CSRCS += esp32_wifi_os_adapter.c
 CSRCS += phy_init.c hw_random.c  system_api.c esp_ota_eps.c intr_alloc.c
-CSRCS += clk.c rtc_clk.c rtc_time.c rtc_init.c rtc_presleep.c
+CSRCS += clk.c rtc_clk.c rtc_time.c rtc_init.c rtc_sleep.c rtc_symbol_stub.c
 CSRCS += lib_printf.c
 
 CSRCS += event_groups.c esp32_queue_api.c 
@@ -63,15 +63,15 @@ endif
 
 #ESP32 heap allocator support
 ifeq ($(CONFIG_SPIRAM_USE_CAPS_ALLOC), y)
-CSRCS += esp32_heap/heap_caps.c  esp32_heap/heap_caps_init.c  esp32_heap/multi_heap.c esp32_heap/soc_memory_layout.c
+CSRCS += esp32_heap/heap_caps.c  esp32_heap/heap_caps_init.c  esp32_heap/multi_heap.c esp32_heap/soc_memory_layout.c 
 endif
 
 #ESP32 event loop module
-CSRCS +=  event_loop/event_loop.c event_default_handlers.c
+CSRCS +=  event_loop/event_loop.c event_loop/event_default_handlers.c
 CFLAGS += -I./tcpip_adapter/include
 
 #ESP32 tcpip adapter
-CSRCS += tcpip_adapter/tcpip_adapter_lwip.c lwip_port/wlanif.c
+CSRCS += tcpip_adapter/tcpip_adapter_lwip.c lwip_port/wlanif.c  lwip_port/dhcpserver.c lwip_port/espdns.c wifi_init.c
 
 CXXOBJS = $(CXXSRCS:.cpp=$(OBJEXT))
 COBJS   = $(CSRCS:.c=$(OBJEXT))

@@ -22,7 +22,7 @@
 #include "esp_event.h"
 #include "esp_event_loop.h"
 #include "esp_task.h"
-//#include "esp_eth.h"
+#include "esp_log.h"
 #include "esp_system.h"
 
 #include "rom/ets_sys.h"
@@ -33,18 +33,7 @@
 #include "freertos/semphr.h"
 #endif
 #include "tcpip_adapter.h"
-//#include "esp_log.h"
-
-static const char* TAG = "event";
-
-/*disable log*/
-
-#define ESP_LOGE( tag, format, ... )
-#define ESP_LOGW( tag, format, ... )
-#define ESP_LOGI( tag, format, ... )
-#define ESP_LOGD( tag, format, ... )
-#define ESP_LOGV( tag, format, ... )
-
+#include "esp_log.h"
 
 #define WIFI_API_CALL_CHECK(info, api_call, ret) \
 do{\
@@ -433,15 +422,14 @@ void esp_event_set_default_wifi_handlers()
      esp_register_shutdown_handler((shutdown_handler_t)esp_wifi_stop);
 }
 
+#if 0
 void esp_event_set_default_eth_handlers()
 {
-#if 0
      default_event_handlers[SYSTEM_EVENT_ETH_START]           = system_event_eth_start_handle_default;
      default_event_handlers[SYSTEM_EVENT_ETH_STOP]            = system_event_eth_stop_handle_default;
      default_event_handlers[SYSTEM_EVENT_ETH_CONNECTED]       = system_event_eth_connected_handle_default;
      default_event_handlers[SYSTEM_EVENT_ETH_DISCONNECTED]    = system_event_eth_disconnected_handle_default;
      default_event_handlers[SYSTEM_EVENT_ETH_GOT_IP]          = system_event_eth_got_ip_default;
-#endif
      default_event_handlers[SYSTEM_EVENT_ETH_START]           = 0;
      default_event_handlers[SYSTEM_EVENT_ETH_STOP]            = 0;
      default_event_handlers[SYSTEM_EVENT_ETH_CONNECTED]       = 0;
@@ -449,3 +437,4 @@ void esp_event_set_default_eth_handlers()
      default_event_handlers[SYSTEM_EVENT_ETH_GOT_IP]          = 0; 
 }
 
+#endif
