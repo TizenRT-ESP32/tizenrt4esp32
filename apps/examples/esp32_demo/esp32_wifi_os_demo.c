@@ -35,6 +35,7 @@
 #include <time.h>
 #include <nvs.h>
 #include <esp_event.h>
+#include <esp_event_loop.h>
 //Will enable later.
 #define QUEUE_SEND_HANDLER_STACKSIZE (1024 * 4)
 #define RANDOM_TEST_TIME (20)
@@ -465,7 +466,7 @@ void *sendevent_func(void *arg)
         printf("send event SYSTEM_EVENT_STA_START\n");
     }
     sleep(10);
-
+    return NULL;
 }
 
 void test_event_loop()
@@ -476,7 +477,7 @@ void test_event_loop()
     pthread_join(thread_handle, NULL); 
 }
 
-extern esp_spiram_test();
+extern int esp_spiram_test();
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");

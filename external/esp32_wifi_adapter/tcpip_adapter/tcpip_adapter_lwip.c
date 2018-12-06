@@ -15,18 +15,22 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <net/lwip/lwipopts.h>
+
 #include "tcpip_adapter.h"
 
 #if CONFIG_TCPIP_LWIP
-
+#include <arpa/inet.h>
 #include "lwip/inet.h"
 #include "lwip/tcpip.h"
 #include "lwip/dhcp.h"
+#include "lwip/prot/dhcp.h"
 #include "lwip/ip_addr.h"
 #include "lwip/ip6_addr.h"
 #include "lwip/nd6.h"
 #include "lwip/priv/tcpip_priv.h"
 #include "lwip/netif.h"
+#include <net/lwip/sys.h>
 #if LWIP_DNS /* don't build if not configured for use in lwipopts.h */
 #include "lwip/dns.h"
 #endif
@@ -35,14 +39,20 @@
 
 #include "dhcpserver.h"
 #include "dhcpserver_options.h"
+#include "espdns.h"
 
 #include "esp_event.h"
 #include "esp_log.h"
+#include <sched/sched.h>
+
+#define DHCP_TIMEOUT 15000
+static int32_t dhcp_timeleft = DHCP_TIMEOUT;
+static struct dhcp g_dhcp_handle;
 
 static struct netif *esp_netif[TCPIP_ADAPTER_IF_MAX];
 static tcpip_adapter_ip_info_t esp_ip[TCPIP_ADAPTER_IF_MAX];
 static tcpip_adapter_ip_info_t esp_ip_old[TCPIP_ADAPTER_IF_MAX];
-static tcpip_adapter_ip6_info_t esp_ip6[TCPIP_ADAPTER_IF_MAX];
+//static tcpip_adapter_ip6_info_t esp_ip6[TCPIP_ADAPTER_IF_MAX];
 static netif_init_fn esp_netif_init_fn[TCPIP_ADAPTER_IF_MAX];
 static tcpip_adapter_ip_lost_timer_t esp_ip_lost_timer[TCPIP_ADAPTER_IF_MAX];
 
@@ -64,11 +74,10 @@ static esp_err_t tcpip_adapter_set_hostname_api(tcpip_adapter_api_msg_t * msg);
 static esp_err_t tcpip_adapter_reset_ip_info(tcpip_adapter_if_t tcpip_if);
 static esp_err_t tcpip_adapter_start_ip_lost_timer(tcpip_adapter_if_t tcpip_if);
 static void tcpip_adapter_ip_lost_timer(void *arg);
-static sys_sem_t api_sync_sem = NULL;
+static sys_sem_t api_sync_sem;
 static bool tcpip_inited = false;
-static sys_sem_t api_lock_sem = NULL;
+static sys_sem_t api_lock_sem;
 extern sys_thread_t g_lwip_task;
-static const char* TAG = "tcpip_adapter";
 
 static void tcpip_adapter_api_cb(void* api_msg)
 {
@@ -132,21 +141,14 @@ static inline netif_init_fn tcpip_if_to_netif_init_fn(tcpip_adapter_if_t tcpip_i
 
 static int tcpip_adapter_ipc_check(tcpip_adapter_api_msg_t *msg)
 {
-#if TCPIP_ADAPTER_TRHEAD_SAFE
-    xTaskHandle local_task = xTaskGetCurrentTaskHandle();
-
-    if (local_task == g_lwip_task) {
+    struct tcb_s *current = this_task();
+    if(strcmp(current->name, CONFIG_NET_TCPIP_THREAD_NAME) == 0) {
         return TCPIP_ADAPTER_IPC_LOCAL;
-    }
-
+    }   
     sys_arch_sem_wait(&api_lock_sem, 0);
     tcpip_send_msg_wait_sem((tcpip_callback_fn)tcpip_adapter_api_cb, msg, &api_sync_sem);
     sys_sem_signal(&api_lock_sem);
-
     return TCPIP_ADAPTER_IPC_REMOTE;
-#else
-    return TCPIP_ADAPTER_IPC_LOCAL;
-#endif
 }
 
 static esp_err_t tcpip_adapter_update_default_netif(void)
@@ -185,7 +187,7 @@ static esp_err_t tcpip_adapter_start(tcpip_adapter_if_t tcpip_if, uint8_t *mac, 
         netif_init = tcpip_if_to_netif_init_fn(tcpip_if);
         assert(netif_init != NULL);
         netif_add(esp_netif[tcpip_if], &ip_info->ip, &ip_info->netmask, &ip_info->gw, NULL, netif_init, tcpip_input);
-#if ESP_GRATUITOUS_ARP
+#ifdef ESP_GRATUITOUS_ARP
         if (tcpip_if == TCPIP_ADAPTER_IF_STA || tcpip_if == TCPIP_ADAPTER_IF_ETH) {
             netif_set_garp_flag(esp_netif[tcpip_if]);
         }
@@ -199,7 +201,7 @@ static esp_err_t tcpip_adapter_start(tcpip_adapter_if_t tcpip_if, uint8_t *mac, 
         if (dhcps_status == TCPIP_ADAPTER_DHCP_INIT) {
             dhcps_set_new_lease_cb(tcpip_adapter_dhcps_cb);
             
-            dhcps_start(esp_netif[tcpip_if], ip_info->ip);
+            esp_dhcps_start(esp_netif[tcpip_if], ip_info->ip);
 
             ESP_LOGD(TAG, "dhcp server start:(ip: " IPSTR ", mask: " IPSTR ", gw: " IPSTR ")",
                    IP2STR(&ip_info->ip), IP2STR(&ip_info->netmask), IP2STR(&ip_info->gw));
@@ -213,11 +215,13 @@ static esp_err_t tcpip_adapter_start(tcpip_adapter_if_t tcpip_if, uint8_t *mac, 
     return ESP_OK;
 }
 
+#if 0  // ignore ethnet now
 esp_err_t tcpip_adapter_eth_start(uint8_t *mac, tcpip_adapter_ip_info_t *ip_info)
 {
      esp_netif_init_fn[TCPIP_ADAPTER_IF_ETH] = ethernetif_init;
      return tcpip_adapter_start(TCPIP_ADAPTER_IF_ETH, mac, ip_info);
 }
+#endif
 
 esp_err_t tcpip_adapter_sta_start(uint8_t *mac, tcpip_adapter_ip_info_t *ip_info)
 {
@@ -254,7 +258,7 @@ esp_err_t tcpip_adapter_stop(tcpip_adapter_if_t tcpip_if)
     }
 
     if (tcpip_if == TCPIP_ADAPTER_IF_AP) {
-        dhcps_stop(esp_netif[tcpip_if]);    // TODO: dhcps checks status by its self
+        esp_dhcps_stop(esp_netif[tcpip_if]);    // TODO: dhcps checks status by its self
         if (TCPIP_ADAPTER_DHCP_STOPPED != dhcps_status) {
             dhcps_status = TCPIP_ADAPTER_DHCP_INIT;
         }
@@ -456,6 +460,7 @@ static esp_err_t tcpip_adapter_set_ip_info_api(tcpip_adapter_api_msg_t * msg)
     return tcpip_adapter_set_ip_info(msg->tcpip_if, msg->ip_info);
 }
 
+#if 0 //disable ip6 now
 static void tcpip_adapter_nd6_cb(struct netif *p_netif, uint8_t ip_idex)
 {
     tcpip_adapter_ip6_info_t *ip6_info;
@@ -488,6 +493,7 @@ static void tcpip_adapter_nd6_cb(struct netif *p_netif, uint8_t ip_idex)
     memcpy(&evt.event_info.got_ip6.ip6_info, ip6_info, sizeof(tcpip_adapter_ip6_info_t));
     esp_event_send(&evt);
 }
+#endif
 
 esp_err_t tcpip_adapter_create_ip6_linklocal(tcpip_adapter_if_t tcpip_if)
 {
@@ -502,7 +508,8 @@ esp_err_t tcpip_adapter_create_ip6_linklocal(tcpip_adapter_if_t tcpip_if)
     p_netif = esp_netif[tcpip_if];
     if (p_netif != NULL && netif_is_up(p_netif)) {
         netif_create_ip6_linklocal_address(p_netif, 1);
-        nd6_set_cb(p_netif, tcpip_adapter_nd6_cb);
+// disable ipv6 testcase now
+//        nd6_set_cb(p_netif, tcpip_adapter_nd6_cb);
 
         return ESP_OK;
     } else {
@@ -766,7 +773,7 @@ esp_err_t tcpip_adapter_get_dns_info(tcpip_adapter_if_t tcpip_if, tcpip_adapter_
     }
 
     if (tcpip_if == TCPIP_ADAPTER_IF_STA || tcpip_if == TCPIP_ADAPTER_IF_ETH) {
-        dns->ip = dns_getserver(type);
+        dns->ip = *(dns_getserver(type));
     } else {
         dns->ip.u_addr.ip4 = dhcps_dns_getserver();
     }
@@ -804,7 +811,7 @@ esp_err_t tcpip_adapter_dhcps_start(tcpip_adapter_if_t tcpip_if)
         if (p_netif != NULL && netif_is_up(p_netif)) {
             tcpip_adapter_ip_info_t default_ip;
             tcpip_adapter_get_ip_info(ESP_IF_WIFI_AP, &default_ip);
-            dhcps_start(p_netif, default_ip.ip);
+            esp_dhcps_start(p_netif, default_ip.ip);
             dhcps_status = TCPIP_ADAPTER_DHCP_STARTED;
             ESP_LOGD(TAG, "dhcp server start successfully");
             return ESP_OK;
@@ -839,7 +846,7 @@ esp_err_t tcpip_adapter_dhcps_stop(tcpip_adapter_if_t tcpip_if)
         struct netif *p_netif = esp_netif[tcpip_if];
 
         if (p_netif != NULL) {
-            dhcps_stop(p_netif);
+            esp_dhcps_stop(p_netif);
         } else {
             ESP_LOGD(TAG, "dhcp server if not ready");
             return ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY;
@@ -1026,8 +1033,29 @@ esp_err_t tcpip_adapter_dhcpc_start(tcpip_adapter_if_t tcpip_if)
                 return ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED;
             }
 
-            dhcp_set_cb(p_netif, tcpip_adapter_dhcpc_cb);
-
+    //       disable notify style, as it need to hook core stack, instead 
+    //       polling style.
+    //      dhcp_set_cb(p_netif, tcpip_adapter_dhcpc_cb);
+    //
+    // Timed loop till get address by dhcp server
+            dhcp_set_struct(p_netif, &g_dhcp_handle);
+            while (g_dhcp_handle.state != DHCP_STATE_BOUND) {
+                usleep(10);
+                dhcp_timeleft -= 10;
+                if (dhcp_timeleft <= 0) {
+                    break;
+                }
+            }
+            if (g_dhcp_handle.state == DHCP_STATE_BOUND) {
+    
+                tcpip_adapter_dhcpc_cb(p_netif);
+            }            
+            else {
+                if (dhcp_timeleft <= 0) {
+                    printf("DHCP Client - Timeout fail to get ip address\n");
+                    return ESP_FAIL;
+                } 
+            } 
             ESP_LOGD(TAG, "dhcp client start successfully");
             dhcpc_status[tcpip_if] = TCPIP_ADAPTER_DHCP_STARTED;
             return ESP_OK;
@@ -1073,10 +1101,7 @@ esp_err_t tcpip_adapter_dhcpc_stop(tcpip_adapter_if_t tcpip_if)
     }
 
     ESP_LOGD(TAG, "dhcp client stop successfully");
-    dhcpc_status[tcpip_if] = TCPIP_ADAPTER_DHCP_STOPPED;
-
-    LWIP_DHCP_IP_ADDR_ERASE();
-    
+    dhcpc_status[tcpip_if] = TCPIP_ADAPTER_DHCP_STOPPED; 
     return ESP_OK;
 }
 
@@ -1085,11 +1110,13 @@ static esp_err_t tcpip_adapter_dhcpc_stop_api(tcpip_adapter_api_msg_t * msg)
     return tcpip_adapter_dhcpc_stop(msg->tcpip_if);
 }
 
+#if 0 // disable eth
 esp_err_t tcpip_adapter_eth_input(void *buffer, uint16_t len, void *eb)
 {
     ethernetif_input(esp_netif[TCPIP_ADAPTER_IF_ETH], buffer, len);
     return ESP_OK;
 }
+#endif
 
 esp_err_t tcpip_adapter_sta_input(void *buffer, uint16_t len, void *eb)
 {
@@ -1173,12 +1200,14 @@ esp_err_t tcpip_adapter_set_hostname(tcpip_adapter_if_t tcpip_if, const char *ho
 #endif
 }
 
+#ifdef LWIP_NETIF_HOSTNAME
 static esp_err_t tcpip_adapter_set_hostname_api(tcpip_adapter_api_msg_t * msg)
 {
     const char *hostname = (char*) msg->data;
 
     return tcpip_adapter_set_hostname(msg->tcpip_if, hostname);
 }
+#endif
 
 esp_err_t tcpip_adapter_get_hostname(tcpip_adapter_if_t tcpip_if, const char **hostname)
 {

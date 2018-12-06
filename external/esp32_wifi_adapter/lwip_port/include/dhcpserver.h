@@ -82,8 +82,8 @@ static inline bool dhcps_dns_enabled (dhcps_offer_t offer)
     return (offer & OFFER_DNS) != 0;
 }
 
-void dhcps_start(struct netif *netif, ip4_addr_t ip);
-void dhcps_stop(struct netif *netif);
+void esp_dhcps_start(struct netif *netif, ip4_addr_t ip);
+void esp_dhcps_stop(struct netif *netif);
 void *dhcps_option_info(u8_t op_id, u32_t opt_len);
 void dhcps_set_option_info(u8_t op_id, void *opt_info, u32_t opt_len);
 bool dhcp_search_ip_on_mac(u8_t *mac, ip4_addr_t *ip);

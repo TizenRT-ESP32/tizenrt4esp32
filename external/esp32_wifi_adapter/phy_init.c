@@ -134,7 +134,6 @@ void IRAM_ATTR phy_exit_critical(uint32_t level)
 
 esp_err_t esp_phy_rf_init(const esp_phy_init_data_t *init_data, esp_phy_calibration_mode_t mode, esp_phy_calibration_data_t *calibration_data, phy_rf_module_t module)
 {
-#if 0
 	/* 3 modules may call phy_init: Wi-Fi, BT, Modem Sleep */
 	if (module >= PHY_MODULE_COUNT) {
 		ESP_LOGE(TAG, "%s, invalid module parameter(%d), should be smaller than \
@@ -208,12 +207,10 @@ esp_err_t esp_phy_rf_init(const esp_phy_init_data_t *init_data, esp_phy_calibrat
 #endif
 	pthread_mutex_unlock(&s_phy_rf_init_lock);
 	return status;
-#endif
 }
 
 esp_err_t esp_phy_rf_deinit(phy_rf_module_t module)
 {
-#if 0
 	/* 3 modules may call phy_init: Wi-Fi, BT, Modem Sleep */
 	if (module >= PHY_MODULE_COUNT) {
 		ESP_LOGE(TAG, "%s, invalid module parameter(%d), should be smaller than \
@@ -266,7 +263,6 @@ esp_err_t esp_phy_rf_deinit(phy_rf_module_t module)
 
 	pthread_mutex_unlock(&s_phy_rf_init_lock);
 	return status;
-#endif
 }
 
 esp_err_t esp_modem_sleep_enter(modem_sleep_module_t module)

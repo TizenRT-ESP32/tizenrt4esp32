@@ -88,6 +88,8 @@
 #define ESP_LOGD( tag, format, ... )
 #define ESP_LOGV( tag, format, ... )
 
+#define SHUTDOWN_HANDLERS_NO 2
+static shutdown_handler_t shutdown_handlers[SHUTDOWN_HANDLERS_NO];
 extern uint8_t esp_crc8(uint8_t *, int len);
 extern uint32_t xthal_get_ccount(void);
 
@@ -233,6 +235,18 @@ esp_err_t esp_read_mac(uint8_t *mac, esp_mac_type_t type)
 	}
 
 	return ESP_OK;
+}
+
+esp_err_t esp_register_shutdown_handler(shutdown_handler_t handler)
+{
+     int i;
+     for (i = 0; i < SHUTDOWN_HANDLERS_NO; i++) {
+      if (shutdown_handlers[i] == NULL) {
+           shutdown_handlers[i] = handler;
+           return ESP_OK;
+      }
+     }
+     return ESP_FAIL;
 }
 
 int os_get_random(unsigned char *buf, size_t len)

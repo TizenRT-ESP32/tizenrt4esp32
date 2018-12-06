@@ -44,15 +44,16 @@
 #include "lwip/stats.h"
 #include "lwip/snmp.h"
 #include "lwip/ethip6.h"
-#include "netif/etharp.h"
-#include "netif/wlanif.h"
+//#include "netif/etharp.h"
+#include "wlanif.h"
 
 #include <stdio.h>
 #include <string.h>
 
 #include "tcpip_adapter.h"
+#include "lwip/etharp.h"
 
-
+#define ESP_L2_TO_L3_COPY 1
 /**
  * In this function, the hardware should be initialized.
  * Called from ethernetif_init().
@@ -64,7 +65,7 @@ static void
 low_level_init(struct netif *netif)
 {
   /* set MAC hardware address length */
-  netif->hwaddr_len = ETHARP_HWADDR_LEN;
+  netif->hwaddr_len = NETIF_MAX_HWADDR_LEN;
 
   /* set MAC hardware address */
 
@@ -75,13 +76,13 @@ low_level_init(struct netif *netif)
   /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
 
-#if ESP_LWIP
+#ifdef ESP_LWIP
 #if LWIP_IGMP
   netif->flags |= NETIF_FLAG_IGMP;
 #endif
 #endif
 
-#if !ESP_L2_TO_L3_COPY
+#if !ESP_L2_TO_L3_COPY   // need estimate this extend is necessary?
   netif->l2_buffer_free_notify = esp_wifi_internal_free_rx_buffer;
 #endif
 }
@@ -118,7 +119,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
     LWIP_DEBUGF(PBUF_DEBUG, ("low_level_output: pbuf is a list, application may has bug"));
     q = pbuf_alloc(PBUF_RAW_TX, p->tot_len, PBUF_RAM);
     if (q != NULL) {
-      q->l2_owner = NULL;
+      //q->l2_owner = NULL;
       pbuf_copy(q, p);
     } else {
       return ERR_MEM;
@@ -154,11 +155,11 @@ wlanif_input(struct netif *netif, void *buffer, u16_t len, void* eb)
 #if (ESP_L2_TO_L3_COPY == 1)
   p = pbuf_alloc(PBUF_RAW, len, PBUF_RAM);
   if (p == NULL) {
-    ESP_STATS_DROP_INC(esp.wlanif_input_pbuf_fail);
+    //ESP_STATS_DROP_INC(esp.wlanif_input_pbuf_fail);  //disable statistics now
     esp_wifi_internal_free_rx_buffer(eb);
     return;
   }
-  p->l2_owner = NULL;
+ // p->l2_owner = NULL;  
   memcpy(p->payload, buffer, len);
   esp_wifi_internal_free_rx_buffer(eb);
 #else
