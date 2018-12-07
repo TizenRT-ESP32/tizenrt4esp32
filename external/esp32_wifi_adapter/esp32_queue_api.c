@@ -32,6 +32,7 @@
 #include <tinyara/arch.h>
 #include "esp_attr.h"
 #include "esp32_queue_api.h"
+#include "mq_tryreceive.h"
 
 /************************************************************************
  * Pre-processor Definitions

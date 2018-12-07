@@ -19,9 +19,7 @@
 /************************************************************************
  * Included Files
  ************************************************************************/
-
-#include <tinyara/config.h>
-
+ 
 #include <sys/types.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -30,7 +28,7 @@
 #include <tinyara/arch.h>
 #include <tinyara/cancelpt.h>
 
-#include "mqueue/mqueue.h"
+#include "mq_tryreceive.h"
 
 /************************************************************************
  * Pre-processor Definitions
@@ -77,7 +75,7 @@
  *
  ****************************************************************************/
 
-FAR struct mqueue_msg_s *mq_receive_isr(mqd_t mqdes)
+static FAR struct mqueue_msg_s *mq_receive_isr(mqd_t mqdes)
 {
 	FAR struct mqueue_inode_s *msgq;
 	FAR struct mqueue_msg_s *rcvmsg;
