@@ -42,7 +42,7 @@ CSRCS += phy_init.c hw_random.c  system_api.c esp_ota_eps.c intr_alloc.c
 CSRCS += clk.c rtc_clk.c rtc_time.c rtc_init.c rtc_sleep.c rtc_symbol_stub.c
 CSRCS += lib_printf.c
 
-CSRCS += event_groups.c esp32_queue_api.c 
+CSRCS += event_groups.c esp32_queue_api.c mq_tryreceive.c 
 
 CSRCS +=  $(wildcard ./spi_flash/*.c)
 
