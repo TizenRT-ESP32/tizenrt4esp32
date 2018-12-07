@@ -73,6 +73,11 @@
 #ifdef CONFIG_SPIRAM_USE_CAPS_ALLOC
 #include <esp_heap_caps.h>
 #endif
+
+#if defined(CONFIG_ADC)
+#include "esp32_adc.h"
+#include <tinyara/analog/adc.h>
+#endif
 /************************************************************************************
  * Pre-processor Definitions
  ************************************************************************************/
@@ -269,6 +274,42 @@ static void board_i2c_initialize(void)
 #endif
 }
 
+#if defined(CONFIG_ADC)
+static void board_adc_initialize(void)
+{
+    static bool adc_initialized;
+    struct adc_dev_s* adc;
+    const adc_channel_t chanlist[] = {
+        ADC_CHANNEL_4,
+        ADC_CHANNEL_5,
+        ADC_CHANNEL_6,
+        ADC_CHANNEL_7
+    };
+
+    /* Have we already initialized? */
+    if (!adc_initialized) {
+
+        adc = esp32_adc_initialize(chanlist, sizeof(chanlist)/sizeof(adc_channel_t));
+        if (NULL != adc) {
+            lldbg("ERROR: Failed to get the ESP32 ADC driver\n");
+        }
+        else {
+            lldbg("ERROR: up_spiinitialize failed\n"t);
+        }
+
+        /* Register the ADC driver at "/dev/adc0" */
+        int ret = adc_register("/dev/adc0", adc);
+        if (ret < 0) {
+            return;
+        }
+
+        /* Now we are initialized */
+
+        adc_initialized = true;
+    }
+}
+#endif
+
 /****************************************************************************
  * Name: board_initialize
  *
@@ -294,6 +335,10 @@ void board_initialize(void)
 	board_gpio_initialize();
 	board_i2c_initialize();
 	board_ledc_setup();
+
+#if defined(CONFIG_ADC)
+	board_adc_initialize();
+#endif
 
 /*Init SPI RAM*/
 #ifdef CONFIG_SPIRAM_SUPPORT

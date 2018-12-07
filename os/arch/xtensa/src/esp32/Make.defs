@@ -112,6 +112,14 @@ CHIP_CSRCS += esp32_flash.c
 CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/include
 CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/spi_flash/include
 endif
+
+ifeq ($(CONFIG_ADC),y)
+CHIP_CSRCS += esp32_adc.c
+CHIP_CSRCS += esp32_rtc_module.c
+CHIP_CSRCS += esp32_rtc_periph.c
+endif
+
+
 # Configuration-dependent ESP32 files
 
 ifeq ($(CONFIG_SMP),y)
