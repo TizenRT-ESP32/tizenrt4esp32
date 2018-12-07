@@ -88,6 +88,17 @@ ifeq ($(CONFIG_TLS_WITH_SSS),y)
 SRC_SEE_CSRCS += see_api.c	see_internal.c  see_misc.c
 endif
 
+ifeq ($(CONFIG_ESP32_WIFI_SUPPORT),y)
+SRC_CRYPTO_CSRCS+= $(wildcard ./port/*.c)
+CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/include
+CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/
+CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/chip
+CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/
+CFLAGS += -I./port/include
+CFLAGS += -I$(TOPDIR)/../external/mbedtls/port/include
+CFLAGS +=-DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"'
+endif
+
 TLS_CSRCS += $(SRC_CRYPTO_CSRCS) $(SRC_X509_CSRCS) $(SRC_TLS_CSRCS) $(SRC_SEE_CSRCS)
 
 CSRCS += $(TLS_CSRCS)
@@ -136,6 +147,7 @@ depend: .depend
 clean:
 	$(call DELFILE, .built)
 	$(call CLEAN)
+	rm -f $(OBJS)
 
 distclean: clean
 	$(call DELFILE, Make.dep)

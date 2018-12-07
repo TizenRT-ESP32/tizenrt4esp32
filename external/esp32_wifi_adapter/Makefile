@@ -33,12 +33,12 @@ CXXSRCS += nvs_flash/src/nvs_types.cpp
 CXXSRCS += nvs_flash/src/nvs_api.cpp 
 
 CXXFLAGS += -I./include
-CXXFLAGS += -I./nvs_flash/include
+CXXFLAGS += -I./nvs_flash/include -DESP_PLATFORM
 CXXFLAGS += -I./spi_flash/include
 CXXFLAGS +=  -std=c++11 -Wall -Werror
 
-CSRCS += esp32_wifi_os_adapter.c
-CSRCS += phy_init.c hw_random.c  system_api.c esp_ota_eps.c intr_alloc.c
+CSRCS += esp32_wifi_os_adapter.c fast_crypto_ops.c
+CSRCS += phy_init.c hw_random.c  system_api.c esp_ota_eps.c intr_alloc.c dport_access.c
 CSRCS += clk.c rtc_clk.c rtc_time.c rtc_init.c rtc_sleep.c rtc_symbol_stub.c
 CSRCS += lib_printf.c
 
@@ -72,6 +72,38 @@ CFLAGS += -I./tcpip_adapter/include
 
 #ESP32 tcpip adapter
 CSRCS += tcpip_adapter/tcpip_adapter_lwip.c lwip_port/wlanif.c  lwip_port/dhcpserver.c lwip_port/espdns.c wifi_init.c
+
+#ESP32 wpa_supplicant crypto
+CSRCS += $(wildcard ./wpa_supplicant/port/*.c)
+CSRCS += $(wildcard ./wpa_supplicant/src/crypto/*.c)
+CSRCS += $(wildcard ./wpa_supplicant/src/fast_crypto/*.c)
+CSRCS += $(wildcard ./wpa_supplicant/src/wps/*.c)
+CSRCS += $(wildcard ./wpa_supplicant/src/wpa2/tls/*.c)
+CSRCS += $(wildcard ./wpa_supplicant/src/wpa2/utils/*.c)
+CSRCS += $(wildcard ./wpa_supplicant/src/wpa2/eap_peer/*.c)
+CFLAGS += -I./wpa_supplicant/include
+CFLAGS += -I./wpa_supplicant/port/include
+CFLAGS += \
+		-D__ets__ \
+		-DEMBEDDED_SUPP\
+		-DIEEE8021X_EAPOL\
+		-DEAP_PEER_METHOD\
+		-DEAP_MSCHAPv2\
+		-DEAP_TTLS\
+		-DEAP_TLS\
+		-DEAP_PEAP\
+		-DUSE_WPA2_TASK\
+		-DCONFIG_WPS2\
+		-DCONFIG_WPS_PIN\
+		-DUSE_WPS_TASK\
+		-DESPRESSIF_USE\
+		-DESP32_WORKAROUND
+
+CFLAGS += -I./../mbedtls/port/include
+CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"'
+#ESP32 hardware crypto
+CSRCS += $(wildcard ./hwcrypto/*.c)
+
 
 CXXOBJS = $(CXXSRCS:.cpp=$(OBJEXT))
 COBJS   = $(CSRCS:.c=$(OBJEXT))

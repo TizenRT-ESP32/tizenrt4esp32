@@ -67,16 +67,10 @@ ifeq ($(WINTOOL),y)
   ARCHSCRIPT += -T "${shell cygpath -w $(LDSCRIPT4)}"
 else
   # Linux/Cygwin-native toolchain
-#MKDEP = $(TOPDIR)/tools/mkdeps$(HOSTEXEEXT)
-#  ARCHINCLUDES = -I. -isystem $(TOPDIR)/include
-# ARCHXXINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/../framework/include -isystem $(TOPDIR)/../external/include -isystem
-#$(TOPDIR)/../external/include/libcxx
-
-
   MKDEP = $(TOPDIR)/tools/mkdeps$(HOSTEXEEXT)
   ARCHINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/../framework/include -isystem $(TOPDIR)/../external/include
   ARCHXXINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/../framework/include -isystem $(TOPDIR)/../external/include  
-  ARCHXXINCLUDES += -I. -isystem $(TOPDIR)/../external/include/libcxx
+  ARCHXXINCLUDES += -I. -isystem $(TOPDIR)/../external/include/libcxx 
   ARCHSCRIPT = -T$(LDSCRIPT1) -T$(LDSCRIPT2) -T$(LDSCRIPT3) -T$(LDSCRIPT4)
 
 endif

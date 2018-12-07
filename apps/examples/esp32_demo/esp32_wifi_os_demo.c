@@ -36,6 +36,8 @@
 #include <nvs.h>
 #include <esp_event.h>
 #include <esp_event_loop.h>
+#include <esp_system.h>
+
 //Will enable later.
 #define QUEUE_SEND_HANDLER_STACKSIZE (1024 * 4)
 #define RANDOM_TEST_TIME (20)
@@ -477,11 +479,23 @@ void test_event_loop()
     pthread_join(thread_handle, NULL); 
 }
 
+void get_wifi_mac_address()
+{
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    for(int i = 0; i < 6; i++)
+        printf("%x ", mac[i]);
+    printf("\n");
+
+}
+
 extern int esp_spiram_test();
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
-
+      
+    get_wifi_mac_address();
+    wifi_scan();
 #ifdef CONFIG_SPIRAM_SUPPORT
 	esp_spiram_test();
 #endif
