@@ -249,26 +249,6 @@ esp_err_t esp_register_shutdown_handler(shutdown_handler_t handler)
      return ESP_FAIL;
 }
 
-int os_get_random(unsigned char *buf, size_t len)
-{
-	int i, j;
-	unsigned long tmp;
-
-	for (i = 0; i < ((len + 3) & ~3) / 4; i++) {
-		tmp = esp_random();
-
-		for (j = 0; j < 4; j++) {
-			if ((i * 4 + j) < len) {
-				buf[i * 4 + j] = (uint8_t)(tmp >> (j * 8));
-			} else {
-				break;
-			}
-		}
-	}
-
-	return 0;
-}
-
 extern uint32_t g_ticks_per_us_pro;
 
 uint32_t esp_log_early_timestamp(void)

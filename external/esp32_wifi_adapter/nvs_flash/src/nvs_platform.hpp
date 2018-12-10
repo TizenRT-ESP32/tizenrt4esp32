@@ -34,9 +34,7 @@
 
 
 #ifdef ESP_PLATFORM
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-
+#include <pthread.h>
 namespace nvs
 {
 
@@ -45,39 +43,41 @@ class Lock
 public:
     Lock()
     {
-        if (mSemaphore) {
-            xSemaphoreTake(mSemaphore, portMAX_DELAY);
+        if (mutex) {
+            pthread_mutex_lock(mutex);
         }
     }
 
     ~Lock()
     {
-        if (mSemaphore) {
-            xSemaphoreGive(mSemaphore);
+        if (mutex) {
+            pthread_mutex_unlock(mutex);
         }
     }
 
     static esp_err_t init()
     {
-        if (mSemaphore) {
+        if (mutex) {
             return ESP_OK;
         }
-        mSemaphore = xSemaphoreCreateMutex();
-        if (!mSemaphore) {
+        mutex = (pthread_mutex_t *)malloc(sizeof(*mutex));
+        if (!mutex) {
             return ESP_ERR_NO_MEM;
         }
+        pthread_mutex_init(mutex, NULL);
         return ESP_OK;
     }
 
     static void uninit()
     {
-        if (mSemaphore) {
-            vSemaphoreDelete(mSemaphore);
+        if (mutex) {
+            pthread_mutex_destroy(mutex);
+            free(mutex);
         }
-        mSemaphore = nullptr;
+        mutex = nullptr;
     }
 
-    static SemaphoreHandle_t mSemaphore;
+    static pthread_mutex_t *mutex;
 };
 } // namespace nvs
 

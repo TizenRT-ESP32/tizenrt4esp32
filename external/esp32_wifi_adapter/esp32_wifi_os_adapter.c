@@ -60,6 +60,10 @@
 #include <sched/sched.h>
 #include <semaphore/semaphore.h>
 #include "event_groups.h"
+#include <os.h>
+
+extern void esp_dport_access_stall_other_cpu_start_wrap(void);
+extern void esp_dport_access_stall_other_cpu_end_wrap(void);
 
 static irqstate_t wifi_int_disable_flags;
 
@@ -511,18 +515,6 @@ static inline int32_t esp_nvs_open_wrapper(const char *name, uint32_t open_mode,
 /*=================espwifi smart config API=========================*/
 /* Will complete next stage, not block WIFI ENABLE*/
 
-void IRAM_ATTR esp_dport_access_stall_other_cpu_start_wrap(void)
-{
-	//useless for signle CPU
-	return;
-}
-
-void IRAM_ATTR esp_dport_access_stall_other_cpu_end_wrap(void)
-{
-	//useless for signle CPU
-	return;
-}
-
 static void IRAM_ATTR set_isr_wrapper(int32_t n, void *f, void *arg)
 {
 	irq_attach(n, f, arg);
@@ -681,12 +673,6 @@ int32_t IRAM_ATTR get_random_wrapper(uint8_t *buf, size_t len)
 	extern int os_get_random(unsigned char * buf, size_t len);
 	return (int32_t) os_get_random(buf, len);
 }
-
-unsigned long os_random(void)
-{
-    return esp_random();
-}
-
 
 extern void xtensa_enable_cpuint(uint32_t mask);
 extern void xtensa_disable_cpuint(uint32_t mask);

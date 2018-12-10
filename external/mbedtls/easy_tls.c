@@ -126,7 +126,7 @@ static int tls_set_cred(tls_ctx *ctx, tls_cred *cred)
 	if (cred == NULL) {
 		return TLS_INVALID_CRED;
 	}
-
+#ifdef MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED
 	if (cred->psk && cred->psk_len) {
 		ret = mbedtls_ssl_conf_psk(ctx->conf, cred->psk, cred->psk_len, (const unsigned char *)cred->psk_identity, strlen(cred->psk_identity));
 
@@ -134,7 +134,7 @@ static int tls_set_cred(tls_ctx *ctx, tls_cred *cred)
 			return TLS_INVALID_PSK;
 		}
 	}
-
+#endif
 	/* Mandatory */
 	if (cred->ca_cert) {
 		ret = mbedtls_x509_crt_parse(ctx->crt, cred->ca_cert, cred->ca_certlen);
