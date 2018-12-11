@@ -1,0 +1,52 @@
+#
+# For a description of the syntax of this configuration file,
+# see kconfig-language at https://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+#
+
+menu "Shell"
+config TASH
+	bool "Enable shell"
+	default y
+	depends on NFILE_DESCRIPTORS != 0
+
+if TASH
+config TASH_MAX_COMMANDS
+	int "Max number of TASH commands"
+	default 32
+	---help---
+		The maximum number of TASH commands to register.
+
+config TASH_USLEEP
+	bool "Enable 'usleep' command in TASH"
+	default n
+	depends on !DISABLE_SIGNALS
+	---help---
+		Enable 'usleep' command in TASH.
+
+config TASH_COMMAND_INTERFACE
+	bool "enable command interface to TASH"
+	default n
+	---help---
+		Enable to use TASH commands APIs
+
+config TASH_CMDTASK_STACKSIZE
+	int "TASH task stack size to run command with ASYNC type"
+	default 4096
+	---help---
+		The stack size allocated for TASH command task
+
+config TASH_CMDTASK_PRIORITY
+	int "TASH task priority to run command with ASYNC type"
+	default 100
+	---help---
+		The priority set for TASH command task
+
+config TASH_SCRIPT
+	bool "enable shell script"
+	default n
+	depends on !DISABLE_ENVIRON
+	---help---
+		This suppors parsing and executing shell script.
+		See "sh" on TASH help command.
+endif
+endmenu

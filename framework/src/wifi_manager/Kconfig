@@ -1,0 +1,74 @@
+#
+# For a description of the syntax of this configuration file,
+# see kconfig-language at https://www.kernel.org/doc/Documentation/kbuild/kconfig-language.txt
+#
+
+config WIFI_MANAGER
+    bool "Enable Wi-Fi Manager"
+    default n
+	select DRIVERS_WIRELESS
+    ---help---
+        Easy APIs for applications to use and control Wi-Fi features
+
+if WIFI_MANAGER
+
+choice
+	prompt "WiFi library"
+	default SELECT_WPA_SUPPLICANT
+
+config SELECT_WPA_SUPPLICANT
+	bool "select wpa_supplicant"
+	select WPA_SUPPLICANT
+	select NETUTILS_WIFI
+
+	---help---
+		Select the wpa_supplicant
+
+config SELECT_PROPIETARY_SUPPLICANT
+	bool "Select external vendor supplicant"
+	---help---
+		select the third party supplicant
+
+endchoice # WiFi supplicant library
+
+choice
+	prompt "WiFi Driver"
+	default SELECT_NO_DRIVER
+
+config SELECT_NO_DRIVER
+	bool "No Wi-Fi Driver"
+
+config SELECT_SCSC_WLAN
+	bool "Enable SCSC Wireless Module"
+	select SCSC_WLAN
+
+config SELECT_PROPIETARY_WLAN
+	bool "Enable vendor-specific Wireless Module"
+
+endchoice # WiFi driver choice
+
+if SELECT_WPA_SUPPLICANT
+source "$EXTERNALDIR/slsi_wifi/Kconfig"
+source "$EXTERNALDIR/wpa_supplicant/Kconfig"
+endif #SELECT_WPA_SUPPLICANT
+
+config WIFI_PROFILE_SECURESTORAGE
+	bool "Store the Wi-Fi Profile in a Secure Storage"
+	depends on SUPPORT_FULL_SECURITY
+	default n
+
+
+config WIFIMGR_SOFTAP_IFNAME
+	string "interface name of softap mode"
+	default "wl1"
+
+config WIFIMGR_STA_IFNAME
+	string "interface name of station mode"
+	default "wl1"
+
+config WIFIMGR_DISABLE_AUTO_GET_IP
+	bool "disable auto get ip (ipv4 dhcp)"
+	default n
+
+endif #WIFI_MANAGER
+

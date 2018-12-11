@@ -1,0 +1,61 @@
+###########################################################################
+#
+# Copyright 2017 Samsung Electronics All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
+#
+###########################################################################
+ifeq ($(CONFIG_AUDIO), y)
+CSRCS += audio_manager.c
+DEPPATH += --dep-path src/media/audio
+VPATH += :src/media/audio
+CSRCS += samplerate.c
+DEPPATH += --dep-path src/media/audio/resample
+VPATH += :src/media/audio/resample
+DEPPATH += --dep-path src/media/streaming
+VPATH += :src/media/streaming
+endif
+
+CFLAGS += -D__TINYARA__
+
+ifeq ($(CONFIG_MEDIA), y)
+CXXSRCS += MediaQueue.cpp DataSource.cpp MediaWorker.cpp
+CXXSRCS += StreamBuffer.cpp StreamBufferReader.cpp StreamBufferWriter.cpp
+CXXSRCS += MediaUtils.cpp
+CXXSRCS += FocusRequest.cpp FocusManager.cpp
+CSRCS += rb.c rbs.c
+DEPPATH += --dep-path src/media/utils
+VPATH += :src/media/utils
+
+ifeq ($(CONFIG_CODEC_LIBOPUS), y)
+CSRCS += opus_encoder_api.c opus_decoder_api.c
+DEPPATH += --dep-path src/media/codecs
+VPATH += :src/media/codecs
+endif
+
+ifeq ($(CONFIG_MEDIA_PLAYER), y)
+CXXSRCS += MediaPlayer.cpp InputDataSource.cpp FileInputDataSource.cpp PlayerWorker.cpp MediaPlayerImpl.cpp PlayerObserverWorker.cpp
+CXXSRCS += Decoder.cpp audio_decoder.cpp
+endif
+
+ifeq ($(CONFIG_MEDIA_RECORDER), y)
+CXXSRCS += MediaRecorder.cpp OutputDataSource.cpp FileOutputDataSource.cpp RecorderWorker.cpp MediaRecorderImpl.cpp BufferOutputDataSource.cpp RecorderObserverWorker.cpp
+CXXSRCS += Encoder.cpp audio_encoder.cpp
+ifeq ($(CONFIG_NET), y)
+CXXSRCS += SocketOutputDataSource.cpp
+endif
+endif
+
+DEPPATH += --dep-path src/media
+VPATH += :src/media
+endif
