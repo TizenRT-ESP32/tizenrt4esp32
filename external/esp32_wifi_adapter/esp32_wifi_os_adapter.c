@@ -77,19 +77,18 @@ static void *IRAM_ATTR semphr_create_wrapper(uint32_t max, uint32_t init)
 	if (max > SEM_VALUE_MAX || init > SEM_VALUE_MAX) {
 		return NULL;
 	}
-
 	sem_t *sem = (sem_t *)malloc(sizeof(*sem));
 	if (!sem) {
 		return NULL;
 	}
+    printf("%s enter, %d create sem %p init to %u\n", __func__, (int)getpid(), sem, init);
 
 	int status = sem_init(sem, 0, init);
 	if (status != OK) {
 		return NULL;
 	}
-
+    printf("%s exit\n", __func__);
 	return (void *)sem;
-
 }
 
 static void IRAM_ATTR semphr_delete_wrapper(void *semphr)
@@ -98,13 +97,16 @@ static void IRAM_ATTR semphr_delete_wrapper(void *semphr)
 		dbg("semphr is NULL\n");
 		return;
 	}
+    printf("%s enter, release sem %p ", __func__, semphr);
 	sem_destroy(semphr);
-	free(semphr);
+    free(semphr);
+
 }
 
 static int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
 {
 
+    printf("%s enter\n", __func__);
 	*(bool *) hptw = WIFI_ADAPTER_FALSE;
 	FAR struct tcb_s *stcb = NULL;
 	FAR struct tcb_s *rtcb = this_task();
@@ -148,6 +150,7 @@ static int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
 
 	leave_cancellation_point();
 	irqrestore(saved_state);
+    printf("%s exit\n", __func__);
 	return ret;
 
 }
@@ -156,12 +159,14 @@ static int32_t IRAM_ATTR semphr_take_wrapper(void *semphr, uint32_t block_time_t
 {
 	int ret;
 	if (semphr == NULL) {
-		dbg("semphr is NULL\n");
+		printf("semphr is NULL\n");
 		return pdFAIL;
 	}
-
+    printf("%s enter, %d\ take sem %p\n", __func__, (int)getpid(), semphr);
+    printf("block_time_tick = %x\n", block_time_tick);
 	if (block_time_tick == OSI_FUNCS_TIME_BLOCKING) {
 		ret = sem_wait(semphr);
+        printf("%s exit\n", __func__);
 		if (ret == OK) {
 			return pdPASS;
 		} else {
@@ -181,6 +186,7 @@ static int32_t IRAM_ATTR semphr_take_wrapper(void *semphr, uint32_t block_time_t
 		abstime.tv_sec += secs;
 		abstime.tv_nsec += nsecs;
 		ret = sem_timedwait(semphr, &abstime);
+        printf("%s exit\n", __func__);
 		if (ret == OK) {
 			return pdPASS;
 		} else {
@@ -196,16 +202,20 @@ static int32_t IRAM_ATTR semphr_give_wrapper(void *semphr)
 		dbg("semphr is NULL\n");
 		return EINVAL;
 	}
+    printf("%s enter, %d give sem %p\n", __func__, (int)getpid(), semphr);
 	ret = sem_post(semphr);
 	if (ret == OK) {
+        printf("%s exit\n", __func__);
 		return pdPASS;
 	} else {
+        printf("%s exit\n", __func__);
 		return pdFAIL;
 	}
 }
 
 static int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
 {
+    printf("%s enter\n", __func__);
 	*(int *)hptw = WIFI_ADAPTER_FALSE;
 	return semphr_give_wrapper(semphr);
 }
@@ -213,6 +223,7 @@ static int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
 /*=================mutx API=================*/
 static void *IRAM_ATTR recursive_mutex_create_wrapper(void)
 {
+    printf("%s enter\n", __func__);
 	pthread_mutexattr_t mattr;
 	int status = 0;
 
@@ -235,6 +246,7 @@ static void *IRAM_ATTR recursive_mutex_create_wrapper(void)
 
 static void *IRAM_ATTR mutex_create_wrapper(void)
 {
+    printf("%s enter\n", __func__);
 	int status = 0;
 	pthread_mutex_t *mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 
@@ -252,6 +264,7 @@ static void *IRAM_ATTR mutex_create_wrapper(void)
 
 static void IRAM_ATTR mutex_delete_wrapper(void *mutex)
 {
+    printf("%s enter\n", __func__);
 	if (mutex == NULL) {
 		dbg("mutex is NULL\n");
 		return;
@@ -262,20 +275,24 @@ static void IRAM_ATTR mutex_delete_wrapper(void *mutex)
 
 static int32_t IRAM_ATTR mutex_lock_wrapper(void *mutex)
 {
+    printf("%s enter\n", __func__);
 	if (mutex == NULL) {
 		dbg("mutex is NULL\n");
 		return EINVAL;
 	}
 	int ret = pthread_mutex_lock(mutex);
 	if (ret) {
+        printf("%s exit\n", __func__);
 		return pdFAIL;
 	}
+    printf("%s exit\n", __func__);
 	return pdPASS;
 
 }
 
 static int32_t IRAM_ATTR mutex_unlock_wrapper(void *mutex)
 {
+    printf("%s enter\n", __func__);
 	if (mutex == NULL) {
 		dbg("mutex is NULL\n");
 		return EINVAL;
@@ -290,17 +307,20 @@ static int32_t IRAM_ATTR mutex_unlock_wrapper(void *mutex)
 /*=================task control API=================*/
 static int32_t IRAM_ATTR task_create_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle)
 {
+    printf("%s enter\n", __func__);
 	int pid = task_create(name, prio, stack_depth, task_func, param);
 	if (pid < 0) {
 		return pdFAIL;
 	}
 
 	task_handle = (void *)pid;
+    printf("%s exit\n", __func__);
 	return pdPASS;
 }
 
 int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle, uint32_t core_id)
 {
+    printf("%s enter\n", __func__);
 #ifndef CONFIG_SMP
 	return task_create_wrapper(task_func, name, stack_depth, param, prio, task_handle);
 #else
@@ -311,6 +331,7 @@ int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, const char
 
 static void IRAM_ATTR task_delete_wrapper(void *task_handle)
 {
+    printf("%s enter\n", __func__);
 	if (task_handle < 0) {
 		return;
 	}
@@ -322,6 +343,7 @@ static void IRAM_ATTR task_delete_wrapper(void *task_handle)
 
 static void IRAM_ATTR task_delay_wrapper(uint32_t tick)
 {
+    printf("%s enter\n", __func__);
 	uint64_t usecs = TICK2USEC(tick);
 	usleep(usecs);
 }
@@ -329,17 +351,20 @@ static void IRAM_ATTR task_delay_wrapper(uint32_t tick)
 static int curpid;
 static void *IRAM_ATTR task_get_current_task_wrapper(void)
 {
+    printf("%s enter\n", __func__);
 	curpid = getpid();
 	return (void *)&curpid;
 }
 
 static inline int32_t IRAM_ATTR task_ms_to_tick_wrapper(uint32_t ms)
 {
+    printf("%s enter\n", __func__);
 	return (int32_t) MSEC2TICK(ms);
 }
 
 static inline int32_t IRAM_ATTR task_get_max_priority_wrapper(void)
 {
+    printf("%s enter\n", __func__);
 	return (int32_t)(SCHED_PRIORITY_MAX);
 }
 
@@ -352,21 +377,25 @@ static inline int32_t IRAM_ATTR is_in_isr_wrapper(void)
 
 static inline int32_t IRAM_ATTR esp_phy_rf_deinit_wrapper(uint32_t module)
 {
+    printf("%s enter\n", __func__);
 	return esp_phy_rf_deinit((phy_rf_module_t) module);
 }
 
 static inline int32_t IRAM_ATTR phy_rf_init_wrapper(const void *init_data, uint32_t mode, void *calibration_data, uint32_t module)
 {
-	return esp_phy_rf_init(init_data, mode, calibration_data, module);
+	printf("phy_rf_init_wrapper\n");
+    return esp_phy_rf_init(init_data, mode, calibration_data, module);
 }
 
 static inline void IRAM_ATTR esp_phy_load_cal_and_init_wrapper(uint32_t module)
 {
+	printf("esp_phy_load_cal_and_ini\n");
 	return esp_phy_load_cal_and_init((phy_rf_module_t) module);
 }
 
 static inline int32_t esp_read_mac_wrapper(uint8_t *mac, uint32_t type)
 {
+    printf("%s enter\n", __func__);
 	return esp_read_mac(mac, (esp_mac_type_t) type);
 }
 
@@ -448,6 +477,7 @@ static inline int32_t IRAM_ATTR get_time_wrapper(void *t)
 /*=================Miscellaneous API================================*/
 static inline int32_t IRAM_ATTR esp_os_get_random_wrapper(uint8_t *buf, size_t len)
 {
+    printf("%s enter\n", __func__);
 	return (int32_t) os_get_random((unsigned char *)buf, len);
 
 }
@@ -486,22 +516,26 @@ static void IRAM_ATTR log_write_wrapper(uint32_t level, const char *tag, const c
 
 static inline esp_err_t esp_modem_sleep_enter_wrapper(uint32_t module)
 {
+    printf("%s enter\n", __func__);
 	return esp_modem_sleep_enter((modem_sleep_module_t) module);
 }
 
 static inline esp_err_t esp_modem_sleep_exit_wrapper(uint32_t module)
 {
+    printf("%s enter\n", __func__);
 	return esp_modem_sleep_exit((modem_sleep_module_t) module);
 
 }
 
 static inline esp_err_t esp_modem_sleep_register_wrapper(uint32_t module)
 {
+    printf("%s enter\n", __func__);
 	return esp_modem_sleep_register((modem_sleep_module_t) module);
 }
 
 static inline esp_err_t esp_modem_sleep_deregister_wrapper(uint32_t module)
 {
+    printf("%s enter\n", __func__);
 	return esp_modem_sleep_deregister((modem_sleep_module_t) module);
 }
 
@@ -509,6 +543,7 @@ static inline esp_err_t esp_modem_sleep_deregister_wrapper(uint32_t module)
 
 static inline int32_t esp_nvs_open_wrapper(const char *name, uint32_t open_mode, uint32_t *out_handle)
 {
+    printf("%s enter\n", __func__);
 	return nvs_open(name, (nvs_open_mode) open_mode, (nvs_handle *) out_handle);
 }
 
@@ -517,19 +552,23 @@ static inline int32_t esp_nvs_open_wrapper(const char *name, uint32_t open_mode,
 
 static void IRAM_ATTR set_isr_wrapper(int32_t n, void *f, void *arg)
 {
+    printf("%s enter\n", __func__);
 	irq_attach(n, f, arg);
 	extern void up_enable_irq(int cpuint);
 	up_enable_irq(n);
+    printf("%s exit\n", __func__);
 }
 
 static void *IRAM_ATTR spin_lock_create_wrapper(void)
 {
+    printf("%s enter\n", __func__);
 	pthread_mutex_t *mux = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 	if (mux) {
 		pthread_mutex_init(mux, NULL);
+        printf("%s exit\n", __func__);
 		return mux;
 	}
-
+    printf("%s exit\n", __func__);
 	return NULL;
 }
 
@@ -664,8 +703,10 @@ static void IRAM_ATTR wifi_delete_queue_wrapper(void *queue)
 
 void IRAM_ATTR task_yield_wrapper(void)
 {
+    printf("%s enter\n", __func__);
 	extern int sched_yield(void);
 	sched_yield();
+    printf("%s exit\n", __func__);
 }
 
 int32_t IRAM_ATTR get_random_wrapper(uint8_t *buf, size_t len)

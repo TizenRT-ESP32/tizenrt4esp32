@@ -517,9 +517,10 @@ extern int esp_spiram_test();
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
-  
     get_wifi_mac_address();
     wifi_scan();
+
+#if 0
 #ifdef CONFIG_SPIRAM_SUPPORT
 	esp_spiram_test();
 #endif
@@ -549,6 +550,7 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 	event_group_demo();
 
 /*  event loop test*/
-    test_event_loop();
+    //test_event_loop();
+#endif
 	return NULL;
 }

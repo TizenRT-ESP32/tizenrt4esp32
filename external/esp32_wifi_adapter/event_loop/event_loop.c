@@ -23,11 +23,11 @@
 #include "esp_task.h"
 #include "esp_mesh.h"
 #include "esp_wifi_os_adapter.h"
+#include "esp_log.h"
+#include <unistd.h>
 
-//#include "esp_log.h"
-//#include "sdkconfig.h"
-
-#define portMAX_DELAY 0xFFFFFFFF
+#define TAG "eventloop"
+#define portMAX_DELAY (10000)
 static bool s_event_init_flag = false;
 static void *s_event_queue = NULL;
 static system_event_cb_t s_event_handler_cb = NULL;
@@ -45,15 +45,18 @@ static void esp_event_loop_task(void *pvParameters)
 {
     while (1) {
         system_event_t evt;
-        //if (queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY) == pdPASS) 
-        queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY);
-        esp_err_t ret = esp_event_process_default(&evt);
-        if (ret != ESP_OK) {
-            //    ESP_LOGE(TAG, "default event handler failed!");
-        }
-        ret = esp_event_post_to_user(&evt);
-        if (ret != ESP_OK) {
-          //      ESP_LOGE(TAG, "post event to user fail!");
+        if (queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY) == pdPASS)
+        {
+
+    //    queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY);
+            esp_err_t ret = esp_event_process_default(&evt);
+            if (ret != ESP_OK) {
+                ESP_LOGE(TAG, "default event handler failed!");
+            }
+            ret = esp_event_post_to_user(&evt);
+            if (ret != ESP_OK) {
+                ESP_LOGE(TAG, "post event to user fail!");
+            }
         }
     } 
 }
@@ -68,11 +71,12 @@ system_event_cb_t esp_event_loop_set_cb(system_event_cb_t cb, void *ctx)
 
 esp_err_t esp_event_send(system_event_t *event)
 {
+    printf("pid %d send event id %d\n", (int)getpid(), event->event_id); 
     if (s_event_queue == NULL) {
         //ESP_LOGE(TAG, "Event loop not initialized via esp_event_loop_init, but esp_event_send called");
         return ESP_ERR_INVALID_STATE;
     }
-#if 0
+#if 1
     if (event->event_id == SYSTEM_EVENT_STA_GOT_IP || event->event_id == SYSTEM_EVENT_STA_LOST_IP) {
         if (g_mesh_event_cb) {
             mesh_event_t mevent;
@@ -86,12 +90,12 @@ esp_err_t esp_event_send(system_event_t *event)
         }
     }
 #endif
-    int32_t ret = queue_send_to_back_wrapper(s_event_queue, event, 0);
+    int32_t ret = queue_send_to_back_wrapper(s_event_queue, event, 2000);
     if (ret != pdPASS) {
         if (event) {
-            //ESP_LOGE(TAG, "e=%d f", event->event_id);
+            ESP_LOGE(TAG, "e=%d f", event->event_id);
         } else {
-            //ESP_LOGE(TAG, "e null");
+            ESP_LOGE(TAG, "e null");
         }
         return ESP_FAIL;
     }
