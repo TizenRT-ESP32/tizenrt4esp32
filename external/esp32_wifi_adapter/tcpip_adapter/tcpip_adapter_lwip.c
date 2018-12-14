@@ -111,7 +111,8 @@ void tcpip_adapter_init(void)
     if (tcpip_inited == false) {
         tcpip_inited = true;
 
-        tcpip_init(NULL, NULL);
+        //*TizenRT will init tcpip when booting*/
+        //tcpip_init(NULL, NULL);
 
         memset(esp_ip, 0, sizeof(tcpip_adapter_ip_info_t)*TCPIP_ADAPTER_IF_MAX);
         memset(esp_ip_old, 0, sizeof(tcpip_adapter_ip_info_t)*TCPIP_ADAPTER_IF_MAX);
@@ -141,6 +142,7 @@ static inline netif_init_fn tcpip_if_to_netif_init_fn(tcpip_adapter_if_t tcpip_i
 
 static int tcpip_adapter_ipc_check(tcpip_adapter_api_msg_t *msg)
 {
+    printf("tcpip_adapter_ipc_check\n");
     struct tcb_s *current = this_task();
     if(strcmp(current->name, CONFIG_NET_TCPIP_THREAD_NAME) == 0) {
         return TCPIP_ADAPTER_IPC_LOCAL;

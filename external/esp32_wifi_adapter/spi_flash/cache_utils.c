@@ -89,7 +89,7 @@ static void IRAM_ATTR spi_flash_restore_cache(uint32_t cpuid, uint32_t saved_sta
 
 static uint32_t s_flash_op_cache_state[2];
 
-#ifndef CONFIG_FREERTOS_UNICORE
+#ifdef CONFIG_SMP
 static SemaphoreHandle_t s_flash_op_mutex;
 static volatile bool s_flash_op_can_start = false;
 static volatile bool s_flash_op_complete = false;

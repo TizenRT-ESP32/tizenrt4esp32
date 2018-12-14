@@ -16,7 +16,6 @@
 # language governing permissions and limitations under the License.
 #
 ############################################################################
-
 -include $(TOPDIR)/.config
 -include $(TOPDIR)/Make.defs
 
@@ -24,7 +23,11 @@
 VPATH = .
 CXXSRCS =
 
-# Include wireless drivers
+SUBDIRS = spi_flash soc esp32 
+
+CSRCS += esp32_wifi_os_adapter.c event_groups.c esp32_queue_api.c mq_tryreceive.c 
+
+# NVS module
 CXXSRCS += nvs_flash/src/nvs_item_hash_list.cpp 
 CXXSRCS += nvs_flash/src/nvs_page.cpp
 CXXSRCS += nvs_flash/src/nvs_pagemanager.cpp
@@ -33,37 +36,27 @@ CXXSRCS += nvs_flash/src/nvs_types.cpp
 CXXSRCS += nvs_flash/src/nvs_api.cpp 
 
 CXXFLAGS += -I./include
-CXXFLAGS += -I./nvs_flash/include -DESP_PLATFORM
 CXXFLAGS += -I./spi_flash/include
-CXXFLAGS +=  -std=c++11 -Wall -Werror
-
-CSRCS += esp32_wifi_os_adapter.c fast_crypto_ops.c
-CSRCS += phy_init.c hw_random.c  system_api.c esp_ota_eps.c intr_alloc.c dport_access.c
-CSRCS += clk.c rtc_clk.c rtc_time.c rtc_init.c rtc_sleep.c rtc_symbol_stub.c
-CSRCS += lib_printf.c
-
-CSRCS += event_groups.c esp32_queue_api.c mq_tryreceive.c 
-
-CSRCS +=  $(wildcard ./spi_flash/*.c)
+CXXFLAGS += -I./nvs_flash/include -DESP_PLATFORM
+CXXFLAGS += -std=c++11 -Wall -Werror
 
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/chip
-CFLAGS += -I./spi_flash/include
 CFLAGS += -I./nvs_flash/include
 CFLAGS += -Iinclude
 CFLAGS += -I$(TOPDIR)/kernel
 CFLAGS += -I$(TOPDIR)/include/net
 CFLAGS += -I./lwip_port/include
 
-#ESP32 external SPIRAM and heap allocator support
+#ESP32 external SPIRAM
 ifeq ($(CONFIG_SPIRAM_SUPPORT), y)
-CFLAGS += -I./esp32_heap/include
+CFLAGS += -I./heap/include
 CSRCS += spi_ram/spiram.c  spi_ram/spiram_psram.c gpio_periph.c
 endif
 
-#ESP32 heap allocator support
+#ESP32 heap allocator 
 ifeq ($(CONFIG_SPIRAM_USE_CAPS_ALLOC), y)
-CSRCS += esp32_heap/heap_caps.c  esp32_heap/heap_caps_init.c  esp32_heap/multi_heap.c esp32_heap/soc_memory_layout.c 
+CSRCS += heap/heap_caps.c  heap/heap_caps_init.c  heap/multi_heap.c 
 endif
 
 #ESP32 event loop module
@@ -71,7 +64,7 @@ CSRCS +=  event_loop/event_loop.c event_loop/event_default_handlers.c
 CFLAGS += -I./tcpip_adapter/include
 
 #ESP32 tcpip adapter
-CSRCS += tcpip_adapter/tcpip_adapter_lwip.c lwip_port/wlanif.c  lwip_port/dhcpserver.c lwip_port/espdns.c wifi_init.c
+CSRCS += tcpip_adapter/tcpip_adapter_lwip.c lwip_port/wlanif.c  lwip_port/dhcpserver.c lwip_port/espdns.c
 
 #ESP32 wpa_supplicant crypto
 CSRCS += $(wildcard ./wpa_supplicant/port/*.c)
@@ -112,8 +105,14 @@ BIN       = ../libexternal$(LIBEXT)
 OBJS        = $(CXXOBJS) $(COBJS)
 
 # Common build
-all: .built
+all: $(SUBDIRS) .built
 .PHONY: clean distclean
+
+ECHO:
+	@echo $(SUBDIRS)
+
+$(SUBDIRS): ECHO
+	make -C $@
 
 .built: $(OBJS)
 	$(call ARCHIVE, $(BIN), $(OBJS))
@@ -126,6 +125,7 @@ $(COBJS): %$(OBJEXT): %.c
 
 clean:
 	$(call DELFILE, .built)
+	$(call DELFILE, esp32/*.o)
 	$(call CLEAN)
 	rm -f $(OBJS)
 

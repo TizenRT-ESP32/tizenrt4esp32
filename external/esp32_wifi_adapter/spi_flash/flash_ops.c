@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <sys/param.h>			// For MIN/MAX(a, b)
 
+#include <tinyara/config.h>
 #include <rom/spi_flash.h>
 #include <rom/cache.h>
 #include <chip/esp32_soc.h>

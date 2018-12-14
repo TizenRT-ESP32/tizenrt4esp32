@@ -54,7 +54,11 @@ SECTIONS
 
     _iram_text_start = ABSOLUTE(.);
     *(.iram1 .iram1.*)
+    *libesp32.a:panic.*(.literal .text .literal.* .text.*)
+    *libesp32.a:core_dump.*(.literal .text .literal.* .text.*)
     *librtc.a:(.literal .text .literal.* .text.*)
+    *libsoc.a:(.literal .text .literal.* .text.*)
+    *libspiflash.a:spi_flash_rom_patch.*(.literal .text .literal.* .text.*)
     _iram_text_end = ABSOLUTE(.);
   } > iram0_0_seg
 
@@ -105,6 +109,9 @@ SECTIONS
     KEEP (*(.gnu.linkonce.s2.*))
     KEEP (*(.jcr))
     *(.dram1 .dram1.*)
+    *libesp32.a:panic.*(.rodata .rodata.*)
+    *libphy.a:(.rodata .rodata.*)
+    *libsoc.a:rtc_clk.*(.rodata .rodata.*)  
     _edata = ABSOLUTE(.);
     . = ALIGN(4);
 

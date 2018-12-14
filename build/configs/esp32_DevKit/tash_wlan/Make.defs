@@ -53,6 +53,17 @@ EXTRA_LIBPATHS += -L "${shell dirname "$(LIBSUPXX)"}"
 EXTRA_LIBS += -lsupc++
 endif
 
+ifeq ($(CONFIG_ESP32_WIFI_SUPPORT),y)
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/spi_flash"
+EXTRA_LIBS += -lspiflash
+
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/soc"
+EXTRA_LIBS += -lsoc
+
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/esp32"
+EXTRA_LIBS += -lesp32
+endif
+
 
 ifeq ($(WINTOOL),y)
   # Windows-native toolchains
@@ -93,7 +104,7 @@ ifneq ($(CONFIG_DEBUG_NOOPT),y)
   ARCHOPTIMIZATION += $(MAXOPTIMIZATION) -fno-strict-aliasing -fno-strength-reduce -fomit-frame-pointer
 endif
 
-ARCHCFLAGS = -fno-builtin 
+ARCHCFLAGS = -fno-builtin -ffunction-sections -fdata-sections 
 ARCHCXXFLAGS =  -fno-builtin
 ARCHWARNINGS = -Wall -Wundef
 ARCHWARNINGSXX = -Wall  
