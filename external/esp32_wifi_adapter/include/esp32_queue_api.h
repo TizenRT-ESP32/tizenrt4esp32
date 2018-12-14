@@ -29,7 +29,8 @@ extern "C" {
 typedef struct {
 	bool valid;
 	uint32_t mq_item_size;
-	mqd_t mqd_fd;
+	mqd_t mqd_fd_send;
+	mqd_t mqd_fd_recv;
 }queue_info_t;
 
 void *queue_create_wrapper(uint32_t queue_len, uint32_t item_size);

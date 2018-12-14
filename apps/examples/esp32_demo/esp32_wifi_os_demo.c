@@ -39,7 +39,7 @@
 #include <esp_system.h>
 
 //Will enable later.
-#define QUEUE_SEND_HANDLER_STACKSIZE (1024 * 4)
+#define QUEUE_SEND_HANDLER_STACKSIZE (1024)
 #define RANDOM_TEST_TIME (20)
 #define MALLOC_CAP_SPIRAM           (1<<10)
 #define MALLOC_CAP_DMA              (1<<3)
@@ -196,32 +196,38 @@ static void *queue_send_thread(void *queue_handle)
 	}
 	int i;
 
-	for (i = 0; i < 20; i++) {
-		data.type = i;
-		strcpy(data.buff, str[i]);
-		//g_wifi_osi_funcs._queue_send(queue_handle, &data,0);
-		queue_send_wrapper(queue_handle, &data, 0);
+	if (g_wifi_osi_funcs._queue_send) {
+		for (i = 0; i < 20; i++) {
+			data.type = i;
+			strcpy(data.buff, str[i]);
+			g_wifi_osi_funcs._queue_send(queue_handle, &data, 1);
+		}
+		usleep(1000 * 1000);
+	} else {
+		printf("g_wifi_osi_funcs._queue_send null piont!\n");
 	}
 
-	usleep(1000 * 1000);
-
-	for (i = 0; i < 20; i++) {
-		data.type = i;
-		strcpy(data.buff, str[i]);
-		//g_wifi_osi_funcs._queue_send_to_back(queue_handle, &data,0);
-		queue_send_to_back_wrapper(queue_handle, &data, 0);
+	if (g_wifi_osi_funcs._queue_send_to_back) {
+		for (i = 0; i < 20; i++) {
+			data.type = i;
+			strcpy(data.buff, str[i]);
+			g_wifi_osi_funcs._queue_send_to_back(queue_handle, &data, 1);
+		}
+		usleep(1000 * 1000);
+	} else {
+		printf("g_wifi_osi_funcs._queue_send_to_back null piont!\n");
 	}
 
-	usleep(1000 * 1000);
-
-	for (i = 0; i < 20; i++) {
-		data.type = i;
-		strcpy(data.buff, str[i]);
-		//g_wifi_osi_funcs._queue_send_to_front(queue_handle, &data,0);
-		queue_send_to_front_wrapper(queue_handle, &data, 0);
+	if (g_wifi_osi_funcs._queue_send_to_front) {
+		for (i = 0; i < 20; i++) {
+			data.type = i;
+			strcpy(data.buff, str[i]);
+			g_wifi_osi_funcs._queue_send_to_front(queue_handle, &data, 1);
+		}
+		usleep(1000 * 1000);
+	} else {
+		printf("g_wifi_osi_funcs._queue_send_to_front null piont!\n");
 	}
-
-	usleep(1000 * 1000);
 
 	//send stop to reciever
 	if (stop == 0) {
@@ -229,8 +235,11 @@ static void *queue_send_thread(void *queue_handle)
 
 		data.type = 0;
 		strcpy(data.buff, stop_str);
-		//g_wifi_osi_funcs._queue_send(queue_handle, &data,0);
-		queue_send_wrapper(queue_handle, &data, 0);
+		if (g_wifi_osi_funcs._queue_send) {
+			g_wifi_osi_funcs._queue_send(queue_handle, &data, 1);
+		} else {
+			printf("g_wifi_osi_funcs._queue_send null piont!\n");
+		}	
 	}
 	return NULL;
 }
@@ -243,14 +252,19 @@ static void *queue_recieve_thread(void *queue_handle)
 		return NULL;
 	}
 
+	if (!g_wifi_osi_funcs._queue_recv) {
+		printf("g_wifi_osi_funcs._queue_recv null piont!\n");
+		return NULL;
+	}
+
 	if (stop == 1) {
 		stop = 0;
 	}
 
 	while (!stop) {
-		//g_wifi_osi_funcs._queue_recv(queue_handle, &item,0);
-		queue_recv_wrapper(queue_handle, &item, 0);
-		printf("Recieve message:\n  type: %d, string: %s\n", item.type, item.buff);
+		if (g_wifi_osi_funcs._queue_recv(queue_handle, &item, 1) != 0) {
+			printf("Recieve message:\n	type: %d, string: %s\n", item.type, item.buff);
+		}
 	}
 	return NULL;
 }
@@ -261,45 +275,51 @@ void queue_operate_demo(void)
 	uint32_t queue_len = 20;
 	pthread_attr_t attr;
 	int status = -1;
+	
+	if (g_wifi_osi_funcs._queue_create) {
+		queue_info_t *queue_handle = g_wifi_osi_funcs._queue_create(queue_len, sizeof(queue_item_t));
+		if (!queue_handle) {
+			printf("%s input null piont!\n", __FUNCTION__);
+			return;
+		}
 
-	//queue_info_t * queue_handle = g_wifi_osi_funcs._queue_create(queue_len,sizeof(queue_item_t));
-	queue_info_t *queue_handle = queue_create_wrapper(queue_len, sizeof(queue_item_t));
-	if (!queue_handle) {
-		printf("%s input null piont!\n", __FUNCTION__);
-		return;
+		if (pthread_attr_init(&attr) != 0) {
+			printf("Error: Cannot initialize ptread attribute\n");
+			return;
+		}
+		pthread_attr_setschedpolicy(&attr, SCHED_RR);
+		pthread_attr_setstacksize(&attr, QUEUE_SEND_HANDLER_STACKSIZE);
+
+
+		status = pthread_create(&queue_recieve_thread_handle, &attr, queue_recieve_thread, (void *)queue_handle);
+		if (status != 0) {
+			printf("queue recieve: pthread_create failed, status=%d\n", status);
+		}
+
+		pthread_setname_np(queue_recieve_thread_handle, "esp32 wifi queue reciever");
+
+		status = pthread_create(&queue_send_thread_handle, &attr, queue_send_thread, (void *)queue_handle);
+		if (status != 0) {
+			printf("queue send: pthread_create failed, status=%d\n", status);
+		}
+
+		pthread_setname_np(queue_send_thread_handle, "esp32 wifi queue sender");
+		
+		status = pthread_join(queue_send_thread_handle, NULL);
+		if (status != OK) {
+			printf("esp32 wifi queue sender: ERROR: pthread_join failed: %d\n", status);
+		}
+		printf("jion send thread!\n");
+
+		status = pthread_join(queue_recieve_thread_handle, NULL);
+		if (status != OK) {
+			printf("esp32 wifi queue recieve: ERROR: pthread_join failed: %d\n", status);
+		}
+		printf("jion recieve thread!\n");
+	} else {
+		printf("g_wifi_osi_funcs._queue_create null pionter!\n");
 	}
-
-	if (pthread_attr_init(&attr) != 0) {
-		printf("Error: Cannot initialize ptread attribute\n");
-		return;
-	}
-	pthread_attr_setschedpolicy(&attr, SCHED_RR);
-	pthread_attr_setstacksize(&attr, QUEUE_SEND_HANDLER_STACKSIZE);
-
-	status = pthread_create(&queue_send_thread_handle, &attr, queue_send_thread, (void *)queue_handle);
-	if (status != 0) {
-		printf("queue send: pthread_create failed, status=%d\n", status);
-	}
-
-	status = pthread_create(&queue_recieve_thread_handle, &attr, queue_recieve_thread, (void *)queue_handle);
-	if (status != 0) {
-		printf("queue recieve: pthread_create failed, status=%d\n", status);
-	}
-
-	pthread_setname_np(queue_send_thread_handle, "esp32 wifi queue sender");
-	pthread_setname_np(queue_recieve_thread_handle, "esp32 wifi queue sender");
-
-	status = pthread_join(queue_send_thread_handle, NULL);
-	if (status != OK) {
-		printf("esp32 wifi queue sender: ERROR: pthread_join failed: %d\n", status);
-	}
-	printf("jion send thread!\n");
-
-	status = pthread_join(queue_recieve_thread_handle, NULL);
-	if (status != OK) {
-		printf("esp32 wifi queue recieve: ERROR: pthread_join failed: %d\n", status);
-	}
-	printf("jion recieve thread!\n");
+	
 }
 
 //event group test code
@@ -312,10 +332,10 @@ static void *event_group_setbit_thread(void *param)
 
 	event_bits_t event_bit[10] = { BIT9, BIT8, BIT7, BIT6, BIT5, BIT4, BIT3, BIT2, BIT1, BIT0 };
 
-	if (event_group) {
+	if (event_group && g_wifi_osi_funcs._event_group_set_bits) {
 		for (int i = 0; i < 10; i++) {
 			printf("Setbit_thread: %x\n", event_bit[i]);
-			event_group_set_bits(event_group, event_bit[i]);
+			g_wifi_osi_funcs._event_group_set_bits(event_group, event_bit[i]);
 		}
 	}
 	return NULL;
@@ -334,7 +354,7 @@ static void *event_group_waitbit_thread(void *param)
 	test_group_event_struct_t *test_group_event_parameter = (test_group_event_struct_t *) param;
 	if (test_group_event_parameter) {
 		printf("Wait for 0x%x!, zzzZZZZ!\n", test_group_event_parameter->bits_to_wait_for);
-		event_group_wait_bits(test_group_event_parameter->event_group, test_group_event_parameter->bits_to_wait_for, test_group_event_parameter->clear_on_exit, test_group_event_parameter->wait_for_all_bits, test_group_event_parameter->ticks_to_wait);
+		g_wifi_osi_funcs._event_group_wait_bits(test_group_event_parameter->event_group, test_group_event_parameter->bits_to_wait_for, test_group_event_parameter->clear_on_exit, test_group_event_parameter->wait_for_all_bits, test_group_event_parameter->ticks_to_wait);
 
 		printf("Week up because 0x%x!, do nothing!\n", test_group_event_parameter->bits_to_wait_for);
 	}
@@ -378,7 +398,7 @@ static void create_wait_event_threads(void)
 	}
 }
 
-void join_wait_event_threads(void)
+static void join_wait_event_threads(void)
 {
 	for (int i = 0; i < 10; i++) {
 		pthread_join(event_group_waitbit_thread_handle[i], NULL);
@@ -390,10 +410,14 @@ void event_group_demo(void)
 	pthread_t event_group_setbit_thread_handle;
 	int status = -1;
 	pthread_attr_t attr;
-
-	test_event_group = event_group_create();
-	if (!test_event_group) {
-		printf("Create event group failed!\n");
+	if (g_wifi_osi_funcs._event_group_create) {
+		test_event_group = g_wifi_osi_funcs._event_group_create();
+		if (!test_event_group) {
+			printf("Create event group failed!\n");
+			return;
+		}
+	} else {
+		printf("g_wifi_osi_funcs._event_group_create NULL!\n");
 		return;
 	}
 
@@ -493,7 +517,7 @@ extern int esp_spiram_test();
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
-      
+  
     get_wifi_mac_address();
     wifi_scan();
 #ifdef CONFIG_SPIRAM_SUPPORT
@@ -519,6 +543,7 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 	test_timer();
 	//wait timer handler exit
 	sleep(2);
+
 	queue_operate_demo();
 	usleep(3 * 1000 * 1000);
 	event_group_demo();

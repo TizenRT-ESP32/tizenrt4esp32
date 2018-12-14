@@ -37,7 +37,7 @@
 /************************************************************************
  * Pre-processor Definitions
  ************************************************************************/
-#define MAX_QUEUE_INFO 20
+#define MAX_QUEUE_INFO 10
 
 /************************************************************************
  * Private Type Declarations
@@ -108,11 +108,17 @@ void *IRAM_ATTR queue_create_wrapper(uint32_t queue_len, uint32_t item_size)
 	sprintf(name, "%s%d", mq_name, mq_id);
 
 	/*Invalid param */
-	queues_info[mq_id].mqd_fd = mq_open(name, O_RDWR | O_CREAT, 0666, &attr);
-	if (queues_info[mq_id].mqd_fd == (mqd_t)-1) {
+	queues_info[mq_id].mqd_fd_send = mq_open(name, O_RDWR | O_CREAT, 0666, &attr);
+	if (queues_info[mq_id].mqd_fd_send == (mqd_t)ERROR) {
 		printf("queue_create_wrapper FAIL: mq_open\n");
 		return NULL;
 	}
+
+	queues_info[mq_id].mqd_fd_recv = mq_open(name, O_RDWR | O_CREAT, 0666, &attr);
+	if (queues_info[mq_id].mqd_fd_recv == (mqd_t)ERROR) {
+		printf("queue_create_wrapper FAIL: mq_open\n");
+		return NULL;
+	}	
 	queues_info[mq_id].valid = true;
 	queues_info[mq_id].mq_item_size = item_size;
 	return &queues_info[mq_id];
@@ -137,8 +143,14 @@ void IRAM_ATTR queue_delete_wrapper(void *queue)
 	
 	if (queue) {
 		queue_info = (queue_info_t *)queue;
-		if (queue_info->mqd_fd) {
-			mq_close(queue_info->mqd_fd);
+		if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
+			mq_close(queue_info->mqd_fd_send);
+			queue_info->mqd_fd_send = NULL;
+		}
+		
+		if (queue_info->mqd_fd_recv != (mqd_t)ERROR) {
+			mq_close(queue_info->mqd_fd_recv);
+			queue_info->mqd_fd_recv = NULL;
 		}
 
 		queue_info->mq_item_size = 0;
@@ -174,24 +186,30 @@ int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t block_tim
 	if (!queue || !item) {
 		return pdFAIL;
 	}
-
-	(void)clock_gettime(CLOCK_REALTIME, &abstime);
-	msecs = TICK2MSEC(block_time_tick);
-	secs = msecs / MSEC_PER_SEC;
-	nsecs = (msecs - (secs * MSEC_PER_SEC)) * NSEC_PER_MSEC;
-	abstime.tv_sec += secs;
-	abstime.tv_nsec += nsecs;
-	
 	queue_info = (queue_info_t *)queue;
-	if (queue_info->mqd_fd) {
-		ret = mq_timedsend(queue_info->mqd_fd, (char *)item, queue_info->mq_item_size, NORMAL, &abstime);
-		if (ret) {
-			return pdFAIL;
+	if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
+		if (block_time_tick == 0xFFFFFFFF) {
+			ret = mq_send(queue_info->mqd_fd_recv, (char *)item, queue_info->mq_item_size, NORMAL);
+			if (ret == ERROR) {
+				return pdFAIL;
+			}
+		} else {
+			(void)clock_gettime(CLOCK_REALTIME, &abstime);
+			msecs = TICK2MSEC(block_time_tick);
+			secs = msecs / MSEC_PER_SEC;
+			nsecs = (msecs - (secs * MSEC_PER_SEC)) * NSEC_PER_MSEC;
+			abstime.tv_sec += secs;
+			abstime.tv_nsec += nsecs;
+				
+			ret = mq_timedsend(queue_info->mqd_fd_send, (char *)item, queue_info->mq_item_size, NORMAL, &abstime);
+			if (ret == ERROR) {
+				return pdFAIL;
+			}
 		}
-		return pdPASS;
+	} else {
+		return pdFAIL;
 	}
-
-	return pdFAIL;
+	return pdPASS;;
 }
 
 /****************************************************************************
@@ -219,14 +237,13 @@ int32_t IRAM_ATTR queue_send_from_isr_wrapper(void *queue, void *item, void *hpt
 	}
 		
 	queue_info = (queue_info_t *)queue;
-	if (queue_info->mqd_fd) {
-		ret = mq_send(queue_info->mqd_fd, (char *)item, queue_info->mq_item_size, NORMAL);
-		if (ret) {
+	if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
+		ret = mq_send(queue_info->mqd_fd_send, (char *)item, queue_info->mq_item_size, NORMAL);
+		if (ret == ERROR) {
 			return pdFAIL;
 		}
 		return pdPASS;
 	}
-
 	return pdFAIL;
 }
 
@@ -281,23 +298,30 @@ int32_t IRAM_ATTR queue_send_to_front_wrapper(void *queue, void *item, uint32_t 
 		return pdFAIL;
 	}
 	
-	(void)clock_gettime(CLOCK_REALTIME, &abstime);
-	msecs = TICK2MSEC(block_time_tick);
-	secs = msecs / MSEC_PER_SEC;
-	nsecs = (msecs - (secs * MSEC_PER_SEC)) * NSEC_PER_MSEC;
-	abstime.tv_sec += secs;
-	abstime.tv_nsec += nsecs;
-	
 	queue_info = (queue_info_t *)queue;
-	if (queue_info->mqd_fd) {
-		ret = mq_timedsend(queue_info->mqd_fd, (char *)item, queue_info->mq_item_size, HIGH, &abstime);
-		if (ret) {
-			return pdFAIL;
+	if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
+		if (block_time_tick == 0xFFFFFFFF) {
+			ret = mq_send(queue_info->mqd_fd_recv, (char *)item, queue_info->mq_item_size, NORMAL);
+			if (ret == ERROR) {
+				return pdFAIL;
+			}
+		} else {
+			(void)clock_gettime(CLOCK_REALTIME, &abstime);
+			msecs = TICK2MSEC(block_time_tick);
+			secs = msecs / MSEC_PER_SEC;
+			nsecs = (msecs - (secs * MSEC_PER_SEC)) * NSEC_PER_MSEC;
+			abstime.tv_sec += secs;
+			abstime.tv_nsec += nsecs;
+		
+			ret = mq_timedsend(queue_info->mqd_fd_send, (char *)item, queue_info->mq_item_size, HIGH, &abstime);
+			if (ret == ERROR) {
+				return pdFAIL;
+			}
 		}
-		return pdPASS;
-	}
-
-	return pdFAIL;
+	} else {
+		return pdFAIL;
+	}	
+	return pdPASS;
 }
 
 /****************************************************************************
@@ -329,25 +353,31 @@ int32_t IRAM_ATTR queue_recv_wrapper(void *queue, void *item, uint32_t block_tim
 	if (!queue || !item) {
 		return pdFAIL;
 	}
-
-	(void)clock_gettime(CLOCK_REALTIME, &abstime);
-	msecs = TICK2MSEC(block_time_tick);
-	secs = msecs / MSEC_PER_SEC;
-	nsecs = (msecs - (secs * MSEC_PER_SEC)) * NSEC_PER_MSEC;
-	abstime.tv_sec += secs;
-	abstime.tv_nsec += nsecs;
-
-	queue_info = (queue_info_t *)queue;
-	if (queue_info->mqd_fd) {
-		msglen = queue_info->mq_item_size;
-		ret = mq_timedreceive(queue_info->mqd_fd, (char *)item, msglen, &prio, &abstime);
-		if (ret) {
-			return pdFAIL;
-		}
-		return pdPASS;
-	}
 	
-	return pdFAIL;
+	queue_info = (queue_info_t *)queue;
+	if (queue_info->mqd_fd_recv != (mqd_t)ERROR) {
+		msglen = queue_info->mq_item_size;
+		if (block_time_tick == 0xFFFFFFFF) {
+			ret = mq_receive(queue_info->mqd_fd_recv, (char *)item, msglen, &prio);
+			if (ret == ERROR) {
+				return pdFAIL;
+			}
+		} else {
+			(void)clock_gettime(CLOCK_REALTIME, &abstime);
+			msecs = TICK2MSEC(block_time_tick);
+			secs = msecs / MSEC_PER_SEC;
+			nsecs = (msecs - (secs * MSEC_PER_SEC)) * NSEC_PER_MSEC;
+			abstime.tv_sec += secs;
+			abstime.tv_nsec += nsecs;
+			ret = mq_timedreceive(queue_info->mqd_fd_recv, (char *)item, msglen, &prio, &abstime);
+			if (ret == ERROR) {
+				return pdFAIL;
+			}
+		}	
+	} else {
+		return pdFAIL;	
+	}	
+	return pdPASS;
 }
 
 /****************************************************************************
@@ -377,15 +407,14 @@ int32_t IRAM_ATTR queue_recv_from_isr_wrapper(void *queue, void *item, int32_t *
 	}
 	
 	queue_info = (queue_info_t *)queue;
-	if (queue_info->mqd_fd) {
+	if (queue_info->mqd_fd_recv != (mqd_t)ERROR) {
 		msglen = queue_info->mq_item_size;
-		ret = mq_tryreceive_isr(queue_info->mqd_fd, (char *)item, msglen, &prio);
-		if (ret) {
+		ret = mq_tryreceive_isr(queue_info->mqd_fd_recv, (char *)item, msglen, &prio);
+		if (ret == ERROR) {
 			return pdFAIL;
 		}
 		return pdPASS;
 	}
-	
 	return pdFAIL;
 }
 
@@ -396,7 +425,7 @@ int32_t IRAM_ATTR queue_recv_from_isr_wrapper(void *queue, void *item, int32_t *
  *	This function gets the message count of message queue. 
  *   
  * Inputs:
- *	queue - The queue to receive messages.
+ *	queue - The queue to send messages.
  * Return:
  *	Returns the count of messages in the queue if success,  returns pdFAIL if failure.
  *
@@ -407,8 +436,9 @@ uint32_t IRAM_ATTR queue_msg_waiting_wrapper(void *queue)
 	
 	if (queue) {
 		queue_info = (queue_info_t *)queue;
-		if (queue_info->mqd_fd && queue_info->mqd_fd->msgq) {
-			return queue_info->mqd_fd->msgq->nmsgs;
+		if ((queue_info->mqd_fd_send != (mqd_t)ERROR) && 
+			(queue_info->mqd_fd_send->msgq != (mqd_t)ERROR)) {
+			return queue_info->mqd_fd_send->msgq->nmsgs;
 		}
 	}
 	return pdFAIL;
