@@ -42,7 +42,8 @@
 // Uncomment this line to force output from this module
 // #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
-//static const char* TAG = "nvs";
+
+static const char* TAG = "nvs";
 #else
 #define ESP_LOGD(...)
 #endif
@@ -534,4 +535,3 @@ extern "C" esp_err_t nvs_get_used_entry_count(nvs_handle handle, size_t* used_en
     return err;
 }
 
-}

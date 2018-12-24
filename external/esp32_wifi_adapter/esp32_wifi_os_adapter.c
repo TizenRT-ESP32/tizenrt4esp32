@@ -52,6 +52,7 @@
 #include <tinyara/cancelpt.h>
 
 #include "esp_attr.h"
+#include "esp_log.h"
 #include "esp_phy_init.h"
 #include "esp_wifi_os_adapter.h"
 #include "nvs.h"
@@ -61,11 +62,12 @@
 #include <semaphore/semaphore.h>
 #include "event_groups.h"
 #include <os.h>
+#include <periph_ctrl.h>
+#include <../../os/arch/xtensa/src/xtensa/xtensa.h>
 
 extern void esp_dport_access_stall_other_cpu_start_wrap(void);
 extern void esp_dport_access_stall_other_cpu_end_wrap(void);
 
-static irqstate_t wifi_int_disable_flags;
 
 /*extern functions declare*/
 extern uint32_t IRAM_ATTR esp_random(void);
@@ -81,13 +83,13 @@ static void *IRAM_ATTR semphr_create_wrapper(uint32_t max, uint32_t init)
 	if (!sem) {
 		return NULL;
 	}
-    printf("%s enter, %d create sem %p init to %u\n", __func__, (int)getpid(), sem, init);
+//    printf("%s enter, %d create sem %p init to %u\n", __func__, (int)getpid(), sem, init);
 
 	int status = sem_init(sem, 0, init);
 	if (status != OK) {
 		return NULL;
 	}
-    printf("%s exit\n", __func__);
+  //  printf("%s exit\n", __func__);
 	return (void *)sem;
 }
 
@@ -97,9 +99,9 @@ static void IRAM_ATTR semphr_delete_wrapper(void *semphr)
 		dbg("semphr is NULL\n");
 		return;
 	}
-    printf("%s enter, release sem %p ", __func__, semphr);
+    //printf("%s enter, release sem %p ", __func__, semphr);
 	sem_destroy(semphr);
-    free(semphr);
+    //free(semphr);
 
 }
 
@@ -150,7 +152,7 @@ static int32_t IRAM_ATTR semphr_take_from_isr_wrapper(void *semphr, void *hptw)
 
 	leave_cancellation_point();
 	irqrestore(saved_state);
-    printf("%s exit\n", __func__);
+   // printf("%s exit\n", __func__);
 	return ret;
 
 }
@@ -162,11 +164,11 @@ static int32_t IRAM_ATTR semphr_take_wrapper(void *semphr, uint32_t block_time_t
 		printf("semphr is NULL\n");
 		return pdFAIL;
 	}
-    printf("%s enter, %d\ take sem %p\n", __func__, (int)getpid(), semphr);
-    printf("block_time_tick = %x\n", block_time_tick);
+   // printf("%s enter, %d take sem %p\n", __func__, (int)getpid(), semphr);
+   // printf("block_time_tick = %x\n", block_time_tick);
 	if (block_time_tick == OSI_FUNCS_TIME_BLOCKING) {
 		ret = sem_wait(semphr);
-        printf("%s exit\n", __func__);
+     //   printf("%s exit\n", __func__);
 		if (ret == OK) {
 			return pdPASS;
 		} else {
@@ -186,7 +188,7 @@ static int32_t IRAM_ATTR semphr_take_wrapper(void *semphr, uint32_t block_time_t
 		abstime.tv_sec += secs;
 		abstime.tv_nsec += nsecs;
 		ret = sem_timedwait(semphr, &abstime);
-        printf("%s exit\n", __func__);
+       // printf("%s exit\n", __func__);
 		if (ret == OK) {
 			return pdPASS;
 		} else {
@@ -202,20 +204,20 @@ static int32_t IRAM_ATTR semphr_give_wrapper(void *semphr)
 		dbg("semphr is NULL\n");
 		return EINVAL;
 	}
-    printf("%s enter, %d give sem %p\n", __func__, (int)getpid(), semphr);
+//    printf("%s enter, %d give sem %p\n", __func__, (int)getpid(), semphr);
 	ret = sem_post(semphr);
 	if (ret == OK) {
-        printf("%s exit\n", __func__);
+  //      printf("%s exit\n", __func__);
 		return pdPASS;
 	} else {
-        printf("%s exit\n", __func__);
+    //    printf("%s exit\n", __func__);
 		return pdFAIL;
 	}
 }
 
 static int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
 {
-    printf("%s enter\n", __func__);
+   // printf("%s enter\n", __func__);
 	*(int *)hptw = WIFI_ADAPTER_FALSE;
 	return semphr_give_wrapper(semphr);
 }
@@ -223,7 +225,7 @@ static int32_t IRAM_ATTR semphr_give_from_isr_wrapper(void *semphr, void *hptw)
 /*=================mutx API=================*/
 static void *IRAM_ATTR recursive_mutex_create_wrapper(void)
 {
-    printf("%s enter\n", __func__);
+//   printf("%s enter\n", __func__);
 	pthread_mutexattr_t mattr;
 	int status = 0;
 
@@ -241,12 +243,16 @@ static void *IRAM_ATTR recursive_mutex_create_wrapper(void)
 	if (status) {
 		return NULL;
 	}
+    //printf("create mutex %p\n", mutex);
 	return (void *)mutex;
 }
 
 static void *IRAM_ATTR mutex_create_wrapper(void)
 {
-    printf("%s enter\n", __func__);
+    //printf("%s enter\n", __func__);
+    return recursive_mutex_create_wrapper();
+#if 0
+   // printf("%s enter\n", __func__);
 	int status = 0;
 	pthread_mutex_t *mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 
@@ -259,6 +265,7 @@ static void *IRAM_ATTR mutex_create_wrapper(void)
 		return NULL;
 	}
 	return (void *)mutex;
+#endif
 
 }
 
@@ -270,57 +277,68 @@ static void IRAM_ATTR mutex_delete_wrapper(void *mutex)
 		return;
 	}
 	pthread_mutex_destroy(mutex);
-	free(mutex);
+	//free(mutex);
 }
 
 static int32_t IRAM_ATTR mutex_lock_wrapper(void *mutex)
 {
-    printf("%s enter\n", __func__);
+    
+    //registerdump();
+    //printf("pid %d %s enter, lock mutex %p\n", (int)getpid(), __func__,mutex);
 	if (mutex == NULL) {
 		dbg("mutex is NULL\n");
 		return EINVAL;
 	}
 	int ret = pthread_mutex_lock(mutex);
 	if (ret) {
-        printf("%s exit\n", __func__);
+     //   printf("%s exit\n", __func__);
 		return pdFAIL;
 	}
-    printf("%s exit\n", __func__);
+   // printf("%s exit\n", __func__);
 	return pdPASS;
 
 }
 
 static int32_t IRAM_ATTR mutex_unlock_wrapper(void *mutex)
 {
-    printf("%s enter\n", __func__);
+
+    //registerdump();
+    if (up_interrupt_context() == true) 
+        printf("%s interrupt context\n", __func__);
+
+   // printf("%s enter\n", __func__);
 	if (mutex == NULL) {
 		dbg("mutex is NULL\n");
 		return EINVAL;
 	}
 	int ret = pthread_mutex_unlock(mutex);
 	if (ret) {
+   //     printf("%s exit\n", __func__);
 		return pdFAIL;
 	}
+   // printf("%s exit\n", __func__);
 	return pdPASS;
 }
 
 /*=================task control API=================*/
 static int32_t IRAM_ATTR task_create_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle)
 {
-    printf("%s enter\n", __func__);
+//    printf("%s enter\n", __func__);
+    //printf("stack_depth = %u, prio = %u\n", stack_depth, prio);
+
 	int pid = task_create(name, prio, stack_depth, task_func, param);
 	if (pid < 0) {
 		return pdFAIL;
 	}
 
 	task_handle = (void *)pid;
-    printf("%s exit\n", __func__);
+  //  printf("%s exit\n", __func__);
 	return pdPASS;
 }
 
 int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle, uint32_t core_id)
 {
-    printf("%s enter\n", __func__);
+   // printf("%s enter\n", __func__);
 #ifndef CONFIG_SMP
 	return task_create_wrapper(task_func, name, stack_depth, param, prio, task_handle);
 #else
@@ -331,7 +349,7 @@ int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, const char
 
 static void IRAM_ATTR task_delete_wrapper(void *task_handle)
 {
-    printf("%s enter\n", __func__);
+    //printf("%s enter\n", __func__);
 	if (task_handle < 0) {
 		return;
 	}
@@ -343,7 +361,7 @@ static void IRAM_ATTR task_delete_wrapper(void *task_handle)
 
 static void IRAM_ATTR task_delay_wrapper(uint32_t tick)
 {
-    printf("%s enter\n", __func__);
+   // printf("%s enter\n", __func__);
 	uint64_t usecs = TICK2USEC(tick);
 	usleep(usecs);
 }
@@ -351,20 +369,20 @@ static void IRAM_ATTR task_delay_wrapper(uint32_t tick)
 static int curpid;
 static void *IRAM_ATTR task_get_current_task_wrapper(void)
 {
-    printf("%s enter\n", __func__);
+    //printf("%s enter\n", __func__);
 	curpid = getpid();
 	return (void *)&curpid;
 }
 
 static inline int32_t IRAM_ATTR task_ms_to_tick_wrapper(uint32_t ms)
 {
-    printf("%s enter\n", __func__);
+    //printf("%s enter\n", __func__);
 	return (int32_t) MSEC2TICK(ms);
 }
 
 static inline int32_t IRAM_ATTR task_get_max_priority_wrapper(void)
 {
-    printf("%s enter\n", __func__);
+    //printf("%s enter\n", __func__);
 	return (int32_t)(SCHED_PRIORITY_MAX);
 }
 
@@ -377,111 +395,147 @@ static inline int32_t IRAM_ATTR is_in_isr_wrapper(void)
 
 static inline int32_t IRAM_ATTR esp_phy_rf_deinit_wrapper(uint32_t module)
 {
-    printf("%s enter\n", __func__);
+    //lldbg("%s enter\n", __func__);
 	return esp_phy_rf_deinit((phy_rf_module_t) module);
 }
 
 static inline int32_t IRAM_ATTR phy_rf_init_wrapper(const void *init_data, uint32_t mode, void *calibration_data, uint32_t module)
 {
-	printf("phy_rf_init_wrapper\n");
+    //lldbg("phy_rf_init_wrapper\n");
     return esp_phy_rf_init(init_data, mode, calibration_data, module);
 }
 
 static inline void IRAM_ATTR esp_phy_load_cal_and_init_wrapper(uint32_t module)
 {
-	printf("esp_phy_load_cal_and_ini\n");
+	//lldbg("esp_phy_load_cal_and_ini\n");
 	return esp_phy_load_cal_and_init((phy_rf_module_t) module);
 }
 
 static inline int32_t esp_read_mac_wrapper(uint8_t *mac, uint32_t type)
 {
-    printf("%s enter\n", __func__);
+//    printf("%s enter\n", __func__);
 	return esp_read_mac(mac, (esp_mac_type_t) type);
 }
 
 /*=================soft timer API=================*/
 
-void ets_timer_init(void)
+static void period_timerfn(int argc, uint32_t arg, ...)
+{
+    ETSTimer *etimer = (ETSTimer *) arg;
+    etimer->timer_func((void*)etimer->timer_expire);
+    wd_start((WDOG_ID)etimer->timer_arg, etimer->timer_period, period_timerfn, 1, etimer);
+}
+
+static void once_timerfn(int argc, uint32_t arg, ...)
+{
+    ETSTimer *etimer = (ETSTimer *) arg;
+    etimer->timer_func((void*)etimer->timer_expire);
+}
+
+void timer_init_wrapper(void)
 {
 
 }
 
-void ets_timer_deinit(void)
+void timer_deinit_wrapper(void)
 {
 
 }
 
+#define TAG "os adapter"
 static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat)
 {
-	ETSTimer *etimer = (ETSTimer *) timer;
-	if (etimer == NULL || etimer->wdog == NULL) {
-		dbg("timer is NULL\n");
-		return;
-	}
-	int delay = MSEC2TICK(tmout);
-	wd_start(etimer->wdog, delay, etimer->func, 0, NULL);
+#if 1
+    ETSTimer *etimer = (ETSTimer *) timer;
+    //ESP_LOGI("TAG", "get func %p\n", etimer->timer_func);
 
+	int delay = MSEC2TICK(tmout);
+    if(repeat)
+    {
+        etimer->timer_period = delay;
+        wd_start((WDOG_ID)etimer->timer_arg, delay, period_timerfn, 1, etimer);
+    }
+    else
+        wd_start((WDOG_ID)etimer->timer_arg, delay, once_timerfn, 1, etimer);
+#endif
 }
 
 static void IRAM_ATTR timer_disarm_wrapper(void *timer)
 {
+ //   ESP_LOGI(TAG, "%s enter\n", __func__);
 	ETSTimer *etimer = (ETSTimer *) timer;
-	if (etimer == NULL || etimer->wdog == NULL) {
-		dbg("timer is NULL\n");
-		return;
-	}
-	wd_cancel(etimer->wdog);
+    //ESP_LOGI("TAG", "dis get func %p\n", etimer->timer_func);
+    if(etimer->timer_func)
+	    wd_cancel((WDOG_ID)etimer->timer_arg);
 }
 
 static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 {
-	ETSTimer *etimer = (ETSTimer *) ptimer;
-	if (etimer == NULL || etimer->wdog == NULL) {
-		dbg("timer is NULL\n");
-		return;
-	}
-	etimer->func = NULL;
-	wd_delete(etimer->wdog);
+    ETSTimer *etimer = (ETSTimer *) ptimer;
+    if (etimer->timer_func) {
+        wd_delete((WDOG_ID)etimer->timer_arg);
+        etimer->timer_arg = NULL;
+        etimer->timer_func = NULL;
+    }
 }
 
 static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *parg)
 {
-	ETSTimer *etimer = (ETSTimer *) ptimer;
-	if (etimer == NULL) {
-		dbg("timer is NULL\n");
-		return;
-	}
-	etimer->wdog = wd_create();
-	if (!etimer->wdog) {
-		return;
-	}
-	etimer->func = (wdentry_t) pfunction;
+    ETSTimer *etimer = (ETSTimer *) ptimer;
+#if 0
+    if (!timer_initialized(etimer)) {
+        TIMER_INITIALIZED_FIELD(etimer) = TIMER_INITIALIZED_VAL;
+    }    
+#endif
+
+    memset(etimer, 0, sizeof(*etimer));
+    etimer->timer_arg = (WDOG_ID)wd_create();
+
+	if (!etimer->timer_arg) {
+        return;
+	} 
+    etimer->timer_func = pfunction;
+   // ESP_LOGI("TAG", "set func %p\n", etimer->timer_func);
+    etimer->timer_expire = (uint32_t)parg;
 }
 
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
 {
-	ETSTimer *etimer = (ETSTimer *) ptimer;
+
+    ETSTimer *etimer = (ETSTimer *) ptimer;
 	if (etimer == NULL) {
-		dbg("timer is NULL\n");
+		ESP_LOGI(TAG, "timer is NULL\n");
 		return;
 	}
 	int delay = USEC2TICK(us);
-	wd_start(etimer->wdog, delay, etimer->func, 0, NULL);
+    if(repeat)
+    {
+        etimer->timer_period = delay;
+        wd_start((WDOG_ID)etimer->timer_arg, delay, period_timerfn, 1, etimer);
+    }
+    else
+        wd_start((WDOG_ID)etimer->timer_arg, delay, once_timerfn, 1, etimer);
+
 }
 
 static inline int32_t IRAM_ATTR get_time_wrapper(void *t)
 {
+#if 1
+    return os_get_time(t);
+#endif
+#if 0
+    ESP_LOGI(TAG, "%s enter\n", __func__);
 	return (int32_t) gettimeofday((struct timeval *)t, NULL);
+#endif
 }
 
 /*=================Miscellaneous API================================*/
 static inline int32_t IRAM_ATTR esp_os_get_random_wrapper(uint8_t *buf, size_t len)
 {
-    printf("%s enter\n", __func__);
 	return (int32_t) os_get_random((unsigned char *)buf, len);
 
 }
-
+#if 0
 typedef enum {
 	ESP_LOG_NONE,				/*!< No log output */
 	ESP_LOG_ERROR,				/*!< Critical errors, software module can not recover on its own */
@@ -490,13 +544,15 @@ typedef enum {
 	ESP_LOG_DEBUG,				/*!< Extra information which is not necessary for normal use (values, pointers, sizes, etc). */
 	ESP_LOG_VERBOSE				/*!< Bigger chunks of debugging information, or frequent messages which can potentially flood the output. */
 } esp_log_level_t;
+#endif
 
 static void IRAM_ATTR log_write_wrapper(uint32_t level, const char *tag, const char *format, ...)
 {
+#if 0
 	switch (level) {
 	case ESP_LOG_ERROR:
 	case ESP_LOG_DEBUG:
-		dbg(format);
+	//	dbg(format);
 		break;
 
 	case ESP_LOG_WARN:
@@ -510,32 +566,35 @@ static void IRAM_ATTR log_write_wrapper(uint32_t level, const char *tag, const c
 	case ESP_LOG_NONE:
 		return;
 	}
+#endif
+
+
 }
 
 /*=================espwifi modem API=========================*/
 
 static inline esp_err_t esp_modem_sleep_enter_wrapper(uint32_t module)
 {
-    printf("%s enter\n", __func__);
+   // printf("%s enter\n", __func__);
 	return esp_modem_sleep_enter((modem_sleep_module_t) module);
 }
 
 static inline esp_err_t esp_modem_sleep_exit_wrapper(uint32_t module)
 {
-    printf("%s enter\n", __func__);
+  //  printf("%s enter\n", __func__);
 	return esp_modem_sleep_exit((modem_sleep_module_t) module);
 
 }
 
 static inline esp_err_t esp_modem_sleep_register_wrapper(uint32_t module)
 {
-    printf("%s enter\n", __func__);
+   // printf("%s enter\n", __func__);
 	return esp_modem_sleep_register((modem_sleep_module_t) module);
 }
 
 static inline esp_err_t esp_modem_sleep_deregister_wrapper(uint32_t module)
 {
-    printf("%s enter\n", __func__);
+   // printf("%s enter\n", __func__);
 	return esp_modem_sleep_deregister((modem_sleep_module_t) module);
 }
 
@@ -543,54 +602,85 @@ static inline esp_err_t esp_modem_sleep_deregister_wrapper(uint32_t module)
 
 static inline int32_t esp_nvs_open_wrapper(const char *name, uint32_t open_mode, uint32_t *out_handle)
 {
-    printf("%s enter\n", __func__);
+   // printf("%s enter\n", __func__);
 	return nvs_open(name, (nvs_open_mode) open_mode, (nvs_handle *) out_handle);
 }
 
 /*=================espwifi smart config API=========================*/
 /* Will complete next stage, not block WIFI ENABLE*/
+extern int ets_printf(const char *fmt, ...);
+
 
 static void IRAM_ATTR set_isr_wrapper(int32_t n, void *f, void *arg)
 {
-    printf("%s enter\n", __func__);
-	irq_attach(n, f, arg);
-	extern void up_enable_irq(int cpuint);
+	irq_attach(ESP32_IRQ_MAC, f, arg);
 	up_enable_irq(n);
-    printf("%s exit\n", __func__);
 }
+
+static void IRAM_ATTR ints_on_wrapper(uint32_t mask)
+{
+    int n = 0;
+    while(mask) {
+        n++;
+        mask >>= 1;
+    }
+    //disable 
+	up_enable_irq(n);
+}
+
+static void IRAM_ATTR ints_off_wrapper(uint32_t mask)
+{
+    int n = 0;
+    while(mask) {
+        n++;
+        mask >>= 1;
+    }
+	up_disable_irq(n);
+}
+
+/*
+static void *IRAM_ATTR spin_lock_delete(void *lock)
+{
+
+
+
+}
+*/
 
 static void *IRAM_ATTR spin_lock_create_wrapper(void)
 {
-    printf("%s enter\n", __func__);
+    //printf("%s enter\n", __func__);
+    return recursive_mutex_create_wrapper();
+
+#if 0
+    //printf("%s enter\n", __func__);
 	pthread_mutex_t *mux = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 	if (mux) {
 		pthread_mutex_init(mux, NULL);
-        printf("%s exit\n", __func__);
+      //  printf("%s exit\n", __func__);
 		return mux;
 	}
-    printf("%s exit\n", __func__);
+
+   // printf("%s exit\n", __func__);
 	return NULL;
+#endif
 }
 
 static irqstate_t wifi_int_disable_flags;
 
 static uint32_t IRAM_ATTR wifi_int_disable_wrapper(void *wifi_int_mux)
 {
-	if (wifi_int_mux) {
+    if (wifi_int_mux) {
 		wifi_int_disable_flags = irqsave();
-		pthread_mutex_lock((pthread_mutex_t *) wifi_int_mux);
 	}
 	return 0;
 }
 
 static void IRAM_ATTR wifi_int_restore_wrapper(void *wifi_int_mux, uint32_t tmp)
 {
-	//tmp is useless.
-	if (wifi_int_mux) {
-		pthread_mutex_unlock((pthread_mutex_t *) wifi_int_mux);
+    if (wifi_int_mux) {
 		irqrestore(wifi_int_disable_flags);
 	}
-	return;
 }
 
 static void IRAM_ATTR task_yield_from_isr_wrapper(void)
@@ -637,7 +727,8 @@ static void *IRAM_ATTR calloc_internal_wrapper(size_t n, size_t size)
 
 static void *IRAM_ATTR zalloc_internal_wrapper(size_t size)
 {
-	return zalloc(size);
+    void *ptr = zalloc(size);
+	return ptr;
 }
 
 /*
@@ -691,6 +782,34 @@ void IRAM_ATTR wifi_delete_queue(wifi_static_queue_t *queue)
 	free(queue);
 }
 
+/*in timer ISR, wd function will be called from wifi driver, which use queue_send_wrapper
+ * leads to coredump, workd around*/
+
+int32_t IRAM_ATTR queue_send_xwrapper(void *queue, void *item, uint32_t block_time_tick)
+{
+#if 0
+    if (up_interrupt_context() == true)
+    {
+        bool hptw;
+        int  times = 0;
+        while (times < 5 )
+        {
+            int ret = queue_send_from_isr_wrapper(queue, item, (void*)&hptw);
+            if (ret == 0)
+                return 0;
+            else
+                usleep(1000);
+        }
+        return -1;
+    }
+    else
+    {   
+        return  queue_send_wrapper(queue, item, block_time_tick);
+    }
+#endif
+
+}
+
 static void *IRAM_ATTR wifi_create_queue_wrapper(int32_t queue_len, int32_t item_size)
 {
 	return wifi_create_queue(queue_len, item_size);
@@ -703,10 +822,10 @@ static void IRAM_ATTR wifi_delete_queue_wrapper(void *queue)
 
 void IRAM_ATTR task_yield_wrapper(void)
 {
-    printf("%s enter\n", __func__);
+    //printf("%s enter\n", __func__);
 	extern int sched_yield(void);
 	sched_yield();
-    printf("%s exit\n", __func__);
+   // printf("%s exit\n", __func__);
 }
 
 int32_t IRAM_ATTR get_random_wrapper(uint8_t *buf, size_t len)
@@ -715,18 +834,18 @@ int32_t IRAM_ATTR get_random_wrapper(uint8_t *buf, size_t len)
 	return (int32_t) os_get_random(buf, len);
 }
 
-extern void xtensa_enable_cpuint(uint32_t mask);
-extern void xtensa_disable_cpuint(uint32_t mask);
+//extern void xtensa_enable_cpuint(uint32_t mask);
+//extern void xtensa_disable_cpuint(uint32_t mask);
 
 /*=================espwifi os adapter interface =====================*/
 
 wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._version = ESP_WIFI_OS_ADAPTER_VERSION,
 	._set_isr = set_isr_wrapper,
-	._ints_on = xtensa_enable_cpuint,
-	._ints_off = xtensa_disable_cpuint,
+	._ints_on = ints_on_wrapper,
+	._ints_off = ints_off_wrapper,
 	._spin_lock_create = spin_lock_create_wrapper,
-	._spin_lock_delete = free,
+	._spin_lock_delete = mutex_delete_wrapper,
 	._wifi_int_disable = wifi_int_disable_wrapper,
 	._wifi_int_restore = wifi_int_restore_wrapper,
 	._task_yield = task_yield_wrapper,
@@ -744,6 +863,7 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._mutex_unlock = mutex_unlock_wrapper,
 	._queue_create = queue_create_wrapper,
 	._queue_delete = queue_delete_wrapper,
+	//._queue_send = queue_send_xwrapper,
 	._queue_send = queue_send_wrapper,
 	._queue_send_from_isr = queue_send_from_isr_wrapper,
 	._queue_send_to_back = queue_send_to_back_wrapper,
@@ -774,13 +894,15 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._phy_rf_deinit = esp_phy_rf_deinit_wrapper,
 	._phy_load_cal_and_init = esp_phy_load_cal_and_init_wrapper,
 	._read_mac = esp_read_mac_wrapper,
-	._timer_init = ets_timer_init,
-	._timer_deinit = ets_timer_deinit,
+	._timer_init = timer_init_wrapper,
+	._timer_deinit = timer_deinit_wrapper,
 	._timer_arm = timer_arm_wrapper,
 	._timer_disarm = timer_disarm_wrapper,
 	._timer_done = timer_done_wrapper,
 	._timer_setfn = timer_setfn_wrapper,
 	._timer_arm_us = timer_arm_us_wrapper,
+    ._periph_module_enable = periph_module_enable,
+    ._periph_module_disable = periph_module_disable,
 	._esp_timer_get_time = get_instant_time,
 	._nvs_set_i8 = nvs_set_i8,
 	._nvs_get_i8 = nvs_get_i8,
@@ -797,7 +919,8 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._get_random = esp_os_get_random_wrapper,
 	._get_time = get_time_wrapper,
 	._random = os_random,
-	._log_write = log_write_wrapper,
+   ._log_write = esp_log_write,
+//	._log_write = log_write_wrapper,
 	._log_timestamp = esp_log_timestamp,
 	._malloc_internal = malloc_internal_wrapper,
 	._realloc_internal = realloc_internal_wrapper,

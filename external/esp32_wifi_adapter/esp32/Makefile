@@ -17,6 +17,7 @@ PWD=$(shell pwd)
 CFLAGS += -I${TOPDIR}/include
 CFLAGS += -I${PWD}/../include 
 CFLAGS += -I${PWD}/../nvs_flash/include
+CFLAGS += -I${PWD}/../log/include
 CFLAGS += -I${PWD}/../wpa_supplicant/include 
 CFLAGS += -I${PWD}/../wpa_supplicant/port/include 
 CFLAGS += -I${PWD}/../tcpip_adapter/include

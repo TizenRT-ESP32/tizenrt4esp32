@@ -26,13 +26,20 @@
 #include "esp_event_loop.h"
 #include "nvs_flash.h"
 
-#define CONFIG_WIFI_SSID "Multiroom-Test01-2G" 
-#define CONFIG_WIFI_PASSWORD "0123456789"
-#define CONFIG_WIFI_FAST_SCAN 1
-#define CONFIG_WIFI_CONNECT_AP_BY_SIGNAL 1
-#define CONFIG_FAST_SCAN_THRESHOLD 1
-#define CONFIG_EXAMPLE_WPA 1
-#define CONFIG_FAST_SCAN_MINIMUM_SIGNAL -127
+/*
+CONFIG_WIFI_SSID="myssid"
+CONFIG_WIFI_PASSWORD="mypassword"
+CONFIG_WIFI_FAST_SCAN=y
+CONFIG_WIFI_ALL_CHANNEL_SCAN=
+CONFIG_WIFI_CONNECT_AP_BY_SIGNAL=y
+CONFIG_WIFI_CONNECT_AP_BY_SECURITY=
+CONFIG_FAST_SCAN_THRESHOLD=y
+CONFIG_FAST_SCAN_MINIMUM_SIGNAL=-127
+CONFIG_EXAMPLE_OPEN=y
+CONFIG_EXAMPLE_WEP=
+CONFIG_EXAMPLE_WPA=
+CONFIG_EXAMPLE_WPA2=
+*/
 
 /*Set the SSID and Password via "make menuconfig"*/
 #define DEFAULT_SSID CONFIG_WIFI_SSID
@@ -105,19 +112,19 @@ static void do_wifi_scan(void)
 {
     esp_err_t ret;
     tcpip_adapter_init();
-    printf("esp_event_loop_init\n");
+    //printf("esp_event_loop_init\n");
     ret = esp_event_loop_init(event_handler, NULL);
     if(ret) {
-        printf("esp_event_loop_init failed, %d\n", ret);
+        ets_printf("esp_event_loop_init failed, %d\n", ret);
         return;
     }
    
 
-    printf("esp_wifi_init \n");
+   // printf("esp_wifi_init \n");
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ret = esp_wifi_init(&cfg);
     if(ret) {
-        printf("esp_wifi_init failed, %d\n", ret);
+        ets_printf("esp_wifi_init failed, %d\n", ret);
         return;
     }
     
@@ -125,37 +132,37 @@ static void do_wifi_scan(void)
         .sta = {
             .ssid = DEFAULT_SSID,
             .password = DEFAULT_PWD,
-          //  .scan_method = DEFAULT_SCAN_METHOD,
-        //    .sort_method = DEFAULT_SORT_METHOD,
-      //      .threshold.rssi = DEFAULT_RSSI,
-    //        .threshold.authmode = DEFAULT_AUTHMODE,
+            .scan_method = DEFAULT_SCAN_METHOD,
+            .sort_method = DEFAULT_SORT_METHOD,
+            .threshold.rssi = DEFAULT_RSSI,
+            .threshold.authmode = DEFAULT_AUTHMODE,
         },
     };
 
-    printf("esp_wifi_set_mode\n");
+//    lldbg("esp_wifi_set_mode\n");
     ret = esp_wifi_set_mode(WIFI_MODE_STA);
     if(ret) {
-        printf("esp_wifi_set_mode failed, %d\n", ret);
+        ets_printf("esp_wifi_set_mode failed, %d\n", ret);
         return;
     }
     
-    printf("esp_wifi_set_config\n");
+  //  lldbg("esp_wifi_set_config\n");
     ret = esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
     if(ret) {
-        printf("esp_wifi_set_config failed, %d\n", ret);
+        ets_printf("esp_wifi_set_config failed, %d\n", ret);
         return;
     }
-
-    printf("esp_wifi_start\n");
+    //lldbg("esp_wifi_start\n");
     ret = esp_wifi_start();
-    if(ret) {
-        printf("esp_wifi_start failed, %d\n", ret);
+    if(ret) { 
         return;
     }
+    while(true){};
 }
 
 void wifi_scan()
 {
+
     // Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {

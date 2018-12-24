@@ -45,14 +45,17 @@ static void esp_event_loop_task(void *pvParameters)
 {
     while (1) {
         system_event_t evt;
-        if (queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY) == pdPASS)
+        esp_err_t ret;
+        if (queue_recv_wrapper(s_event_queue, &evt, 1) == pdPASS)
         {
 
-    //    queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY);
+        #if 0
+             //queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY);
             esp_err_t ret = esp_event_process_default(&evt);
             if (ret != ESP_OK) {
                 ESP_LOGE(TAG, "default event handler failed!");
             }
+        #endif
             ret = esp_event_post_to_user(&evt);
             if (ret != ESP_OK) {
                 ESP_LOGE(TAG, "post event to user fail!");
@@ -71,9 +74,9 @@ system_event_cb_t esp_event_loop_set_cb(system_event_cb_t cb, void *ctx)
 
 esp_err_t esp_event_send(system_event_t *event)
 {
-    printf("pid %d send event id %d\n", (int)getpid(), event->event_id); 
+    //lldbg("pid %d send event id %d\n", (int)getpid(), event->event_id); 
     if (s_event_queue == NULL) {
-        //ESP_LOGE(TAG, "Event loop not initialized via esp_event_loop_init, but esp_event_send called");
+        ESP_LOGE(TAG, "Event loop not initialized via esp_event_loop_init, but esp_event_send called");
         return ESP_ERR_INVALID_STATE;
     }
 #if 1
@@ -90,12 +93,12 @@ esp_err_t esp_event_send(system_event_t *event)
         }
     }
 #endif
-    int32_t ret = queue_send_to_back_wrapper(s_event_queue, event, 2000);
+    int32_t ret = queue_send_to_back_wrapper(s_event_queue, event, 1);
     if (ret != pdPASS) {
         if (event) {
-            ESP_LOGE(TAG, "e=%d f", event->event_id);
+           // ESP_LOGE(TAG, "e=%d f", event->event_id);
         } else {
-            ESP_LOGE(TAG, "e null");
+           // ESP_LOGE(TAG, "e null");
         }
         return ESP_FAIL;
     }

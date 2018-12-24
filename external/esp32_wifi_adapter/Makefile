@@ -35,18 +35,24 @@ CXXSRCS += nvs_flash/src/nvs_storage.cpp
 CXXSRCS += nvs_flash/src/nvs_types.cpp
 CXXSRCS += nvs_flash/src/nvs_api.cpp 
 
+CXXFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 CXXFLAGS += -I./include
 CXXFLAGS += -I./spi_flash/include
+CXXFLAGS += -I./log/include
 CXXFLAGS += -I./nvs_flash/include -DESP_PLATFORM
 CXXFLAGS += -std=c++11 -Wall -Werror
 
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/chip
 CFLAGS += -I./nvs_flash/include
-CFLAGS += -Iinclude
+CFLAGS += -Iinclude -I./spi_flash/include
 CFLAGS += -I$(TOPDIR)/kernel
 CFLAGS += -I$(TOPDIR)/include/net
 CFLAGS += -I./lwip_port/include
+
+#ESP log module
+CSRCS += log/log.c
+CFLAGS += -I./log/include
 
 #ESP32 external SPIRAM
 ifeq ($(CONFIG_SPIRAM_SUPPORT), y)

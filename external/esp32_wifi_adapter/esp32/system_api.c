@@ -249,6 +249,7 @@ esp_err_t esp_register_shutdown_handler(shutdown_handler_t handler)
      return ESP_FAIL;
 }
 
+#if 0
 extern uint32_t g_ticks_per_us_pro;
 
 uint32_t esp_log_early_timestamp(void)
@@ -271,6 +272,7 @@ uint32_t IRAM_ATTR esp_log_timestamp()
 	}
 	return base + clock_systimer() * (1000 / CLK_TCK);
 }
+#endif
 
 #ifndef XTSTR
 #define _XTSTR(x)   # x

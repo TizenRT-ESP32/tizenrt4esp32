@@ -75,7 +75,7 @@
  * Definitions
  ****************************************************************************/
 #define ESP32_TASH_PRI      100
-#define ESP32_TASH_STAKSIZE (1024*64)
+#define ESP32_TASH_STAKSIZE (4096)
 
 /****************************************************************************
  * Private Data & Functions

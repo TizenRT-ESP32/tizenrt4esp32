@@ -59,6 +59,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
+#include <arch/irq.h>
 
 #include <tinyara/mm/mm.h>
 
@@ -100,12 +101,54 @@
  *
  ****************************************************************************/
 
+/****************************************************************************
+ * Name: mm_takesemaphore
+ *
+ * Description:
+ *   Take the MM mutex.  This is the normal action before all memory
+ *   management actions.
+ *
+ ****************************************************************************/
+
+#ifdef CONFIG_ISR_MALLOC
+
+void mm_seminitialize(FAR struct mm_heap_s *heap)
+{
+
+
+}
+
+int mm_trysemaphore(FAR struct mm_heap_s *heap)
+{
+    return 1;
+
+}
+
+void mm_takesemaphore(FAR struct mm_heap_s *heap)
+{
+    sched_lock();
+    heap->mm_counts_held = irqsave();
+    /*abuse mm_holder as irq state*/
+}
+
+void mm_givesemaphore(FAR struct mm_heap_s *heap)
+{
+    irqrestore(heap->mm_counts_held);
+    sched_unlock();
+}
+
+void mm_is_sem_available(void)
+{
+
+}
+
+#else
+
 void mm_seminitialize(FAR struct mm_heap_s *heap)
 {
 	/* Initialize the MM semaphore to one (to support one-at-a-time access to
 	 * private data sets.
 	 */
-
 	(void)sem_init(&heap->mm_semaphore, 0, 1);
 
 	heap->mm_holder      = -1;
@@ -149,14 +192,8 @@ int mm_trysemaphore(FAR struct mm_heap_s *heap)
 	}
 }
 
-/****************************************************************************
- * Name: mm_takesemaphore
- *
- * Description:
- *   Take the MM mutex.  This is the normal action before all memory
- *   management actions.
- *
- ****************************************************************************/
+
+
 
 void mm_takesemaphore(FAR struct mm_heap_s *heap)
 {
@@ -241,3 +278,4 @@ void mm_is_sem_available(void)
 	mm_takesemaphore(heap);
 	mm_givesemaphore(heap);
 }
+#endif

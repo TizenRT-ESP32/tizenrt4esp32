@@ -34,6 +34,7 @@
 #endif
 #include "tcpip_adapter.h"
 #include "esp_log.h"
+static const char* TAG = "event";
 
 #define WIFI_API_CALL_CHECK(info, api_call, ret) \
 do{\
@@ -179,7 +180,7 @@ esp_err_t system_event_sta_start_handle_default(system_event_t *event)
 {
     tcpip_adapter_ip_info_t sta_ip;
     uint8_t sta_mac[6];
-
+    
     WIFI_API_CALL_CHECK("esp_wifi_mac_get",  esp_wifi_get_mac(ESP_IF_WIFI_STA, sta_mac), ESP_OK);
     tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &sta_ip);
     tcpip_adapter_sta_start(sta_mac, &sta_ip);

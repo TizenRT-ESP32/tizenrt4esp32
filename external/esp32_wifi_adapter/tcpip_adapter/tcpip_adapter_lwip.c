@@ -45,6 +45,7 @@
 #include "esp_log.h"
 #include <sched/sched.h>
 
+static const char* TAG = "tcpip_adapter";
 #define DHCP_TIMEOUT 15000
 static int32_t dhcp_timeleft = DHCP_TIMEOUT;
 static struct dhcp g_dhcp_handle;

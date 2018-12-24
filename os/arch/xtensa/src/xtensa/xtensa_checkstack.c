@@ -64,8 +64,10 @@
 #include <debug.h>
 
 #include <tinyara/arch.h>
+#ifdef CONFIG_TLS
 #include <nuttx/tls.h>
-#include <nuttx/board.h>
+#endif
+//#include <nuttx/board.h>
 
 #include "xtensa.h"
 #include "sched/sched.h"

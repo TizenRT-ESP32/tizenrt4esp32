@@ -89,17 +89,10 @@
 #include "coexist_internal.h"
 #include "periph_ctrl.h"
 #include "esp_wifi_os_adapter.h"
-
+#include "esp_log.h"
 #define CONFIG_ESP32_PHY_MAX_TX_POWER 20
 
-/*disable log*/
-
-#define ESP_LOGE( tag, format, ... )
-#define ESP_LOGW( tag, format, ... )
-#define ESP_LOGI( tag, format, ... )
-#define ESP_LOGD( tag, format, ... )
-#define ESP_LOGV( tag, format, ... )
-
+static const char* TAG = "phy_init";
 //static const char* TAG = "phy_init";
 static pthread_mutex_t s_phy_rf_init_lock = PTHREAD_MUTEX_INITIALIZER;
 

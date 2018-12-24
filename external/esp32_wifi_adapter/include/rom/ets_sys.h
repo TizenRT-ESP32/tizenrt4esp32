@@ -308,19 +308,13 @@ void ets_install_uart_printf(void);
 typedef void ETSTimerFunc(void *timer_arg);
 /**< timer handler*/
 
-#if 0
+#
 typedef struct _ETSTIMER_ {
 	struct _ETSTIMER_ *timer_next;	/**< timer linker*/
 	uint32_t timer_expire;			/**< abstruct time when timer expire*/
 	uint32_t timer_period;			/**< timer period, 0 means timer is not periodic repeated*/
 	ETSTimerFunc *timer_func;		/**< timer handler*/
 	void *timer_arg;				/**< timer handler argument*/
-} ETSTimer;
-#endif
-
-typedef struct _ETSTIMER_ {
-	WDOG_ID wdog;
-    wdentry_t func;
 } ETSTimer;
 
 /**

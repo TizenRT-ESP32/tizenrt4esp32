@@ -176,7 +176,7 @@ void IRAM_ATTR queue_delete_wrapper(void *queue)
  ****************************************************************************/
 int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t block_time_tick)
 {
-	int32_t ret;
+    int32_t ret;
 	queue_info_t *queue_info = NULL;
 	struct timespec abstime;
 	clock_t msecs;
@@ -188,7 +188,7 @@ int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t block_tim
 	}
 	queue_info = (queue_info_t *)queue;
 	if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
-		if (block_time_tick == 0xFFFFFFFF) {
+		if (block_time_tick == 0xFFFFFFFF || (up_interrupt_context() == true)) {
 			ret = mq_send(queue_info->mqd_fd_recv, (char *)item, queue_info->mq_item_size, NORMAL);
 			if (ret == ERROR) {
 				return pdFAIL;

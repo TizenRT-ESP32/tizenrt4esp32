@@ -54,6 +54,10 @@ SECTIONS
 
     _iram_text_start = ABSOLUTE(.);
     *(.iram1 .iram1.*)
+    *libkernel.a:panic.*(.literal .text .literal.* .text.*)
+    *libmm.a:panic.*(.literal .text .literal.* .text.*)
+    *libarch.a:panic.*(.literal .text .literal.* .text.*)
+    *libc.a:panic.*(.literal .text .literal.* .text.*) 
     *libesp32.a:panic.*(.literal .text .literal.* .text.*)
     *libesp32.a:core_dump.*(.literal .text .literal.* .text.*)
     *librtc.a:(.literal .text .literal.* .text.*)

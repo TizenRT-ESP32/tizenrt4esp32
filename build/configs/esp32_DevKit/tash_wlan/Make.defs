@@ -134,7 +134,7 @@ OBJEXT = .o
 LIBEXT = .a
 EXEEXT = .elf
 
-LDFLAGS += -nostartfiles -nodefaultlibs 
+LDFLAGS += -nostartfiles -nodefaultlibs --gc-sections
 ifeq ($(CONFIG_DEBUG_SYMBOLS),y)
   LDFLAGS += -g
 endif

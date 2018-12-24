@@ -64,7 +64,9 @@ STACKSIZE = 2048
 
 CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter
 CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/include
+CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/log/include
 CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/nvs_flash/include
+CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/spi_flash/include
 CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/tcpip_adapter/include
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 
