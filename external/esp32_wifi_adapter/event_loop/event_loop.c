@@ -46,11 +46,10 @@ static void esp_event_loop_task(void *pvParameters)
     while (1) {
         system_event_t evt;
         esp_err_t ret;
-        if (queue_recv_wrapper(s_event_queue, &evt, 1) == pdPASS)
+        if (queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY) == pdPASS)
         {
 
-        #if 0
-             //queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY);
+        #if 1
             esp_err_t ret = esp_event_process_default(&evt);
             if (ret != ESP_OK) {
                 ESP_LOGE(TAG, "default event handler failed!");

@@ -156,11 +156,11 @@ static int tcpip_adapter_ipc_check(tcpip_adapter_api_msg_t *msg)
 
 static esp_err_t tcpip_adapter_update_default_netif(void)
 {
-    if (netif_is_up(esp_netif[TCPIP_ADAPTER_IF_STA])) {
+    if (esp_netif[TCPIP_ADAPTER_IF_STA] && netif_is_up(esp_netif[TCPIP_ADAPTER_IF_STA])) {
         netif_set_default(esp_netif[TCPIP_ADAPTER_IF_STA]);
-    } else if (netif_is_up(esp_netif[TCPIP_ADAPTER_IF_ETH])) {
+    } else if (esp_netif[TCPIP_ADAPTER_IF_ETH] && netif_is_up(esp_netif[TCPIP_ADAPTER_IF_ETH])) {
         netif_set_default(esp_netif[TCPIP_ADAPTER_IF_ETH]);
-    } else if (netif_is_up(esp_netif[TCPIP_ADAPTER_IF_AP])) {
+    } else if (esp_netif[TCPIP_ADAPTER_IF_AP] && netif_is_up(esp_netif[TCPIP_ADAPTER_IF_AP])) {
         netif_set_default(esp_netif[TCPIP_ADAPTER_IF_AP]);
     }
 
@@ -195,7 +195,7 @@ static esp_err_t tcpip_adapter_start(tcpip_adapter_if_t tcpip_if, uint8_t *mac, 
             netif_set_garp_flag(esp_netif[tcpip_if]);
         }
 #endif
-
+        netif_set_up(esp_netif[tcpip_if]);
     }
 
     if (tcpip_if == TCPIP_ADAPTER_IF_AP) {
