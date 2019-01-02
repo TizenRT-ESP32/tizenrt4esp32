@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #define TAG "eventloop"
-#define portMAX_DELAY (10000)
+#define portMAX_DELAY (0xffffffff)
 static bool s_event_init_flag = false;
 static void *s_event_queue = NULL;
 static system_event_cb_t s_event_handler_cb = NULL;
@@ -46,16 +46,12 @@ static void esp_event_loop_task(void *pvParameters)
     while (1) {
         system_event_t evt;
         esp_err_t ret;
-        if (queue_recv_wrapper(s_event_queue, &evt, 1) == pdPASS)
+        if (queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY) == pdPASS)
         {
-
-        #if 0
-             //queue_recv_wrapper(s_event_queue, &evt, portMAX_DELAY);
             esp_err_t ret = esp_event_process_default(&evt);
             if (ret != ESP_OK) {
                 ESP_LOGE(TAG, "default event handler failed!");
             }
-        #endif
             ret = esp_event_post_to_user(&evt);
             if (ret != ESP_OK) {
                 ESP_LOGE(TAG, "post event to user fail!");
