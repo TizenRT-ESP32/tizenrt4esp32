@@ -28,7 +28,10 @@ int
 fast_sha256_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
 		  uint8_t *mac)
 {
+
     int ret = 0;
+/*if enable, there are link error, but i do not know why esp no this error*/
+#if 0    
     mbedtls_sha256_context ctx;
 
     mbedtls_sha256_init(&ctx);
@@ -53,6 +56,7 @@ fast_sha256_vector(size_t num_elem, const uint8_t *addr[], const size_t *len,
 out:
     mbedtls_sha256_free(&ctx);
 
+#endif
     return ret;
 }
 

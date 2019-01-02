@@ -44,6 +44,7 @@ unsigned long r_rand(void) __attribute__((alias("os_random")));
 
 int os_get_random(unsigned char *buf, size_t len)
 {
+   
     int i, j;
     unsigned long tmp;
 
@@ -55,10 +56,9 @@ int os_get_random(unsigned char *buf, size_t len)
                 buf[i * 4 + j] = (uint8_t)(tmp >> (j * 8));
             } else {
                 break;
-            }
-        }
-    }
-
+            }   
+        }   
+    }    
     return 0;
 }
 

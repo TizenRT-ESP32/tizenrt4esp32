@@ -154,7 +154,7 @@ void *timer_func(void *parm)
 void test_timer(void)
 {
 	g_wifi_osi_funcs._timer_setfn(&mytimer, timer_func, NULL);
-	g_wifi_osi_funcs._timer_arm(&mytimer, 10, 0);
+	g_wifi_osi_funcs._timer_arm(&mytimer, 0, 0);
 }
 
 void test_time(void)
@@ -517,9 +517,10 @@ extern int esp_spiram_test();
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
+	//test_timer();
     //get_wifi_mac_address();
     wifi_scan();
-
+    
 #if 0
 #ifdef CONFIG_SPIRAM_SUPPORT
 	esp_spiram_test();

@@ -64,14 +64,20 @@
 #include <os.h>
 #include <periph_ctrl.h>
 #include <../../os/arch/xtensa/src/xtensa/xtensa.h>
+#include <tinyara/wqueue.h>
 
 extern void esp_dport_access_stall_other_cpu_start_wrap(void);
 extern void esp_dport_access_stall_other_cpu_end_wrap(void);
 
 
 /*extern functions declare*/
-extern uint32_t IRAM_ATTR esp_random(void);
 int64_t get_instant_time(void);
+
+int64_t esp_timer_get_time_wrapper(void)
+{
+
+}
+
 
 /*=================seamphore API=================*/
 static void *IRAM_ATTR semphr_create_wrapper(uint32_t max, uint32_t init)
@@ -323,8 +329,9 @@ static int32_t IRAM_ATTR mutex_unlock_wrapper(void *mutex)
 /*=================task control API=================*/
 static int32_t IRAM_ATTR task_create_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle)
 {
+    ets_printf("task name = %s\n", name);
 //    printf("%s enter\n", __func__);
-    //printf("stack_depth = %u, prio = %u\n", stack_depth, prio);
+    printf("stack_depth = %u, prio = %u\n", stack_depth, prio);
 
 	int pid = task_create(name, prio, stack_depth, task_func, param);
 	if (pid < 0) {
@@ -422,14 +429,15 @@ static inline int32_t esp_read_mac_wrapper(uint8_t *mac, uint32_t type)
 static void period_timerfn(int argc, uint32_t arg, ...)
 {
     ETSTimer *etimer = (ETSTimer *) arg;
-    etimer->timer_func((void*)etimer->timer_expire);
+    work_queue(HPWORK, etimer->timer_next, etimer->timer_func, etimer->timer_expire, 0); 
     wd_start((WDOG_ID)etimer->timer_arg, etimer->timer_period, period_timerfn, 1, etimer);
 }
 
 static void once_timerfn(int argc, uint32_t arg, ...)
 {
     ETSTimer *etimer = (ETSTimer *) arg;
-    etimer->timer_func((void*)etimer->timer_expire);
+    //ets_printf("(%u) excute timer out = %p\n",  clock_systimer(), etimer);
+    work_queue(HPWORK, etimer->timer_next, etimer->timer_func, etimer->timer_expire, 0); 
 }
 
 void timer_init_wrapper(void)
@@ -442,16 +450,25 @@ void timer_deinit_wrapper(void)
 
 }
 
+#define WDOG_TIMER(ptimer) ((WDOG_ID)(ptimer->timer_arg))
+
 #define TAG "os adapter"
 static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat)
 {
-#if 1
+  #if 1
     ETSTimer *etimer = (ETSTimer *) timer;
-    //ESP_LOGI("TAG", "get func %p\n", etimer->timer_func);
+    if(etimer->timer_func == NULL)
+    {
+        ets_printf("assert bug\n");
+    }
+ 
+    wd_cancel((WDOG_ID)etimer->timer_arg);
 
 	int delay = MSEC2TICK(tmout);
+   // ets_printf("alarm ptimer = %p delay = %u ms\n", timer, tmout);
     if(repeat)
     {
+        ets_printf(" repeat\n");
         etimer->timer_period = delay;
         wd_start((WDOG_ID)etimer->timer_arg, delay, period_timerfn, 1, etimer);
     }
@@ -462,9 +479,8 @@ static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat
 
 static void IRAM_ATTR timer_disarm_wrapper(void *timer)
 {
- //   ESP_LOGI(TAG, "%s enter\n", __func__);
 	ETSTimer *etimer = (ETSTimer *) timer;
-    //ESP_LOGI("TAG", "dis get func %p\n", etimer->timer_func);
+    //ets_printf(" disalarm ptimer = %p\n", timer);
     if(etimer->timer_func)
 	    wd_cancel((WDOG_ID)etimer->timer_arg);
 }
@@ -472,8 +488,11 @@ static void IRAM_ATTR timer_disarm_wrapper(void *timer)
 static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 {
     ETSTimer *etimer = (ETSTimer *) ptimer;
+    //ets_printf("del ptimer = %p\n", ptimer);
     if (etimer->timer_func) {
         wd_delete((WDOG_ID)etimer->timer_arg);
+        free(etimer->timer_next);
+        etimer->timer_next = NULL;
         etimer->timer_arg = NULL;
         etimer->timer_func = NULL;
     }
@@ -482,12 +501,8 @@ static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *parg)
 {
     ETSTimer *etimer = (ETSTimer *) ptimer;
-#if 0
-    if (!timer_initialized(etimer)) {
-        TIMER_INITIALIZED_FIELD(etimer) = TIMER_INITIALIZED_VAL;
-    }    
-#endif
 
+    //ets_printf("create ptimer = %p\n", ptimer);
     memset(etimer, 0, sizeof(*etimer));
     etimer->timer_arg = (WDOG_ID)wd_create();
 
@@ -497,11 +512,13 @@ static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *p
     etimer->timer_func = pfunction;
    // ESP_LOGI("TAG", "set func %p\n", etimer->timer_func);
     etimer->timer_expire = (uint32_t)parg;
+    etimer->timer_next = (struct work_s*)malloc(sizeof(struct work_s));
 }
 
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
 {
 
+    ets_printf("tmout = %u us\n", us);
     ETSTimer *etimer = (ETSTimer *) ptimer;
 	if (etimer == NULL) {
 		ESP_LOGI(TAG, "timer is NULL\n");
@@ -519,14 +536,8 @@ static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repea
 }
 
 static inline int32_t IRAM_ATTR get_time_wrapper(void *t)
-{
-#if 1
+{   
     return os_get_time(t);
-#endif
-#if 0
-    ESP_LOGI(TAG, "%s enter\n", __func__);
-	return (int32_t) gettimeofday((struct timeval *)t, NULL);
-#endif
 }
 
 /*=================Miscellaneous API================================*/
@@ -768,8 +779,10 @@ wifi_static_queue_t *IRAM_ATTR wifi_create_queue(int queue_len, int item_size)
 	wifi_static_queue_t *wifi_queue = (wifi_static_queue_t *)malloc(sizeof(wifi_static_queue_t));
 	if (!wifi_queue) {
 		return NULL;
-	}
-
+    }
+    /*just for debug, remove me late*/
+    ets_printf("queue len = %d\n", queue_len);
+    
 	wifi_queue->handle = queue_create_wrapper(queue_len, item_size);
 	return wifi_queue;
 }
@@ -780,34 +793,6 @@ void IRAM_ATTR wifi_delete_queue(wifi_static_queue_t *queue)
 		queue_delete_wrapper(queue->handle);
 	}
 	free(queue);
-}
-
-/*in timer ISR, wd function will be called from wifi driver, which use queue_send_wrapper
- * leads to coredump, workd around*/
-
-int32_t IRAM_ATTR queue_send_xwrapper(void *queue, void *item, uint32_t block_time_tick)
-{
-#if 0
-    if (up_interrupt_context() == true)
-    {
-        bool hptw;
-        int  times = 0;
-        while (times < 5 )
-        {
-            int ret = queue_send_from_isr_wrapper(queue, item, (void*)&hptw);
-            if (ret == 0)
-                return 0;
-            else
-                usleep(1000);
-        }
-        return -1;
-    }
-    else
-    {   
-        return  queue_send_wrapper(queue, item, block_time_tick);
-    }
-#endif
-
 }
 
 static void *IRAM_ATTR wifi_create_queue_wrapper(int32_t queue_len, int32_t item_size)
@@ -822,16 +807,10 @@ static void IRAM_ATTR wifi_delete_queue_wrapper(void *queue)
 
 void IRAM_ATTR task_yield_wrapper(void)
 {
-    //printf("%s enter\n", __func__);
+    printf("%s enter\n", __func__);
 	extern int sched_yield(void);
 	sched_yield();
    // printf("%s exit\n", __func__);
-}
-
-int32_t IRAM_ATTR get_random_wrapper(uint8_t *buf, size_t len)
-{
-	extern int os_get_random(unsigned char * buf, size_t len);
-	return (int32_t) os_get_random(buf, len);
 }
 
 //extern void xtensa_enable_cpuint(uint32_t mask);
@@ -863,7 +842,6 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._mutex_unlock = mutex_unlock_wrapper,
 	._queue_create = queue_create_wrapper,
 	._queue_delete = queue_delete_wrapper,
-	//._queue_send = queue_send_xwrapper,
 	._queue_send = queue_send_wrapper,
 	._queue_send_from_isr = queue_send_from_isr_wrapper,
 	._queue_send_to_back = queue_send_to_back_wrapper,
@@ -903,7 +881,7 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._timer_arm_us = timer_arm_us_wrapper,
     ._periph_module_enable = periph_module_enable,
     ._periph_module_disable = periph_module_disable,
-	._esp_timer_get_time = get_instant_time,
+	._esp_timer_get_time = esp_timer_get_time_wrapper,
 	._nvs_set_i8 = nvs_set_i8,
 	._nvs_get_i8 = nvs_get_i8,
 	._nvs_set_u8 = nvs_set_u8,

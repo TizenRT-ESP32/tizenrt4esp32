@@ -247,7 +247,7 @@ esp_err_t system_event_sta_disconnected_handle_default(system_event_t *event)
 static esp_err_t esp_system_event_debug(system_event_t *event)
 {
     if (event == NULL) {
-        ESP_LOGE(TAG, "event is null!");
+       // ESP_LOGE(TAG, "event is null!");
         return ESP_FAIL;
     }
 
@@ -262,7 +262,7 @@ static esp_err_t esp_system_event_debug(system_event_t *event)
         break;
     }
     case SYSTEM_EVENT_STA_START: {
-        ESP_LOGD(TAG, "SYSTEM_EVENT_STA_START");
+        //ESP_LOGD(TAG, "SYSTEM_EVENT_STA_START");
         break;
     }
     case SYSTEM_EVENT_STA_STOP: {
@@ -277,7 +277,7 @@ static esp_err_t esp_system_event_debug(system_event_t *event)
     }
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         system_event_sta_disconnected_t *disconnected = &event->event_info.disconnected;
-        ESP_LOGD(TAG, "SYSTEM_EVENT_STA_DISCONNECTED, ssid:%s, ssid_len:%d, bssid:" MACSTR ", reason:%d", \
+        ets_printf ("SYSTEM_EVENT_STA_DISCONNECTED, ssid:%s, ssid_len:%d, bssid:" MACSTR ", reason:%d\n", \
                    disconnected->ssid, disconnected->ssid_len, MAC2STR(disconnected->bssid), disconnected->reason);
         break;
     }
@@ -398,9 +398,9 @@ esp_err_t esp_event_process_default(system_event_t *event)
     esp_system_event_debug(event);
     if ((event->event_id < SYSTEM_EVENT_MAX)) {
         if (default_event_handlers[event->event_id] != NULL) {
-            ESP_LOGV(TAG, "enter default callback");
+           // ESP_LOGV(TAG, "enter default callback");
             default_event_handlers[event->event_id](event);
-            ESP_LOGV(TAG, "exit default callback");
+           // ESP_LOGV(TAG, "exit default callback");
         }
     } else {
         ESP_LOGE(TAG, "mismatch or invalid event, id=%d", event->event_id);

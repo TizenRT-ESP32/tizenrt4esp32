@@ -96,13 +96,19 @@ CFLAGS += \
 		-DCONFIG_WPS_PIN\
 		-DUSE_WPS_TASK\
 		-DESPRESSIF_USE\
-		-DESP32_WORKAROUND
+		-DESP32_WORKAROUND \
+		-DCONFIG_ECC 
 
-CFLAGS += -I./../mbedtls/port/include
-CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"'
+#ESP32 mbedtls
+CSRCS += $(wildcard ./mbedtls/mbedtls/library/*.c)
+CSRCS += $(wildcard ./mbedtls/port/*.c)
+CFLAGS += -I./mbedtls/mbedtls/include
+CFLAGS += -I./mbedtls/port/include
+CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/port/include/mbedtls/esp_config.h"'
+
+
 #ESP32 hardware crypto
 CSRCS += $(wildcard ./hwcrypto/*.c)
-
 
 CXXOBJS = $(CXXSRCS:.cpp=$(OBJEXT))
 COBJS   = $(CSRCS:.c=$(OBJEXT))

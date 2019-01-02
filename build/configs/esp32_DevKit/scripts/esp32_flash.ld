@@ -55,6 +55,8 @@ SECTIONS
     _iram_text_start = ABSOLUTE(.);
     *(.iram1 .iram1.*)
     *libkernel.a:panic.*(.literal .text .literal.* .text.*)
+    *libarch.a:panic.*(.literal .text .literal.* .text.*)
+    *libnet.a:panic.*(.literal .text .literal.* .text.*)
     *libmm.a:panic.*(.literal .text .literal.* .text.*)
     *libarch.a:panic.*(.literal .text .literal.* .text.*)
     *libc.a:panic.*(.literal .text .literal.* .text.*) 

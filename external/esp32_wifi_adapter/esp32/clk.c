@@ -127,18 +127,21 @@ void esp_clk_init(void)
 
 int IRAM_ATTR esp_clk_cpu_freq(void)
 {
+    g_ticks_per_us_pro = 160;
     return g_ticks_per_us_pro * 1000000;
 }
 
 int IRAM_ATTR esp_clk_apb_freq(void)
 {
+    g_ticks_per_us_pro = 160;   
     return MIN(g_ticks_per_us_pro, 80) * 1000000;
 }
 
 void IRAM_ATTR ets_update_cpu_frequency(uint32_t ticks_per_us)
 {
+    g_ticks_per_us_pro = 16;
     /* Update scale factors used by ets_delay_us */
-    g_ticks_per_us_pro = ticks_per_us;
+ //   g_ticks_per_us_pro = ticks_per_us;
     g_ticks_per_us_app = ticks_per_us;
 }
 

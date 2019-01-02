@@ -41,6 +41,8 @@
                 __asm__ __volatile__("rsr.ccount %0" : "=a"(__ccount)); \
                 __ccount; })
 
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
 uint32_t IRAM_ATTR esp_random(void)
 {
 	/* The PRNG which implements WDEV_RANDOM register gets 2 bits
@@ -73,3 +75,18 @@ uint32_t IRAM_ATTR esp_random(void)
 	last_ccount = ccount;
 	return result ^ REG_READ(WDEV_RND_REG);
 }
+
+#if 0
+void esp_fill_random(void *buf, size_t len)
+{
+    uint8_t *buf_bytes = (uint8_t *)buf;
+    while (len > 0) {
+        uint32_t word = esp_random();
+        uint32_t to_copy = MIN(sizeof(word), len);
+        memcpy(buf_bytes, &word, to_copy);
+        buf_bytes += to_copy;
+        len -= to_copy;
+    }   
+}
+
+#endif

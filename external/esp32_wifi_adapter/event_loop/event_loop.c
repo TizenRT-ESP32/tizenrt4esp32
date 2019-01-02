@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #define TAG "eventloop"
-#define portMAX_DELAY (10000)
+#define portMAX_DELAY (0xffffffff)
 static bool s_event_init_flag = false;
 static void *s_event_queue = NULL;
 static system_event_cb_t s_event_handler_cb = NULL;

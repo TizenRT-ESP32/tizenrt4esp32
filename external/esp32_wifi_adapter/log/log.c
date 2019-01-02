@@ -337,6 +337,8 @@ uint32_t ATTR esp_log_early_timestamp()
 
 uint32_t IRAM_ATTR esp_log_timestamp()
 {
+    return clock_systimer();
+
 #if 0
     if (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) {
         return esp_log_early_timestamp();

@@ -86,6 +86,12 @@ extern "C" {
 #define ESP_ERR_WIFI_WOULD_BLOCK (ESP_ERR_WIFI_BASE + 14)  /*!< The caller would block */
 #define ESP_ERR_WIFI_NOT_CONNECT (ESP_ERR_WIFI_BASE + 15)  /*!< Station still in disconnect status */
 
+#ifdef CONFIG_ESP32_WIFI_SOFTAP_BEACON_MAX_LEN
+#define WIFI_SOFTAP_BEACON_MAX_LEN CONFIG_ESP32_WIFI_SOFTAP_BEACON_MAX_LEN
+#else
+#define WIFI_SOFTAP_BEACON_MAX_LEN 752
+#endif
+
 /**
  * @brief WiFi stack configuration parameters passed to esp_wifi_init call.
  */
@@ -106,6 +112,7 @@ typedef struct {
     int                    tx_ba_win;              /**< WiFi Block Ack TX window size */
     int                    rx_ba_win;              /**< WiFi Block Ack RX window size */
     int                    wifi_task_core_id;      /**< WiFi Task Core ID */
+    int                    beacon_max_len;         /**< WiFi softAP maximum length of the beacon */
     int                    magic;                  /**< WiFi init magic number, it should be the last field */
 } wifi_init_config_t;
 
@@ -190,6 +197,7 @@ extern const wpa_crypto_funcs_t g_wifi_default_wpa_crypto_funcs;
     .tx_ba_win = WIFI_DEFAULT_TX_BA_WIN,\
     .rx_ba_win = WIFI_DEFAULT_RX_BA_WIN,\
     .wifi_task_core_id = WIFI_TASK_CORE_ID,\
+    .beacon_max_len = WIFI_SOFTAP_BEACON_MAX_LEN, \
     .magic = WIFI_INIT_CONFIG_MAGIC\
 };
 

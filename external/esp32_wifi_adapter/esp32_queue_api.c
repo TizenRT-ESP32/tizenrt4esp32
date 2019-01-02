@@ -34,6 +34,7 @@
 #include "esp32_queue_api.h"
 #include "mq_tryreceive.h"
 
+#include <tinyara/clock.h>
 /************************************************************************
  * Pre-processor Definitions
  ************************************************************************/
@@ -57,6 +58,14 @@ enum {
  ************************************************************************/
 const char *mq_name = "mq_wifi";
 static queue_info_t queues_info[MAX_QUEUE_INFO];
+
+static unsigned long long diff_time(struct timeval *x, struct timeval *y)
+{
+    
+    unsigned long long start = x->tv_sec * 1000 + x->tv_usec/1000;
+    unsigned long long end = y->tv_sec * 1000 + y->tv_usec/1000; 
+    return (end-start);
+}
 
 /************************************************************************
  * Private Functions
@@ -174,41 +183,83 @@ void IRAM_ATTR queue_delete_wrapper(void *queue)
  *	Returns pdPASS if success, pdFAIL if failure.
  *
  ****************************************************************************/
+static bool queue_is_full(void *queue)
+{
+    queue_info_t *queue_info = (queue_info_t *)queue;
+#if 0
+    if(queue_info->mqd_fd_send->msgq->nmsgs >= queue_info->mqd_fd_send->msgq->maxmsgs)
+    {
+        ets_printf("queue full\n");
+    }
+#endif
+   // ets_printf("queue size %d\n", queue_info->mqd_fd_send->msgq->nmsgs);
+    return false;
+}
+
 int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t block_time_tick)
 {
     int32_t ret;
 	queue_info_t *queue_info = NULL;
 	struct timespec abstime;
-	clock_t msecs;
 	clock_t secs;
+	clock_t msecs;
 	clock_t nsecs;
+    uint32_t carry;
 
 	if (!queue || !item) {
 		return pdFAIL;
 	}
+    //for debug
+//    queue_is_full(queue);
+
+
+    unsigned long long consume = 0;
+    struct timeval start_t;
+    struct timeval end_t; 
+    gettimeofday(&start_t, NULL); 
+
 	queue_info = (queue_info_t *)queue;
 	if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
-		if (block_time_tick == 0xFFFFFFFF || (up_interrupt_context() == true)) {
+		if (block_time_tick == 0xFFFFFFFF) {
 			ret = mq_send(queue_info->mqd_fd_recv, (char *)item, queue_info->mq_item_size, NORMAL);
 			if (ret == ERROR) {
+               // ets_printf("queue_send_wrapper fail, errcode = %d\n",  get_errno());
 				return pdFAIL;
 			}
-		} else {
+       
+        }
+       
+        else {
 			(void)clock_gettime(CLOCK_REALTIME, &abstime);
 			msecs = TICK2MSEC(block_time_tick);
 			secs = msecs / MSEC_PER_SEC;
 			nsecs = (msecs - (secs * MSEC_PER_SEC)) * NSEC_PER_MSEC;
 			abstime.tv_sec += secs;
 			abstime.tv_nsec += nsecs;
-				
+
+           // ets_printf("1 tick %u, to msecs %u, secs %u, usecs %ld\n", block_time_tick,  msecs, abstime.tv_sec, abstime.tv_nsec);
+            if (abstime.tv_nsec >= NSEC_PER_SEC) {
+                  //  ets_printf("over 1s\n");
+                    carry       = abstime.tv_nsec / NSEC_PER_SEC;
+                    abstime.tv_sec  += carry;
+                    abstime.tv_nsec -= (carry * NSEC_PER_SEC);
+            }
+
+           // ets_printf("2 tick %u, to msecs %u, secs %u, usecs %ld\n", block_time_tick,  msecs, abstime.tv_sec, abstime.tv_nsec);
+
 			ret = mq_timedsend(queue_info->mqd_fd_send, (char *)item, queue_info->mq_item_size, NORMAL, &abstime);
 			if (ret == ERROR) {
+             //   ets_printf(" queue_send_wrapper fail,  errcode = %d\n", get_errno());
 				return pdFAIL;
 			}
 		}
 	} else {
 		return pdFAIL;
 	}
+    gettimeofday(&end_t, NULL);
+    consume = diff_time(&start_t, &end_t);
+//    if(consume > 5) 
+  //      ets_printf("queue_send_wrapper run  %llu ms\n", consume); 
 	return pdPASS;;
 }
 
@@ -235,11 +286,13 @@ int32_t IRAM_ATTR queue_send_from_isr_wrapper(void *queue, void *item, void *hpt
 	if (!queue || !item) {
 		return pdFAIL;
 	}
-		
+	//for debug	
+    //queue_is_full(queue);
 	queue_info = (queue_info_t *)queue;
 	if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
 		ret = mq_send(queue_info->mqd_fd_send, (char *)item, queue_info->mq_item_size, NORMAL);
 		if (ret == ERROR) {
+            ets_printf("queue_send_from_isr_wrapper error\n");
 			return pdFAIL;
 		}
 		return pdPASS;
@@ -353,6 +406,15 @@ int32_t IRAM_ATTR queue_recv_wrapper(void *queue, void *item, uint32_t block_tim
 	if (!queue || !item) {
 		return pdFAIL;
 	}
+
+    //queue_is_full(queue);
+#if 0 
+    unsigned long long consume = 0;
+    struct timeval start_t;
+    struct timeval end_t; 
+    gettimeofday(&start_t, NULL); 
+
+#endif
 	
 	queue_info = (queue_info_t *)queue;
 	if (queue_info->mqd_fd_recv != (mqd_t)ERROR) {
@@ -360,6 +422,7 @@ int32_t IRAM_ATTR queue_recv_wrapper(void *queue, void *item, uint32_t block_tim
 		if (block_time_tick == 0xFFFFFFFF) {
 			ret = mq_receive(queue_info->mqd_fd_recv, (char *)item, msglen, &prio);
 			if (ret == ERROR) {
+                ets_printf("queue_recv_wrapper failed\n");
 				return pdFAIL;
 			}
 		} else {
@@ -371,13 +434,21 @@ int32_t IRAM_ATTR queue_recv_wrapper(void *queue, void *item, uint32_t block_tim
 			abstime.tv_nsec += nsecs;
 			ret = mq_timedreceive(queue_info->mqd_fd_recv, (char *)item, msglen, &prio, &abstime);
 			if (ret == ERROR) {
+                ets_printf("queue_recv_wrapper failed\n");
 				return pdFAIL;
 			}
 		}	
 	} else {
 		return pdFAIL;	
 	}	
-	return pdPASS;
+
+#if 0
+    gettimeofday(&end_t, NULL);
+    consume = diff_time(&start_t, &end_t);
+    if(consume > 5)
+      ets_printf("queue_recv_wrapper run  %llu ms\n", consume); 
+#endif
+    return pdPASS;
 }
 
 /****************************************************************************
@@ -432,12 +503,15 @@ int32_t IRAM_ATTR queue_recv_from_isr_wrapper(void *queue, void *item, int32_t *
  ****************************************************************************/
 uint32_t IRAM_ATTR queue_msg_waiting_wrapper(void *queue)
 {
-	queue_info_t *queue_info = NULL;
+    ets_printf("queue_msg_waiting_wrapper\n"); 
+
+    queue_info_t *queue_info = NULL;
 	
 	if (queue) {
 		queue_info = (queue_info_t *)queue;
 		if ((queue_info->mqd_fd_send != (mqd_t)ERROR) && 
-			(queue_info->mqd_fd_send->msgq != (mqd_t)ERROR)) {
+			(queue_info->mqd_fd_send->msgq != NULL)) {
+            ets_printf("wait msg = %d\n",  queue_info->mqd_fd_send->msgq->nmsgs); 
 			return queue_info->mqd_fd_send->msgq->nmsgs;
 		}
 	}
