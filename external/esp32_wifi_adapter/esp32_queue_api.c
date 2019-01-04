@@ -201,9 +201,9 @@ int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t block_tim
     int32_t ret;
 	queue_info_t *queue_info = NULL;
 	struct timespec abstime;
-	clock_t secs;
-	clock_t msecs;
-	clock_t nsecs;
+	uint32_t secs;
+	uint32_t msecs;
+	uint32_t nsecs;
     uint32_t carry;
 
 	if (!queue || !item) {
@@ -221,7 +221,7 @@ int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t block_tim
 	queue_info = (queue_info_t *)queue;
 	if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
 		if (block_time_tick == 0xFFFFFFFF) {
-			ret = mq_send(queue_info->mqd_fd_recv, (char *)item, queue_info->mq_item_size, NORMAL);
+			ret = mq_send(queue_info->mqd_fd_send, (char *)item, queue_info->mq_item_size, NORMAL);
 			if (ret == ERROR) {
                // ets_printf("queue_send_wrapper fail, errcode = %d\n",  get_errno());
 				return pdFAIL;
@@ -249,7 +249,7 @@ int32_t IRAM_ATTR queue_send_wrapper(void *queue, void *item, uint32_t block_tim
 
 			ret = mq_timedsend(queue_info->mqd_fd_send, (char *)item, queue_info->mq_item_size, NORMAL, &abstime);
 			if (ret == ERROR) {
-             //   ets_printf(" queue_send_wrapper fail,  errcode = %d\n", get_errno());
+                ets_printf(" queue_send_wrapper fail,  errcode = %d\n", get_errno());
 				return pdFAIL;
 			}
 		}
@@ -343,9 +343,9 @@ int32_t IRAM_ATTR queue_send_to_front_wrapper(void *queue, void *item, uint32_t 
 	int32_t ret;
 	queue_info_t *queue_info = NULL;
 	struct timespec abstime;
-	clock_t msecs;
-	clock_t secs;
-	clock_t nsecs;
+	uint32_t msecs;
+	uint32_t secs;
+	uint32_t nsecs;
 
 	if (!queue || !item) {
 		return pdFAIL;
@@ -354,7 +354,7 @@ int32_t IRAM_ATTR queue_send_to_front_wrapper(void *queue, void *item, uint32_t 
 	queue_info = (queue_info_t *)queue;
 	if (queue_info->mqd_fd_send != (mqd_t)ERROR) {
 		if (block_time_tick == 0xFFFFFFFF) {
-			ret = mq_send(queue_info->mqd_fd_recv, (char *)item, queue_info->mq_item_size, NORMAL);
+			ret = mq_send(queue_info->mqd_fd_send, (char *)item, queue_info->mq_item_size, NORMAL);
 			if (ret == ERROR) {
 				return pdFAIL;
 			}

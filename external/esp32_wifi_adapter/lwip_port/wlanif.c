@@ -64,6 +64,7 @@
 static void
 low_level_init(struct netif *netif)
 {
+  ets_printf("low_level_init\n");
   /* set MAC hardware address length */
   netif->hwaddr_len = NETIF_MAX_HWADDR_LEN;
 
@@ -76,11 +77,11 @@ low_level_init(struct netif *netif)
   /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
 
-#ifdef ESP_LWIP
+//#ifdef ESP_LWIP
 #if LWIP_IGMP
   netif->flags |= NETIF_FLAG_IGMP;
 #endif
-#endif
+//#endif
 
 #if !ESP_L2_TO_L3_COPY   // need estimate this extend is necessary?
   netif->l2_buffer_free_notify = esp_wifi_internal_free_rx_buffer;
@@ -105,6 +106,7 @@ low_level_init(struct netif *netif)
 static err_t ESP_IRAM_ATTR
 low_level_output(struct netif *netif, struct pbuf *p)
 {
+  ets_printf("low_level_output begin\n");
   wifi_interface_t wifi_if = tcpip_adapter_get_esp_if(netif);
   struct pbuf *q = p;
   err_t ret;
@@ -128,6 +130,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
     pbuf_free(q);
   }
 
+  ets_printf("low_level_output end\n");
   return ret;
 }
 
@@ -197,16 +200,17 @@ wlanif_input(struct netif *netif, void *buffer, u16_t len, void* eb)
 err_t
 wlanif_init(struct netif *netif)
 {
+  ets_printf("wlanif_init\n");
   LWIP_ASSERT("netif != NULL", (netif != NULL));
 
 #if LWIP_NETIF_HOSTNAME
   /* Initialize interface hostname */
 
-#if ESP_LWIP
+//#if ESP_LWIP
   netif->hostname = "espressif";
-#else
-  netif->hostname = "lwip";
-#endif
+//#else
+  //netif->hostname = "lwip";
+//#endif
 
 #endif /* LWIP_NETIF_HOSTNAME */
 
@@ -234,6 +238,7 @@ wlanif_init(struct netif *netif)
 }
 
 err_t wlanif_init_sta(struct netif *netif) {
+  ets_printf("wlanif_init_sta\n");
   netif->name[0] = 's';
   netif->name[1] = 't';
   return wlanif_init(netif);

@@ -426,17 +426,26 @@ static inline int32_t esp_read_mac_wrapper(uint8_t *mac, uint32_t type)
 
 /*=================soft timer API=================*/
 
-static void period_timerfn(int argc, uint32_t arg, ...)
+#define TIMER_INITIALIZED_VAL 0x12121212
+
+static IRAM_ATTR bool timer_initialized(ETSTimer *ptimer)
 {
-    ETSTimer *etimer = (ETSTimer *) arg;
-    work_queue(HPWORK, etimer->timer_next, etimer->timer_func, etimer->timer_expire, 0); 
-    wd_start((WDOG_ID)etimer->timer_arg, etimer->timer_period, period_timerfn, 1, etimer);
+    return ptimer->timer_period == TIMER_INITIALIZED_VAL; 
+        
 }
 
-static void once_timerfn(int argc, uint32_t arg, ...)
+static void IRAM_ATTR period_timerfn(int argc, uint32_t arg, ...)
 {
     ETSTimer *etimer = (ETSTimer *) arg;
-    //ets_printf("(%u) excute timer out = %p\n",  clock_systimer(), etimer);
+    work_cancel(HPWORK, etimer->timer_next);
+    work_queue(HPWORK, etimer->timer_next, etimer->timer_func, etimer->timer_expire, 0); 
+//    wd_start((WDOG_ID)etimer->timer_arg, etimer->timer_period, period_timerfn, 1, etimer);
+}
+
+static void IRAM_ATTR once_timerfn(int argc, uint32_t arg, ...)
+{
+    ETSTimer *etimer = (ETSTimer *) arg;
+    work_cancel(HPWORK, etimer->timer_next);
     work_queue(HPWORK, etimer->timer_next, etimer->timer_func, etimer->timer_expire, 0); 
 }
 
@@ -457,7 +466,7 @@ static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat
 {
   #if 1
     ETSTimer *etimer = (ETSTimer *) timer;
-    if(etimer->timer_func == NULL)
+    if(etimer->timer_period != TIMER_INITIALIZED_VAL)
     {
         ets_printf("assert bug\n");
     }
@@ -469,7 +478,7 @@ static void IRAM_ATTR timer_arm_wrapper(void *timer, uint32_t tmout, bool repeat
     if(repeat)
     {
         ets_printf(" repeat\n");
-        etimer->timer_period = delay;
+        //etimer->timer_period = delay;
         wd_start((WDOG_ID)etimer->timer_arg, delay, period_timerfn, 1, etimer);
     }
     else
@@ -481,7 +490,7 @@ static void IRAM_ATTR timer_disarm_wrapper(void *timer)
 {
 	ETSTimer *etimer = (ETSTimer *) timer;
     //ets_printf(" disalarm ptimer = %p\n", timer);
-    if(etimer->timer_func)
+    if(etimer->timer_period == TIMER_INITIALIZED_VAL)
 	    wd_cancel((WDOG_ID)etimer->timer_arg);
 }
 
@@ -489,30 +498,34 @@ static void IRAM_ATTR timer_done_wrapper(void *ptimer)
 {
     ETSTimer *etimer = (ETSTimer *) ptimer;
     //ets_printf("del ptimer = %p\n", ptimer);
-    if (etimer->timer_func) {
+    if (etimer->timer_period == TIMER_INITIALIZED_VAL) {
         wd_delete((WDOG_ID)etimer->timer_arg);
         free(etimer->timer_next);
         etimer->timer_next = NULL;
         etimer->timer_arg = NULL;
         etimer->timer_func = NULL;
+        etimer->timer_period = 0;
     }
 }
 
 static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *parg)
 {
     ETSTimer *etimer = (ETSTimer *) ptimer;
-
-    //ets_printf("create ptimer = %p\n", ptimer);
-    memset(etimer, 0, sizeof(*etimer));
-    etimer->timer_arg = (WDOG_ID)wd_create();
-
-	if (!etimer->timer_arg) {
-        return;
-	} 
-    etimer->timer_func = pfunction;
-   // ESP_LOGI("TAG", "set func %p\n", etimer->timer_func);
-    etimer->timer_expire = (uint32_t)parg;
-    etimer->timer_next = (struct work_s*)malloc(sizeof(struct work_s));
+  
+    if (etimer->timer_period != TIMER_INITIALIZED_VAL) {
+        memset(ptimer, 0, sizeof(*ptimer));
+        etimer->timer_period = TIMER_INITIALIZED_VAL;
+    }
+ 
+    if(etimer->timer_arg == NULL) {
+        etimer->timer_arg = (WDOG_ID)wd_create();
+        if (!etimer->timer_arg) {
+            return;
+        }
+        etimer->timer_func = pfunction;
+        etimer->timer_expire = (uint32_t)parg;
+        etimer->timer_next = (struct work_s*)malloc(sizeof(struct work_s));
+    } 
 }
 
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
@@ -881,7 +894,7 @@ wifi_osi_funcs_t g_wifi_osi_funcs = {
 	._timer_arm_us = timer_arm_us_wrapper,
     ._periph_module_enable = periph_module_enable,
     ._periph_module_disable = periph_module_disable,
-	._esp_timer_get_time = esp_timer_get_time_wrapper,
+	._esp_timer_get_time = get_instant_time,
 	._nvs_set_i8 = nvs_set_i8,
 	._nvs_get_i8 = nvs_get_i8,
 	._nvs_set_u8 = nvs_set_u8,

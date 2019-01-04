@@ -83,18 +83,16 @@ CONFIG_EXAMPLE_WPA2=
 #endif /*CONFIG_FAST_SCAN_THRESHOLD*/
 
 
-#define DEFAULT_LISTEN_INTERVAL 3
 static const char *TAG = "scan";
-
-static int s_retry_num = 0;
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch (event->event_id) {
         case SYSTEM_EVENT_STA_START:
-             ESP_LOGI(TAG, "SYSTEM_EVENT_STA_START");
-             esp_wifi_connect();
-
+            ESP_LOGI(TAG, "SYSTEM_EVENT_STA_START");
+            if(esp_wifi_connect()) {
+                printf("esp_wifi_connect failed\n");
+            }
             break;
         case SYSTEM_EVENT_STA_GOT_IP:
             ESP_LOGI(TAG, "SYSTEM_EVENT_STA_GOT_IP");
@@ -103,17 +101,6 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
             break;
         case SYSTEM_EVENT_STA_DISCONNECTED:
             ESP_LOGI(TAG, "SYSTEM_EVENT_STA_DISCONNECTED");
-            {   
-                if (s_retry_num < 5) {
-                    esp_wifi_connect();
-                    s_retry_num++;
-                    ESP_LOGI(TAG,"retry to connect to the AP");
-            }   
-            ESP_LOGI(TAG,"connect to the AP fail\n");
-            s_retry_num = 0;
-            break;
-        }   
-
             if(esp_wifi_connect()) {
                 printf("esp_wifi_connect failed\n");
             }
@@ -124,18 +111,9 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
-extern void s_set_default_wifi_log_level();
 /* Initialize Wi-Fi as sta and set scan method */
 static void do_wifi_scan(void)
 {
-/*init wifi internal lib log*/
-
-    //s_set_default_wifi_log_level();
-
-    /*all wifi and submodule enable*/
-
-
-
     esp_err_t ret;
     tcpip_adapter_init();
     //printf("esp_event_loop_init\n");
@@ -160,31 +138,15 @@ static void do_wifi_scan(void)
         esp_wifi_internal_set_log_mod(WIFI_LOG_MODULE_ALL, WIFI_LOG_MODULE_ALL | WIFI_LOG_SUBMODULE_INIT | WIFI_LOG_SUBMODULE_IOCTL | WIFI_LOG_SUBMODULE_CONN | WIFI_LOG_SUBMODULE_SCAN, true);
 
 #endif
-#if 0
-    ret = esp_wifi_internal_set_log_level(WIFI_LOG_INFO);
-    ets_printf("esp_wifi_internal_set_log_level ret = %d\n", ret);
-
-    ret = esp_wifi_internal_set_log_mod(WIFI_LOG_MODULE_WIFI, 0, 1);
-    ets_printf("esp_wifi_internal_set_log_mod ret = %d\n", ret);
-#endif
-
-#if 0
-
-    wifi_log_level_t curlevel;
-    uint32_t logmod;
-    ret =  esp_wifi_internal_get_log(&curlevel, &logmod);
-    
-    ets_printf("esp_wifi_internal_get_log ret = %d curlevel = %d, log_mod \n", ret, curlevel, logmod);
-#endif
+        
     wifi_config_t wifi_config = {
         .sta = {
             .ssid = DEFAULT_SSID,
             .password = DEFAULT_PWD,
-           // .listen_interval = DEFAULT_LISTEN_INTERVAL,
-           // .scan_method = DEFAULT_SCAN_METHOD,
-           // .sort_method = DEFAULT_SORT_METHOD,
-           // .threshold.rssi = DEFAULT_RSSI,
-           // .threshold.authmode = DEFAULT_AUTHMODE,
+            .scan_method = DEFAULT_SCAN_METHOD,
+            .sort_method = DEFAULT_SORT_METHOD,
+            .threshold.rssi = DEFAULT_RSSI,
+            .threshold.authmode = DEFAULT_AUTHMODE,
         },
     };
 
@@ -201,14 +163,6 @@ static void do_wifi_scan(void)
         ets_printf("esp_wifi_set_config failed, %d\n", ret);
         return;
     }
-#if 0
-    //esp_wifi_set_protocol(ifx, WIFI_PROTOCOL_11B| WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N)  
-   ret =  esp_wifi_set_protocol(ESP_IF_WIFI_STA, WIFI_PROTOCOL_11B| WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11G|WIFI_PROTOCOL_11N);
-   if(ret) {
-        ets_printf("esp_wifi_set_protocol failed, %d\n", ret);
-        return;
-    }
-#endif
     //lldbg("esp_wifi_start\n");
     ret = esp_wifi_start();
     if(ret) { 
@@ -232,7 +186,5 @@ void wifi_scan()
         printf("nvs_flash_init failed\n");
         return;
     }
-
-    esp_clk_init();
     do_wifi_scan();
 }

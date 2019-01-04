@@ -270,6 +270,7 @@ int mq_timedsend(mqd_t mqdes, FAR const char *msg, size_t msglen, int prio, FAR 
 		 * return immediately.
 		 */
 
+        lldbg("==ticks %d==\n", ticks);
 		if (result == OK && ticks <= 0) {
 			result = ETIMEDOUT;
 		}

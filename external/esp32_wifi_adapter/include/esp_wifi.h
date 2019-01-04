@@ -198,7 +198,7 @@ extern const wpa_crypto_funcs_t g_wifi_default_wpa_crypto_funcs;
     .rx_ba_win = WIFI_DEFAULT_RX_BA_WIN,\
     .wifi_task_core_id = WIFI_TASK_CORE_ID,\
     .beacon_max_len = WIFI_SOFTAP_BEACON_MAX_LEN, \
-    .magic = WIFI_INIT_CONFIG_MAGIC\
+    .magic = WIFI_INIT_CONFIG_MAGIC,\
 };
 
 /**
