@@ -46,9 +46,7 @@
 #include <sched/sched.h>
 
 static const char* TAG = "tcpip_adapter";
-#define DHCP_TIMEOUT 15000
-static int32_t dhcp_timeleft = DHCP_TIMEOUT;
-static struct dhcp g_dhcp_handle;
+struct dhcp g_dhcp_handle;
 
 static struct netif *esp_netif[TCPIP_ADAPTER_IF_MAX];
 static tcpip_adapter_ip_info_t esp_ip[TCPIP_ADAPTER_IF_MAX];
@@ -85,7 +83,7 @@ static void tcpip_adapter_api_cb(void* api_msg)
     tcpip_adapter_api_msg_t *msg = (tcpip_adapter_api_msg_t*)api_msg;
 
     if (!msg || !msg->api_fn) {
-        ESP_LOGD(TAG, "null msg/api_fn");
+        ESP_LOGI(TAG, "null msg/api_fn");
         return;
     }
 
@@ -875,7 +873,7 @@ esp_err_t tcpip_adapter_dhcpc_option(tcpip_adapter_option_mode_t opt_op, tcpip_a
     return ESP_OK;
 }
 
-static void tcpip_adapter_dhcpc_cb(struct netif *netif)
+void tcpip_adapter_dhcpc_notify(struct netif *netif)
 {
     tcpip_adapter_ip_info_t *ip_info_old = NULL;
     tcpip_adapter_ip_info_t *ip_info = NULL;
@@ -1005,6 +1003,7 @@ esp_err_t tcpip_adapter_dhcpc_start(tcpip_adapter_if_t tcpip_if)
 {
     TCPIP_ADAPTER_IPC_CALL(tcpip_if, 0, 0, 0, tcpip_adapter_dhcpc_start_api);
 
+    ESP_LOGI(TAG, "tcpip_adapter_dhcpc_start\n");
     if ((tcpip_if != TCPIP_ADAPTER_IF_STA && tcpip_if != TCPIP_ADAPTER_IF_ETH)  || tcpip_if >= TCPIP_ADAPTER_IF_MAX) {
         ESP_LOGD(TAG, "dhcp client invalid if=%d", tcpip_if);
         return ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS;
@@ -1020,56 +1019,33 @@ esp_err_t tcpip_adapter_dhcpc_start(tcpip_adapter_if_t tcpip_if)
 
         if (p_netif != NULL) {
             if (netif_is_up(p_netif)) {
-                ESP_LOGD(TAG, "dhcp client init ip/mask/gw to all-0");
+                ESP_LOGI(TAG, "dhcp client init ip/mask/gw to all-0");
                 ip_addr_set_zero(&p_netif->ip_addr);
                 ip_addr_set_zero(&p_netif->netmask);
                 ip_addr_set_zero(&p_netif->gw);
                 tcpip_adapter_start_ip_lost_timer(tcpip_if);
             } else {
-                ESP_LOGD(TAG, "dhcp client re init");
+                ESP_LOGI(TAG, "dhcp client re init");
                 dhcpc_status[tcpip_if] = TCPIP_ADAPTER_DHCP_INIT;
                 return ESP_OK;
             }
 
+            dhcp_set_struct(p_netif, &g_dhcp_handle);
             if (dhcp_start(p_netif) != ERR_OK) {
-                ESP_LOGD(TAG, "dhcp client start failed");
+                ESP_LOGI(TAG, "dhcp client start failed");
                 return ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED;
             }
 
-    //       disable notify style, as it need to hook core stack, instead 
-    //       polling style.
-    //      dhcp_set_cb(p_netif, tcpip_adapter_dhcpc_cb);
-    //
-    // Timed loop till get address by dhcp server
-            dhcp_set_struct(p_netif, &g_dhcp_handle);
-            while (g_dhcp_handle.state != DHCP_STATE_BOUND) {
-                usleep(10);
-                dhcp_timeleft -= 10;
-                if (dhcp_timeleft <= 0) {
-                    break;
-                }
-            }
-            if (g_dhcp_handle.state == DHCP_STATE_BOUND) {
-    
-                tcpip_adapter_dhcpc_cb(p_netif);
-            }            
-            else {
-                if (dhcp_timeleft <= 0) {
-                    printf("DHCP Client - Timeout fail to get ip address\n");
-                    return ESP_FAIL;
-                } 
-            } 
-            ESP_LOGD(TAG, "dhcp client start successfully");
             dhcpc_status[tcpip_if] = TCPIP_ADAPTER_DHCP_STARTED;
             return ESP_OK;
         } else {
-            ESP_LOGD(TAG, "dhcp client re init");
+            ESP_LOGI(TAG, "dhcp client re init");
             dhcpc_status[tcpip_if] = TCPIP_ADAPTER_DHCP_INIT;
             return ESP_OK;
         }
     }
 
-    ESP_LOGD(TAG, "dhcp client already started");
+    ESP_LOGI(TAG, "dhcp client already started");
     return ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STARTED;
 }
 

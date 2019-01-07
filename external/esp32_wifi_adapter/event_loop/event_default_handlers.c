@@ -24,7 +24,8 @@
 #include "esp_task.h"
 #include "esp_log.h"
 #include "esp_system.h"
-
+#include "lwip/dhcp.h"
+#include "lwip/prot/dhcp.h"
 #include "rom/ets_sys.h"
 #if 0
 #include "freertos/FreeRTOS.h"
@@ -195,6 +196,42 @@ esp_err_t system_event_sta_stop_handle_default(system_event_t *event)
     return ESP_OK;
 }
 
+#define DHCP_TIMEOUT (3)
+static int dhcp_timeleft = DHCP_TIMEOUT;
+extern struct dhcp g_dhcp_handle;
+static void check_dhcp_status(tcpip_adapter_if_t tcpip_if)
+{
+    ESP_LOGI(TAG, "try to get ip address\n");
+    tcpip_adapter_if_t *sta_if;
+    tcpip_adapter_get_netif(tcpip_if, &sta_if);
+
+    dhcp_timeleft = DHCP_TIMEOUT; 
+    while (g_dhcp_handle.state != DHCP_STATE_BOUND) {
+        sleep(1);
+        dhcp_timeleft -= 1;
+        if (dhcp_timeleft <= 0) { 
+            break;
+        }    
+    }    
+    if (g_dhcp_handle.state == DHCP_STATE_BOUND) {
+
+        ESP_LOGI(TAG, "got ip address\n");
+        tcpip_adapter_dhcpc_notify(sta_if);
+    }     
+    else {
+        if (dhcp_timeleft <= 0) { 
+            ESP_LOGI(TAG, "DHCP Client - Timeout fail to get ip address\n");
+            return ESP_FAIL;
+        }    
+    }    
+    ESP_LOGI(TAG, "dhcp client start successfully");
+    //dhcpc_status[tcpip_if] = TCPIP_ADAPTER_DHCP_STARTED;
+    return ESP_OK;
+
+
+}
+
+
 esp_err_t system_event_sta_connected_handle_default(system_event_t *event)
 {
     tcpip_adapter_dhcp_status_t status;
@@ -207,6 +244,9 @@ esp_err_t system_event_sta_connected_handle_default(system_event_t *event)
 
     if (status == TCPIP_ADAPTER_DHCP_INIT) {
         tcpip_adapter_dhcpc_start(TCPIP_ADAPTER_IF_STA);
+//check dhcp status, default 3s
+        check_dhcp_status(TCPIP_ADAPTER_IF_STA);
+
     } else if (status == TCPIP_ADAPTER_DHCP_STOPPED) {
         tcpip_adapter_ip_info_t sta_ip;
         tcpip_adapter_ip_info_t sta_old_ip;
@@ -277,7 +317,7 @@ static esp_err_t esp_system_event_debug(system_event_t *event)
     }
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         system_event_sta_disconnected_t *disconnected = &event->event_info.disconnected;
-        ets_printf ("SYSTEM_EVENT_STA_DISCONNECTED, ssid:%s, ssid_len:%d, bssid:" MACSTR ", reason:%d\n", \
+        ESP_LOGD(TAG,"SYSTEM_EVENT_STA_DISCONNECTED, ssid:%s, ssid_len:%d, bssid:" MACSTR ", reason:%d\n", \
                    disconnected->ssid, disconnected->ssid_len, MAC2STR(disconnected->bssid), disconnected->reason);
         break;
     }
