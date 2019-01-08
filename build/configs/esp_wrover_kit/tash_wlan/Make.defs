@@ -53,6 +53,17 @@ EXTRA_LIBPATHS += -L "${shell dirname "$(LIBSUPXX)"}"
 EXTRA_LIBS += -lsupc++
 endif
 
+ifeq ($(CONFIG_ESP32_WIFI_SUPPORT),y)
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/spi_flash"
+EXTRA_LIBS += -lspiflash
+
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/soc"
+EXTRA_LIBS += -lsoc
+
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/esp32"
+EXTRA_LIBS += -lesp32
+endif
+
 
 ifeq ($(WINTOOL),y)
   # Windows-native toolchains
@@ -67,16 +78,10 @@ ifeq ($(WINTOOL),y)
   ARCHSCRIPT += -T "${shell cygpath -w $(LDSCRIPT4)}"
 else
   # Linux/Cygwin-native toolchain
-#MKDEP = $(TOPDIR)/tools/mkdeps$(HOSTEXEEXT)
-#  ARCHINCLUDES = -I. -isystem $(TOPDIR)/include
-# ARCHXXINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/../framework/include -isystem $(TOPDIR)/../external/include -isystem
-#$(TOPDIR)/../external/include/libcxx
-
-
   MKDEP = $(TOPDIR)/tools/mkdeps$(HOSTEXEEXT)
   ARCHINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/../framework/include -isystem $(TOPDIR)/../external/include
   ARCHXXINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/../framework/include -isystem $(TOPDIR)/../external/include  
-  ARCHXXINCLUDES += -I. -isystem $(TOPDIR)/../external/include/libcxx
+  ARCHXXINCLUDES += -I. -isystem $(TOPDIR)/../external/include/libcxx 
   ARCHSCRIPT = -T$(LDSCRIPT1) -T$(LDSCRIPT2) -T$(LDSCRIPT3) -T$(LDSCRIPT4)
 
 endif
@@ -99,9 +104,9 @@ ifneq ($(CONFIG_DEBUG_NOOPT),y)
   ARCHOPTIMIZATION += $(MAXOPTIMIZATION) -fno-strict-aliasing -fno-strength-reduce -fomit-frame-pointer
 endif
 
-ARCHCFLAGS = -fno-builtin 
+ARCHCFLAGS = -fno-builtin -ffunction-sections -fdata-sections 
 ARCHCXXFLAGS =  -fno-builtin
-ARCHWARNINGS = -Wall -Wstrict-prototypes -Wundef
+ARCHWARNINGS = -Wall -Wundef
 ARCHWARNINGSXX = -Wall  
 ARCHDEFINES =
 ARCHPICFLAGS = -fpic
@@ -129,7 +134,7 @@ OBJEXT = .o
 LIBEXT = .a
 EXEEXT = .elf
 
-LDFLAGS += -nostartfiles -nodefaultlibs 
+LDFLAGS += -nostartfiles -nodefaultlibs --gc-sections
 ifeq ($(CONFIG_DEBUG_SYMBOLS),y)
   LDFLAGS += -g
 endif
