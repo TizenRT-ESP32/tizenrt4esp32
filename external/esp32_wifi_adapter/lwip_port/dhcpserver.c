@@ -1082,9 +1082,10 @@ static void handle_dhcp(void *arg,
 #if DHCPS_DEBUG
     DHCPS_LOG("dhcps: handle_dhcp-> pbuf_free(p)\n");
 #endif
-    pbuf_free(p);
-    free(pmsg_dhcps);
+    mem_free(pmsg_dhcps);
     pmsg_dhcps = NULL;
+    if(p!= NULL)
+        pbuf_free(p);
 }
 
 /******************************************************************************
