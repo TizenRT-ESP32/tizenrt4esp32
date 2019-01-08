@@ -170,7 +170,6 @@ static void do_wifi_scan(void)
     }
 
 //    esp_wifi_set_ps(DEFAULT_PS_MODE);
-    while(true){};
 }
 
 void wifi_scan()
@@ -186,5 +185,6 @@ void wifi_scan()
         printf("nvs_flash_init failed\n");
         return;
     }
+
     do_wifi_scan();
 }

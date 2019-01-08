@@ -531,7 +531,7 @@ static void IRAM_ATTR timer_setfn_wrapper(void *ptimer, void *pfunction, void *p
 static void IRAM_ATTR timer_arm_us_wrapper(void *ptimer, uint32_t us, bool repeat)
 {
 
-    ets_printf("tmout = %u us\n", us);
+    //ets_printf("tmout = %u us\n", us);
     ETSTimer *etimer = (ETSTimer *) ptimer;
 	if (etimer == NULL) {
 		ESP_LOGI(TAG, "timer is NULL\n");

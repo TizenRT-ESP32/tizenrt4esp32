@@ -721,6 +721,7 @@ void tcp_server_thread(int num_packets)
 
 	recv_len = sizeof(msg);
 	while (1) {
+		memset(msg,0,sizeof(char)*BUF_SIZE);
 		nbytes = recv(connfd, msg, recv_len, 0);
 		if (nbytes <= 0) {
 			/* connection closed */
@@ -829,6 +830,7 @@ int main(int argc, FAR char *argv[])
 int nettest_main(int argc, char *argv[])
 #endif
 {
+	printf("nettest_main!\n");
 	int mode = 0;
 	nettest_proto_e proto = NT_NONE;
 	int num_packets_to_process = 0;
@@ -878,7 +880,7 @@ int nettest_main(int argc, char *argv[])
 			if (argc != 7) {
 				goto err_with_input;
 			}
-			ipmcast_receiver_thread(num_packets_to_process, argv[6]);
+			//ipmcast_receiver_thread(num_packets_to_process, argv[6]);
 		}
 	} else if (mode == NETTEST_CLIENT_MODE) {
 		if (argc < 7) {
@@ -901,7 +903,7 @@ int nettest_main(int argc, char *argv[])
 			if (argc != 8) {
 				goto err_with_input;
 			}
-			ipmcast_sender_thread(num_packets_to_process, interval, argv[7]);
+			//ipmcast_sender_thread(num_packets_to_process, interval, argv[7]);
 		}
 	}
 	printf("Exiting nettest_main thread, job finished\n");
