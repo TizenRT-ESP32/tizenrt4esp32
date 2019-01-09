@@ -38,8 +38,8 @@
 const wpa_crypto_funcs_t g_wifi_default_wpa_crypto_funcs = {
     .size = sizeof(wpa_crypto_funcs_t), 
     .version = ESP_WIFI_CRYPTO_VERSION,
-    .aes_wrap = (esp_aes_wrap_t)fast_aes_wrap,
-    .aes_unwrap = (esp_aes_unwrap_t)fast_aes_unwrap,
+    .aes_wrap = (esp_aes_wrap_t)aes_wrap,
+    .aes_unwrap = (esp_aes_unwrap_t)aes_unwrap,
     .hmac_sha256_vector = (esp_hmac_sha256_vector_t)fast_hmac_sha256_vector,
     .sha256_prf = (esp_sha256_prf_t)fast_sha256_prf,
     .hmac_md5 = (esp_hmac_md5_t)hmac_md5,
