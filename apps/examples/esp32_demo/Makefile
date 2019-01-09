@@ -72,7 +72,7 @@ CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 
 ASRCS =
 CSRCS =
-MAINSRC = esp32_tash_main.c esp32_wifi_os_demo.c scan.c 
+MAINSRC = esp32_tash_main.c esp32_wifi_os_demo.c scan.c softap.c 
 
 ifeq ($(CONFIG_LEDC),y)
 CSRCS += esp32_ledc.c

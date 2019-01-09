@@ -519,7 +519,11 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 	printf("start esp32 demo!\n");
 	//test_timer();
     //get_wifi_mac_address();
-    wifi_scan();
+#ifdef CONFIG_ESP_WIFI_MODE_STATION
+    wifi_station_entry();
+#else
+    wifi_softap_entry();
+#endif
     
 #if 0
 #ifdef CONFIG_SPIRAM_SUPPORT

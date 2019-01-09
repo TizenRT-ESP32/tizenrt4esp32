@@ -172,19 +172,9 @@ static void do_wifi_scan(void)
 //    esp_wifi_set_ps(DEFAULT_PS_MODE);
 }
 
-void wifi_scan()
+void wifi_station_entry()
 {
 
-    // Initialize NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        nvs_flash_erase();
-        ret = nvs_flash_init();
-    }
-    if(ret) {
-        printf("nvs_flash_init failed\n");
-        return;
-    }
-
+    ESP_LOGI(TAG, "ESP_WIFI_MODE_STATION");
     do_wifi_scan();
 }
