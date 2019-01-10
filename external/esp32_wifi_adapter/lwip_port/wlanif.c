@@ -64,7 +64,6 @@
 static void
 low_level_init(struct netif *netif)
 {
-  ets_printf("low_level_init\n");
   /* set MAC hardware address length */
   netif->hwaddr_len = NETIF_MAX_HWADDR_LEN;
 
@@ -106,7 +105,6 @@ low_level_init(struct netif *netif)
 static err_t ESP_IRAM_ATTR
 low_level_output(struct netif *netif, struct pbuf *p)
 {
-  ets_printf("low_level_output begin\n");
   wifi_interface_t wifi_if = tcpip_adapter_get_esp_if(netif);
   struct pbuf *q = p;
   err_t ret;
@@ -130,7 +128,6 @@ low_level_output(struct netif *netif, struct pbuf *p)
     pbuf_free(q);
   }
 
-  ets_printf("low_level_output end\n");
   return ret;
 }
 
