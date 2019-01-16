@@ -34,7 +34,7 @@
 
 
 #define CONFIG_ESP_WIFI_SSID "ESP32"
-#define CONFIG_ESP_WIFI_PASSWORD ""
+#define CONFIG_ESP_WIFI_PASSWORD "12345678"
 #define CONFIG_MAX_STA_CONN 4
 
 static const char *TAG = "AP";
