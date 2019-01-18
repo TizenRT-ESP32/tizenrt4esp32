@@ -45,8 +45,11 @@
 #include "esp_log.h"
 #include <sched/sched.h>
 
+#include <protocols/dhcpd.h>	/* Advertised DHCPD APIs */
+
 static const char* TAG = "tcpip_adapter";
 struct dhcp g_dhcp_handle;
+tcpip_adapter_if_t cur_if = TCPIP_ADAPTER_IF_MAX;
 
 static struct netif *esp_netif[TCPIP_ADAPTER_IF_MAX];
 static tcpip_adapter_ip_info_t esp_ip[TCPIP_ADAPTER_IF_MAX];
@@ -128,6 +131,16 @@ void tcpip_adapter_init(void)
         if (ERR_OK != ret) {
             ESP_LOGE(TAG, "tcpip adatper api lock sem init fail");
         }
+    }
+}
+
+
+void tcpip_adapter_deinit(void)
+{
+    if (tcpip_inited == true) {
+		sys_sem_free(&api_sync_sem);
+		sys_sem_free(&api_lock_sem);
+		tcpip_inited = false;
     }
 }
 
@@ -225,19 +238,22 @@ esp_err_t tcpip_adapter_eth_start(uint8_t *mac, tcpip_adapter_ip_info_t *ip_info
 
 esp_err_t tcpip_adapter_sta_start(uint8_t *mac, tcpip_adapter_ip_info_t *ip_info)
 {
-     esp_netif_init_fn[TCPIP_ADAPTER_IF_STA] = wlanif_init_sta;
-     return tcpip_adapter_start(TCPIP_ADAPTER_IF_STA, mac, ip_info);
+	 esp_netif_init_fn[TCPIP_ADAPTER_IF_STA] = wlanif_init_sta;
+	 cur_if = TCPIP_ADAPTER_IF_STA;
+	 return tcpip_adapter_start(TCPIP_ADAPTER_IF_STA, mac, ip_info);
 }
 
 esp_err_t tcpip_adapter_ap_start(uint8_t *mac, tcpip_adapter_ip_info_t *ip_info)
 {
-     esp_netif_init_fn[TCPIP_ADAPTER_IF_AP] = wlanif_init_ap;
-     return tcpip_adapter_start(TCPIP_ADAPTER_IF_AP, mac, ip_info);
+	esp_netif_init_fn[TCPIP_ADAPTER_IF_AP] = wlanif_init_ap;
+	cur_if = TCPIP_ADAPTER_IF_AP;
+	return tcpip_adapter_start(TCPIP_ADAPTER_IF_AP, mac, ip_info);
 }
 
 static esp_err_t tcpip_adapter_start_api(tcpip_adapter_api_msg_t * msg)
 {
-    return tcpip_adapter_start(msg->tcpip_if, msg->mac, msg->ip_info);
+	cur_if = msg->tcpip_if;
+	return tcpip_adapter_start(msg->tcpip_if, msg->mac, msg->ip_info);
 }
 
 esp_err_t tcpip_adapter_stop(tcpip_adapter_if_t tcpip_if)
@@ -275,6 +291,8 @@ esp_err_t tcpip_adapter_stop(tcpip_adapter_if_t tcpip_if)
     netif_set_down(esp_netif[tcpip_if]);
     netif_remove(esp_netif[tcpip_if]);
     tcpip_adapter_update_default_netif();
+
+    cur_if = TCPIP_ADAPTER_IF_MAX;
 
     return ESP_OK;
 }
@@ -1227,6 +1245,22 @@ esp_err_t tcpip_adapter_get_netif(tcpip_adapter_if_t tcpip_if, void ** netif)
         return ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY;
     }
     return ESP_OK;
+}
+
+esp_err_t esp_wifi_get_ip(uint32_t* ip)
+{
+	esp_err_t ret;
+	*ip = 0;
+	tcpip_adapter_ip_info_t ip_info = { 0 };
+	ret = tcpip_adapter_get_ip_info(cur_if, &ip_info);
+	if (ret == ESP_OK) {
+		*ip = ip_info.ip.addr;
+		printf("tcpip_adapter_get_ip_info: %08x %08x %08x; %08x\n", ip_info.ip.addr, ip_info.netmask.addr, ip_info.gw.addr, *ip);
+	}
+	else {
+	    printf("tcpip_adapter_get_ip_info:%d \n", ret);
+	}
+	return ret;
 }
 
 #endif /* CONFIG_TCPIP_LWIP */

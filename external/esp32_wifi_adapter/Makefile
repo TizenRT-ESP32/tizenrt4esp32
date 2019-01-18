@@ -25,7 +25,7 @@ CXXSRCS =
 
 SUBDIRS = spi_flash soc esp32 
 
-CSRCS += esp32_wifi_os_adapter.c event_groups.c esp32_queue_api.c mq_tryreceive.c 
+CSRCS += esp32_wifi_os_adapter.c event_groups.c esp32_queue_api.c mq_tryreceive.c esp32_wifi_utils.c 
 
 # NVS module
 CXXSRCS += nvs_flash/src/nvs_item_hash_list.cpp 
@@ -49,6 +49,7 @@ CFLAGS += -Iinclude -I./spi_flash/include
 CFLAGS += -I$(TOPDIR)/kernel
 CFLAGS += -I$(TOPDIR)/include/net
 CFLAGS += -I./lwip_port/include
+CFLAGS += -I$(TOPDIR)/../framework/src/wifi_manager
 
 #ESP log module
 CSRCS += log/log.c

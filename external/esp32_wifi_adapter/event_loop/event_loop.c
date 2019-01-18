@@ -32,6 +32,7 @@ static bool s_event_init_flag = false;
 static void *s_event_queue = NULL;
 static system_event_cb_t s_event_handler_cb = NULL;
 static void *s_event_ctx = NULL;
+static int g_event_thread_pid;
 
 static esp_err_t esp_event_post_to_user(system_event_t *event)
 {
@@ -92,7 +93,7 @@ esp_err_t esp_event_send(system_event_t *event)
         }
     }
 #endif
-    int32_t ret = queue_send_to_back_wrapper(s_event_queue, event, 1);
+    int32_t ret = g_wifi_osi_funcs._queue_send_to_back(s_event_queue, event, 1);
     if (ret != pdPASS) {
         if (event) {
            // ESP_LOGE(TAG, "e=%d f", event->event_id);
@@ -116,12 +117,18 @@ esp_err_t esp_event_loop_init(system_event_cb_t cb, void *ctx)
     }
     s_event_handler_cb = cb;
     s_event_ctx = ctx;
-    s_event_queue = queue_create_wrapper(CONFIG_SYSTEM_EVENT_QUEUE_SIZE, sizeof(system_event_t));
+    s_event_queue = g_wifi_osi_funcs._queue_create(CONFIG_SYSTEM_EVENT_QUEUE_SIZE, sizeof(system_event_t));
 
     g_wifi_osi_funcs._task_create_pinned_to_core(esp_event_loop_task, "eventTask",
-            ESP_TASKD_EVENT_STACK, NULL, ESP_TASKD_EVENT_PRIO, NULL, 0); 
+            ESP_TASKD_EVENT_STACK, NULL, ESP_TASKD_EVENT_PRIO, (void *)&g_event_thread_pid, 0);
 
     s_event_init_flag = true;
     return ESP_OK;
 }
 
+void esp_event_loop_deinit(void)
+{
+	g_wifi_osi_funcs._task_delete(g_event_thread_pid);
+	g_wifi_osi_funcs._queue_delete(s_event_queue);
+	s_event_init_flag = false;
+}

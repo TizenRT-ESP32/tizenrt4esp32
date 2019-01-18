@@ -277,7 +277,7 @@ static void *IRAM_ATTR mutex_create_wrapper(void)
 
 static void IRAM_ATTR mutex_delete_wrapper(void *mutex)
 {
-    printf("%s enter\n", __func__);
+    //printf("%s enter\n", __func__);
 	if (mutex == NULL) {
 		dbg("mutex is NULL\n");
 		return;
@@ -338,12 +338,16 @@ static int32_t IRAM_ATTR task_create_wrapper(void *task_func, const char *name, 
 		return pdFAIL;
 	}
 
-	task_handle = (void *)pid;
-  //  printf("%s exit\n", __func__);
+	if (task_handle) {
+		int *p = (int *)task_handle;
+		*p = pid;
+	}
+	
+    //printf("%s task_handle is 0x%x pid is %dexit\n", __func__, task_handle, pid);
 	return pdPASS;
 }
 
-int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle, uint32_t core_id)
+static int32_t IRAM_ATTR task_create_pinned_to_core_wrapper(void *task_func, const char *name, uint32_t stack_depth, void *param, uint32_t prio, void *task_handle, uint32_t core_id)
 {
    // printf("%s enter\n", __func__);
 #ifndef CONFIG_SMP
@@ -360,10 +364,10 @@ static void IRAM_ATTR task_delete_wrapper(void *task_handle)
 	if (task_handle < 0) {
 		return;
 	}
-	int pid = (int)task_handle;
-
+	
+	int pid = (int *)task_handle;
+	//printf("%s enter pid is %d\n", __func__, pid);
 	task_delete(pid);
-
 }
 
 static void IRAM_ATTR task_delay_wrapper(uint32_t tick)
