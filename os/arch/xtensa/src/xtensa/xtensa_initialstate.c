@@ -124,7 +124,7 @@ void up_initial_state(struct tcb_s *tcb)
 	xcp->cpstate.cpenable = 0;	/* No co-processors are enabled */
 #else
 	//xcp->cpstate.cpenable = (CONFIG_XTENSA_CP_INITSET & XTENSA_CP_ALLSET);// modify it because no defination
-	xcp->cpstate.cpenable = 0;
+	xcp->cpstate.cpenable = xtensa_get_cpenable();
 #endif
 	xcp->cpstate.cpstored = 0;	/* No co-processors haved state saved */
 #endif

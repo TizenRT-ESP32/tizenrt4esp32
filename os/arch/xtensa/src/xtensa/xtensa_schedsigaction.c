@@ -113,8 +113,6 @@ void up_schedule_sigaction(struct tcb_s *tcb, sig_deliver_t sigdeliver)
 {
 	irqstate_t flags;
 
-	vdbg("tcb=0x%p sigdeliver=0x%p\n", tcb, sigdeliver);
-
 	/* Make sure that interrupts are disabled */
 
 	flags = up_irq_save();
@@ -125,8 +123,6 @@ void up_schedule_sigaction(struct tcb_s *tcb, sig_deliver_t sigdeliver)
 		/* First, handle some special cases when the signal is being delivered
 		 * to the currently executing task.
 		 */
-
-		vdbg("rtcb=0x%p CURRENT_REGS=0x%p\n", this_task(), CURRENT_REGS);
 
 		if (tcb == this_task()) {
 			/* CASE 1:  We are not in an interrupt handler and a task is

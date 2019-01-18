@@ -62,14 +62,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/mount.h>
+#include <errno.h>
 
 #include <tinyara/fs/mksmartfs.h>
 #include <tinyara/board.h>
+#include <tinyara/gpio.h>
+#include <tinyara/configdata.h>
 #include <arch/board/board.h>
 #include "esp32_gpio.h"
 #include "esp32-core.h"
 #include "esp32_i2c.h"
-#include <tinyara/gpio.h>
 #ifdef CONFIG_SPIRAM_USE_CAPS_ALLOC
 #include <esp_heap_caps.h>
 #endif
@@ -158,7 +160,8 @@ void esp32_devKit_config_partions(void)
 #endif
 #if defined(CONFIG_MTD_CONFIG)
 			if (!strncmp(types, "config,", 7)) {
-				mtdconfig_register(mtd_part);
+				int ret = mtdconfig_register(mtd_part);
+				lldbg("mtd config: %d, errno :%d\n", ret, errno);
 			} else
 #endif
 #if defined(CONFIG_MTD_SMART) && defined(CONFIG_FS_SMARTFS)
@@ -218,10 +221,10 @@ void esp32_devKit_mount_partions(void)
 
 #ifdef CONFIG_FS_PROCFS
 	/* Mount the procfs file system */
-	ret = mount(NULL, CONFIG_ESP32_PROCFS_MOUNTPOINT, "procfs", 0, NULL);
+	/*ret = mount(NULL, CONFIG_ESP32_PROCFS_MOUNTPOINT, "procfs", 0, NULL);
 	if (ret < 0) {
 		lldbg("Failed to mount procfs at %s: %d\n", CONFIG_ESP32_PROCFS_MOUNTPOINT, ret);
-	}
+	}*/
 #endif
 
 }
@@ -294,7 +297,7 @@ static void board_adc_initialize(void)
             lldbg("ERROR: Failed to get the ESP32 ADC driver\n");
         }
         else {
-            lldbg("ERROR: up_spiinitialize failed\n"t);
+            lldbg("ERROR: up_spiinitialize failed\n");
         }
 
         /* Register the ADC driver at "/dev/adc0" */

@@ -68,7 +68,7 @@
 #define TMP_MOUNT_DEV_DIR CONFIG_SIDK_S5JT200_AUTOMOUNT_USERFS_DEVNAME
 #elif defined(CONFIG_ARTIK05X_AUTOMOUNT_USERFS)
 #define TMP_MOUNT_DEV_DIR CONFIG_ARTIK05X_AUTOMOUNT_USERFS_DEVNAME
-#elif defined(CONFIG_ARCH_BOARD_LM3S6965EK)
+#elif defined(CONFIG_ARCH_BOARD_LM3S6965EK) || defined(CONFIG_ARCH_BOARD_ESP32)
 #define TMP_MOUNT_DEV_DIR "/dev/smart0p0"
 #else
 #define TMP_MOUNT_DEV_DIR "/dev/smart1"
@@ -1634,7 +1634,7 @@ static void tc_driver_mtd_config_ops(void)
 	int fd;
 	int ret;
 	struct config_data_s config;
-	char *buf = "test";
+	char buf[8] = "test";
 
 	fd = open(MTD_CONFIG_PATH, O_RDOK);
 	TC_ASSERT_GEQ("open", fd, 0);
