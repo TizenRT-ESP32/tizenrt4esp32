@@ -75,9 +75,9 @@ else
 
   MKDEP = $(TOPDIR)/tools/mkdeps$(HOSTEXEEXT)
   ARCHINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/../framework/include -isystem $(TOPDIR)/../external/include
-  ARCHINCLUDES += -I. -isystem $(TOPDIR)/../external/esp32_wifi_adapter/esp32_heap/include 
+  ARCHINCLUDES += -I. -isystem $(TOPDIR)/../external/esp_idf_port/heap/include 
   ARCHXXINCLUDES = -I. -isystem $(TOPDIR)/include -isystem $(TOPDIR)/../framework/include -isystem $(TOPDIR)/../external/include  
-  ARCHXXINCLUDES += -I. -isystem $(TOPDIR)/../external/include/libcxx -isystem $(TOPDIR)/../external/esp32_wifi_adapter/esp32_heap/include
+  ARCHXXINCLUDES += -I. -isystem $(TOPDIR)/../external/include/libcxx -isystem $(TOPDIR)/../external/esp_idf_port/heap/include
   ARCHSCRIPT = -T$(LDSCRIPT1) -T$(LDSCRIPT2) -T$(LDSCRIPT3) -T$(LDSCRIPT4)
 
 endif

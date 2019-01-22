@@ -279,7 +279,7 @@ esp_err_t system_event_sta_connected_handle_default(system_event_t *event)
 
 esp_err_t system_event_sta_disconnected_handle_default(system_event_t *event)
 {
-    tcpip_adapter_down(TCPIP_ADAPTER_IF_STA);
+    //tcpip_adapter_down(TCPIP_ADAPTER_IF_STA);
     WIFI_API_CALL_CHECK("esp_wifi_internal_reg_rxcb", esp_wifi_internal_reg_rxcb(ESP_IF_WIFI_STA, NULL), ESP_OK);
     return ESP_OK;
 }

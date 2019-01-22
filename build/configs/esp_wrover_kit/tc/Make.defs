@@ -54,13 +54,13 @@ EXTRA_LIBS += -lsupc++
 endif
 
 ifeq ($(CONFIG_ESP32_WIFI_SUPPORT),y)
-EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/spi_flash"
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp_idf_port/spi_flash"
 EXTRA_LIBS += -lspiflash
 
-EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/soc"
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp_idf_port/soc"
 EXTRA_LIBS += -lsoc
 
-EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp32_wifi_adapter/esp32"
+EXTRA_LIBPATHS += -L"$(TOPDIR)/../external/esp_idf_port/esp32"
 EXTRA_LIBS += -lesp32
 endif
 

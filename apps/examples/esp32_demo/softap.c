@@ -27,6 +27,8 @@
 #include "nvs_flash.h"
 #include "esp_wifi_internal.h"
 
+#include <string.h>
+
 /*======config for wifi softap mode=====*/
 #define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
 #define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD

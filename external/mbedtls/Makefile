@@ -90,9 +90,9 @@ endif
 
 ifeq ($(CONFIG_ESP32_WIFI_SUPPORT),y)
 SRC_CRYPTO_CSRCS+= $(wildcard ./port/*.c)
-CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/include
-CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/log/include
-CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/log/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/chip
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/
 CFLAGS += -I./port/include

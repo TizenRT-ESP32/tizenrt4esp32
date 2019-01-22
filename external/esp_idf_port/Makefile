@@ -25,8 +25,6 @@ CXXSRCS =
 
 SUBDIRS = spi_flash soc esp32 
 
-CSRCS += esp32_wifi_os_adapter.c event_groups.c esp32_queue_api.c mq_tryreceive.c esp32_wifi_utils.c 
-
 # NVS module
 CXXSRCS += nvs_flash/src/nvs_item_hash_list.cpp 
 CXXSRCS += nvs_flash/src/nvs_page.cpp
@@ -38,39 +36,30 @@ CXXSRCS += nvs_flash/src/nvs_api.cpp
 CXXFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 CXXFLAGS += -I./include
 CXXFLAGS += -I./spi_flash/include
-CXXFLAGS += -I./log/include
 CXXFLAGS += -I./nvs_flash/include -DESP_PLATFORM
+CXXFLAGS += -I./log/include
 CXXFLAGS += -std=c++11 -Wall -Werror
 
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/chip
 CFLAGS += -I./nvs_flash/include
 CFLAGS += -Iinclude -I./spi_flash/include
-CFLAGS += -I$(TOPDIR)/kernel
 CFLAGS += -I$(TOPDIR)/include/net
 CFLAGS += -I./lwip_port/include
-CFLAGS += -I$(TOPDIR)/../framework/src/wifi_manager
+CFLAGS += -I./log/include
 
 #ESP log module
 CSRCS += log/log.c
 CFLAGS += -I./log/include
-
-#ESP32 external SPIRAM
-ifeq ($(CONFIG_SPIRAM_SUPPORT), y)
-CFLAGS += -I./heap/include
-CSRCS += spi_ram/spiram.c  spi_ram/spiram_psram.c gpio_periph.c
-endif
+CFLAGS += -I$(TOPDIR)/kernel
 
 #ESP32 heap allocator 
 ifeq ($(CONFIG_SPIRAM_USE_CAPS_ALLOC), y)
 CSRCS += heap/heap_caps.c  heap/heap_caps_init.c  heap/multi_heap.c 
 endif
 
-#ESP32 event loop module
-CSRCS +=  event_loop/event_loop.c event_loop/event_default_handlers.c
-CFLAGS += -I./tcpip_adapter/include
-
 #ESP32 tcpip adapter
+CFLAGS += -I./tcpip_adapter/include
 CSRCS += tcpip_adapter/tcpip_adapter_lwip.c lwip_port/wlanif.c  lwip_port/dhcpserver.c lwip_port/espdns.c
 
 #ESP32 wpa_supplicant crypto
@@ -100,12 +89,12 @@ CFLAGS += \
 		-DESP32_WORKAROUND \
 		-DCONFIG_ECC 
 
-#ESP32 mbedtls
-CSRCS += $(wildcard ./mbedtls/mbedtls/library/*.c)
-CSRCS += $(wildcard ./mbedtls/port/*.c)
-CFLAGS += -I./mbedtls/mbedtls/include
-CFLAGS += -I./mbedtls/port/include
-CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/port/include/mbedtls/esp_config.h"'
+#ESP32 mbedtls, for software AES, mbedtls is not needed
+#CSRCS += $(wildcard ./mbedtls/mbedtls/library/*.c)
+#CSRCS += $(wildcard ./mbedtls/port/*.c)
+#CFLAGS += -I./mbedtls/mbedtls/include
+#CFLAGS += -I./mbedtls/port/include
+#CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/port/include/mbedtls/esp_config.h"'
 
 
 #ESP32 hardware crypto

@@ -109,8 +109,8 @@ endif
 
 ifeq ($(CONFIG_FS_SMARTFS),y)
 CHIP_CSRCS += esp32_flash.c
-CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/include
-CFLAGS += -I$(TOPDIR)/../external/esp32_wifi_adapter/spi_flash/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/spi_flash/include
 endif
 
 ifeq ($(CONFIG_ADC),y)

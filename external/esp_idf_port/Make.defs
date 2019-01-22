@@ -15,5 +15,5 @@
 # language governing permissions and limitations under the License.
 #
 ifeq ($(CONFIG_ESP32_WIFI_SUPPORT),y)
-    CONFIGURED_EXT += esp32_wifi_adapter
+    CONFIGURED_EXT += esp_idf_port
 endif

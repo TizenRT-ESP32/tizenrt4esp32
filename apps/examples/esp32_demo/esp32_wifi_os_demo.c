@@ -512,8 +512,9 @@ void get_wifi_mac_address()
     printf("\n");
 
 }
-
+extern void wifi_station_entry();
 extern int esp_spiram_test();
+
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
