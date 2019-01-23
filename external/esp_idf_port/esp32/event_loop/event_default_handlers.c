@@ -196,7 +196,8 @@ esp_err_t system_event_sta_stop_handle_default(system_event_t *event)
     return ESP_OK;
 }
 
-#define DHCP_TIMEOUT (3)
+#define DHCP_TIMEOUT (5000000)
+#define DHCP_CHECK_INTERVAL 10000
 static int dhcp_timeleft = DHCP_TIMEOUT;
 extern struct dhcp g_dhcp_handle;
 static void check_dhcp_status(tcpip_adapter_if_t tcpip_if)
@@ -207,7 +208,7 @@ static void check_dhcp_status(tcpip_adapter_if_t tcpip_if)
 
     dhcp_timeleft = DHCP_TIMEOUT; 
     while (g_dhcp_handle.state != DHCP_STATE_BOUND) {
-        sleep(1);
+        usleep(DHCP_CHECK_INTERVAL);
         dhcp_timeleft -= 1;
         if (dhcp_timeleft <= 0) { 
             break;
