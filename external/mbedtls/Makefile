@@ -93,6 +93,7 @@ SRC_CRYPTO_CSRCS+= $(wildcard ./port/*.c)
 CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/include
 CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/log/include
 CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/esp32
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/chip
 CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32/
 CFLAGS += -I./port/include
