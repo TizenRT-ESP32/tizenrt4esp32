@@ -16,60 +16,8 @@
  *
  ******************************************************************/
 
-/****************************************************************************
- *
- * Copyright 2017 Samsung Electronics All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the License.
- *
- ****************************************************************************/
-/************************************************************************************
- * arch/arm/src/s5j/s5j_i2s.h
- *
- *   Copyright (C) 2013 Gregory Nutt. All rights reserved.
- *   Author: Gregory Nutt <gnutt@nuttx.org>
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- * 3. Neither the name NuttX nor the names of its contributors may be
- *    used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- ************************************************************************************/
-
-#ifndef __ARCH_ARM_SRC_S5J_I2S_H
-#define __ARCH_ARM_SRC_S5J_I2S_H
+#ifndef __ARCH_XTENSA_SRC_ESP32_I2S_H
+#define __ARCH_XTENSA_SRC_ESP32_I2S_H
 
 /************************************************************************************
  * Included Files
@@ -79,29 +27,11 @@
 #include <tinyara/audio/i2s.h>
 
 #include <arch/chip/irq.h>
-#include <chip.h>
 
-#include "s5j_gpio.h"
-#include "chip.h"
-#include "chip/s5jt200_i2s.h"
-
-/************************************************************************************
- * Pre-processor Definitions
- ************************************************************************************/
-
-/************************************************************************************
- * Public Types
- ************************************************************************************/
-
-/************************************************************************************
- * Inline Functions
- ************************************************************************************/
+#include <arch/chip/i2s_struct.h>
+#include "chip/esp32_i2s_reg.h"
 
 #ifndef __ASSEMBLY__
-
-/************************************************************************************
- * Public Data
- ************************************************************************************/
 
 #undef EXTERN
 #if defined(__cplusplus)
@@ -112,11 +42,103 @@ extern "C" {
 #endif
 
 /************************************************************************************
+ * Pre-processor Definitions
+ ************************************************************************************/
+#ifndef GPIO_PIN_COUNT
+#define GPIO_PIN_COUNT          40
+#endif
+#ifndef GPIO_PIN_OUT_MAX
+#define GPIO_PIN_OUT_MAX        34
+#endif
+
+/************************************************************************************
+ * Public Types
+ ************************************************************************************/
+
+/**
+* @brief I2S bit width per sample.
+*
+*/
+typedef enum {
+	I2S_BITS_PER_SAMPLE_8BIT = 8,	/*!< I2S bits per sample: 8-bits */
+	I2S_BITS_PER_SAMPLE_16BIT = 16,	/*!< I2S bits per sample: 16-bits */
+	I2S_BITS_PER_SAMPLE_24BIT = 24,	/*!< I2S bits per sample: 24-bits */
+	I2S_BITS_PER_SAMPLE_32BIT = 32,	/*!< I2S bits per sample: 32-bits */
+} i2s_bits_per_sample_t;
+
+/**
+* @brief I2S channel.
+*
+*/
+typedef enum {
+	I2S_CHANNEL_MONO = 1,		/*!< I2S 1 channel (mono) */
+	I2S_CHANNEL_STEREO = 2		/*!< I2S 2 channel (stereo) */
+} i2s_channel_t;
+
+/**
+* @brief I2S communication standard format
+*
+*/
+typedef enum {
+	I2S_COMM_FORMAT_I2S = 0x01,	/*!< I2S communication format I2S */
+	I2S_COMM_FORMAT_I2S_MSB = 0x02,	/*!< I2S format MSB */
+	I2S_COMM_FORMAT_I2S_LSB = 0x04,	/*!< I2S format LSB */
+	I2S_COMM_FORMAT_PCM = 0x08,	/*!< I2S communication format PCM */
+	I2S_COMM_FORMAT_PCM_SHORT = 0x10,	/*!< PCM Short */
+	I2S_COMM_FORMAT_PCM_LONG = 0x20,	/*!< PCM Long */
+} i2s_comm_format_t;
+
+/**
+* @brief I2S channel format type
+*/
+typedef enum {
+	I2S_CHANNEL_FMT_RIGHT_LEFT = 0x00,
+	I2S_CHANNEL_FMT_ALL_RIGHT,
+	I2S_CHANNEL_FMT_ALL_LEFT,
+	I2S_CHANNEL_FMT_ONLY_RIGHT,
+	I2S_CHANNEL_FMT_ONLY_LEFT,
+} i2s_channel_fmt_t;
+
+/**
+* @brief I2S Peripheral, 0 & 1.
+*
+*/
+typedef enum {
+	I2S_NUM_0 = 0x0,			/*!< I2S 0 */
+	I2S_NUM_1 = 0x1,			/*!< I2S 1 */
+	I2S_NUM_MAX,
+} i2s_port_t;
+
+/**
+* @brief I2S Mode, defaut is I2S_MODE_MASTER | I2S_MODE_TX
+*
+* @note PDM and built-in DAC functions are only supported on I2S0 for current ESP32 chip.
+*
+*/
+typedef enum {
+	I2S_MODE_MASTER = 1,
+	I2S_MODE_SLAVE = 2,
+	I2S_MODE_TX = 4,
+	I2S_MODE_RX = 8,
+	I2S_MODE_DAC_BUILT_IN = 16,	/*!< Output I2S data to built-in DAC, no matter the data format is 16bit or 32 bit, the DAC module will only take the 8bits from MSB */
+	I2S_MODE_ADC_BUILT_IN = 32,	/*!< Input I2S data from built-in ADC, each data can be 12-bit width at most */
+	I2S_MODE_PDM = 64,
+} i2s_mode_t;
+
+/************************************************************************************
+ * Inline Functions
+ ************************************************************************************/
+
+/************************************************************************************
+ * Public Data
+ ************************************************************************************/
+
+/************************************************************************************
  * Public Function Prototypes
  ************************************************************************************/
 
 /****************************************************************************
- * Name: s5j_i2s_initialize
+ * Name: esp32_i2s_initialize
  *
  * Description:
  *   Initialize the selected I2S port.
@@ -129,7 +151,7 @@ extern "C" {
  *
  ****************************************************************************/
 
-FAR struct i2s_dev_s *s5j_i2s_initialize(uint16_t port);
+FAR struct i2s_dev_s *esp32_i2s_initialize(uint16_t port);
 
 #undef EXTERN
 #if defined(__cplusplus)
@@ -137,4 +159,4 @@ FAR struct i2s_dev_s *s5j_i2s_initialize(uint16_t port);
 #endif
 
 #endif							/* __ASSEMBLY__ */
-#endif							/* __ARCH_ARM_SRC_S5J_I2S_H */
+#endif							/* __ARCH_XTENSA_SRC_ESP32_I2S_H */
