@@ -113,12 +113,19 @@ CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/include
 CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/spi_flash/include
 endif
 
+ifeq ($(CONFIG_SPI),y)
+CHIP_CSRCS += esp32_spi.c
+endif
+
 ifeq ($(CONFIG_ADC),y)
 CHIP_CSRCS += esp32_adc.c
 CHIP_CSRCS += esp32_rtc_module.c
 CHIP_CSRCS += esp32_rtc_periph.c
 endif
 
+ifeq ($(CONFIG_I2S),y)
+CHIP_CSRCS += esp32_i2s.c
+endif
 
 # Configuration-dependent ESP32 files
 
