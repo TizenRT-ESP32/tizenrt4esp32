@@ -245,16 +245,14 @@ static void board_gpio_initialize(void)
 		uint16_t pincfg;
 	} pins[] = {
 		{
-			5, INPUT_PULLDOWN
+			0, OUTPUT_FUNCTION_2 | PULLUP
 		}, {
-			15, INPUT_PULLDOWN
+			2, OUTPUT_FUNCTION_2 | PULLUP
 		}, {
-			18, INPUT_PULLDOWN
+			4, OUTPUT_FUNCTION_2 | PULLUP
 		}, {
-			19, INPUT_PULLDOWN
-		}, {
-			21, INPUT_PULLDOWN
-		},
+			15, INPUT_FUNCTION_2
+		}
 	};
 
 	for (i = 0; i < sizeof(pins) / sizeof(*pins); i++) {
@@ -280,36 +278,35 @@ static void board_i2c_initialize(void)
 #if defined(CONFIG_ADC)
 static void board_adc_initialize(void)
 {
-    static bool adc_initialized;
-    struct adc_dev_s* adc;
-    const adc_channel_t chanlist[] = {
-        ADC_CHANNEL_4,
-        ADC_CHANNEL_5,
-        ADC_CHANNEL_6,
-        ADC_CHANNEL_7
-    };
+	static bool adc_initialized;
+	struct adc_dev_s *adc;
+	const adc_channel_t chanlist[] = {
+		ADC_CHANNEL_4,
+		ADC_CHANNEL_5,
+		ADC_CHANNEL_6,
+		ADC_CHANNEL_7
+	};
 
-    /* Have we already initialized? */
-    if (!adc_initialized) {
+	/* Have we already initialized? */
+	if (!adc_initialized) {
 
-        adc = esp32_adc_initialize(chanlist, sizeof(chanlist)/sizeof(adc_channel_t));
-        if (NULL != adc) {
-            lldbg("ERROR: Failed to get the ESP32 ADC driver\n");
-        }
-        else {
-            lldbg("ERROR: up_spiinitialize failed\n");
-        }
+		adc = esp32_adc_initialize(chanlist, sizeof(chanlist) / sizeof(adc_channel_t));
+		if (NULL != adc) {
+			lldbg("ERROR: Failed to get the ESP32 ADC driver\n");
+		} else {
+			lldbg("ERROR: up_spiinitialize failed\n");
+		}
 
-        /* Register the ADC driver at "/dev/adc0" */
-        int ret = adc_register("/dev/adc0", adc);
-        if (ret < 0) {
-            return;
-        }
+		/* Register the ADC driver at "/dev/adc0" */
+		int ret = adc_register("/dev/adc0", adc);
+		if (ret < 0) {
+			return;
+		}
 
-        /* Now we are initialized */
+		/* Now we are initialized */
 
-        adc_initialized = true;
-    }
+		adc_initialized = true;
+	}
 }
 #endif
 
@@ -331,7 +328,7 @@ void board_initialize(void)
 {
 	/* Perform board-specific initialization */
 	(void)esp32_bringup();
-#if defined(CONFIG_ESP32_FLASH_PART) && (CONFIG_ESP32_FLASH_PART == 1)	
+#if defined(CONFIG_ESP32_FLASH_PART) && (CONFIG_ESP32_FLASH_PART == 1)
 	esp32_devKit_config_partions();
 	esp32_devKit_mount_partions();
 #endif
@@ -343,25 +340,26 @@ void board_initialize(void)
 	board_adc_initialize();
 #endif
 
-/*Init SPI RAM*/
+	/*Init SPI RAM*/
 #ifdef CONFIG_SPIRAM_SUPPORT
-    esp_spiram_init_cache();
-    esp_spiram_init();
+	esp_spiram_init_cache();
+	esp_spiram_init();
 #endif
 
-/*no-os heap configure*/
+	/*no-os heap configure*/
 #ifdef CONFIG_SPIRAM_USE_CAPS_ALLOC
-   // heap_caps_init();
-    esp_spiram_add_to_heapalloc();
-    //Assgin DMA memory for drivers*/
-    uint8_t *dma_heap = malloc(CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL);
-    if (!dma_heap)
-        return;
-    uint32_t caps[]={ MALLOC_CAP_DMA|MALLOC_CAP_INTERNAL, 0, MALLOC_CAP_8BIT|MALLOC_CAP_32BIT};
-    heap_caps_add_region_with_caps(caps, (intptr_t) dma_heap, (intptr_t) dma_heap+CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL-1);
+	// heap_caps_init();
+	esp_spiram_add_to_heapalloc();
+	//Assgin DMA memory for drivers*/
+	uint8_t *dma_heap = malloc(CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL);
+	if (!dma_heap) {
+		return;
+	}
+	uint32_t caps[] = { MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL, 0, MALLOC_CAP_8BIT | MALLOC_CAP_32BIT };
+	heap_caps_add_region_with_caps(caps, (intptr_t) dma_heap, (intptr_t) dma_heap + CONFIG_SPIRAM_MALLOC_RESERVE_INTERNAL - 1);
 
-    /*enable heaps*/
-    heap_caps_enable_nonos_stack_heaps();
+	/*enable heaps */
+	heap_caps_enable_nonos_stack_heaps();
 #endif
 
 }
