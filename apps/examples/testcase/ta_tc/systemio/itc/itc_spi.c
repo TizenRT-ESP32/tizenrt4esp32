@@ -25,7 +25,11 @@
 #include <iotbus_spi.h>
 #include <iotbus_error.h>
 
+#if defined(CONFIG_ARCH_BOARD_ESP32)
+static unsigned int g_bus = 2;
+#else
 static unsigned int g_bus = 0;
+#endif
 
 static struct iotbus_spi_config_s g_st_config = {
 	(char)8,

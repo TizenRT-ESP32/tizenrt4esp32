@@ -31,7 +31,7 @@
 
 #define MICROSECOND 1000000
 #define BUF_LEN 32
-#ifdef CONFIG_ARCH_CHIP_STM32
+#if defined(CONFIG_ARCH_CHIP_STM32) || defined(CONFIG_ARCH_BOARD_ESP32)
 #define DEVPATH "/dev/ttyS1"
 #else                            // artik
 #define DEVPATH "/dev/ttyS2"
@@ -104,7 +104,6 @@ void itc_systemio_iotbus_uart_set_baudrate_p(void)
 	int ret = IOTBUS_ERROR_NONE;
 	iotbus_uart_context_h h_uart = iotbus_uart_init(DEVPATH);
 	TC_ASSERT_NEQ("iotbus_uart_init", h_uart, NULL);
-
 	ret = iotbus_uart_set_baudrate(h_uart, i_baudrate);
 	TC_ASSERT_EQ_CLEANUP("iotbus_uart_set_baudrate", ret, IOTBUS_ERROR_NONE, iotbus_uart_stop(h_uart));
 
@@ -271,7 +270,7 @@ void itc_systemio_iotbus_uart_write_read_p(void)
 {
 	int ret = IOTBUS_ERROR_NONE;
 	char sz_input_text[BUF_LEN] = "UART READ/WRITE ITC TESTING!";
-	char sz_output_text[BUF_LEN];
+    char sz_output_text[BUF_LEN];
 	iotbus_uart_context_h h_uart = iotbus_uart_init(DEVPATH);
 	TC_ASSERT_NEQ("iotbus_uart_init", h_uart, NULL);
 

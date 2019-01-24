@@ -31,6 +31,8 @@ iotbus_spi_context_h spi;
 
 #if defined(CONFIG_ARCH_BOARD_MIKROEQUAIL)
 unsigned int bus = 1;
+#elif defined(CONFIG_ARCH_BOARD_ESP32)
+unsigned int bus = 2;
 #else
 unsigned int bus = 0;
 #endif

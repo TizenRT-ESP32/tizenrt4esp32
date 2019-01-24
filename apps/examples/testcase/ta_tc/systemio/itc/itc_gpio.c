@@ -25,7 +25,14 @@
 #include <iotbus_gpio.h>
 #include <iotbus_error.h>
 
-#define GPIO_PIN 41
+#if defined(CONFIG_ARCH_BOARD_ESP32)
+#define GPIO_PIN 0
+#define GPIO_PIN2 15
+#else
+#define GPIO_PIN    41
+#define GPIO_PIN2   57
+#endif
+
 #define WAIT_SECONDS 2
 #define LOOP_COUNT 10
 
@@ -287,8 +294,8 @@ static void itc_systemio_gpio_register_unregister_callback_p(void)
 	g_gpio_h = NULL;
 	g_gpio_h2 = NULL;
 	int data = 0;
-	int gpio_pin2 = 57;
 	int gpio_pin1 = GPIO_PIN;
+	int gpio_pin2 = GPIO_PIN2;
 
 	g_gpio_h = iotbus_gpio_open(gpio_pin1);
 	TC_ASSERT_NEQ("iotbus_gpio_open", g_gpio_h, NULL);

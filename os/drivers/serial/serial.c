@@ -1090,6 +1090,12 @@ static int uart_close(FAR struct file *filep)
 #endif
 	}
 
+    /* Mark the io buffers empty */
+    dev->xmit.head = 0;
+    dev->xmit.tail = 0;
+    dev->recv.head = 0;
+    dev->recv.tail = 0;
+
 	/* Free the IRQ and disable the UART */
 
 	flags = irqsave();			/* Disable interrupts */

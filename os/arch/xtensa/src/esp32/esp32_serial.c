@@ -535,8 +535,8 @@ static int esp32_setup(struct uart_dev_s *dev)
 
 	/* Enable RX and error interrupts.  Clear and pending interrtupt */
 
-	regval = UART_RXFIFO_FULL_INT_ENA | UART_FRM_ERR_INT_ENA | UART_RXFIFO_TOUT_INT_ENA;
-	esp32_serialout(priv, UART_INT_ENA_OFFSET, regval);
+	//regval = UART_RXFIFO_FULL_INT_ENA | UART_FRM_ERR_INT_ENA | UART_RXFIFO_TOUT_INT_ENA;
+	//esp32_serialout(priv, UART_INT_ENA_OFFSET, regval);
 
 	esp32_serialout(priv, UART_INT_CLR_OFFSET, 0xffffffff);
 
@@ -679,7 +679,7 @@ static void esp32_detach(struct uart_dev_s *dev)
 	/* Disable and detach the CPU interrupt */
 
 	up_disable_irq(priv->cpuint);
-	irq_detach(priv->config->irq);
+    irq_detach(priv->cpuint);
 
 	/* Disassociate the peripheral interrupt from the CPU interrupt */
 
@@ -1119,7 +1119,7 @@ static bool esp32_txempty(struct uart_dev_s *dev)
 {
 	struct esp32_dev_s *priv = (struct esp32_dev_s *)dev->priv;
 
-	return (((esp32_serialin(priv, UART_STATUS_OFFSET) & UART_TXFIFO_CNT_M) >> UART_TXFIFO_CNT_S) > 0);
+	return (((esp32_serialin(priv, UART_STATUS_OFFSET) & UART_TXFIFO_CNT_M) >> UART_TXFIFO_CNT_S) == 0);
 }
 
 /****************************************************************************

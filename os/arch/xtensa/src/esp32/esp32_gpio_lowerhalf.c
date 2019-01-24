@@ -104,7 +104,7 @@ static int esp32_gpio_interrupt(int irq, FAR void *context, FAR void *arg)
 {
 	struct esp32_lowerhalf_s *lower = (struct esp32_lowerhalf_s *)arg;
 
-	esp32_gpio_clear_pending(lower->pincfg);
+	//esp32_gpio_clear_pending(lower->pincfg);
 
 	if (lower->handler != NULL) {
 		DEBUGASSERT(lower->handler != NULL);
@@ -180,7 +180,10 @@ static int esp32_gpio_pull(FAR struct gpio_lowerhalf_s *lower, unsigned long arg
 		priv->pincfg |= PULLUP;
 	} else if (arg == GPIO_DRIVE_PULLDOWN) {
 		priv->pincfg |= PULLDOWN;
-	} else {
+    }
+    else if (arg == GPIO_DRIVE_FLOAT) {
+        priv->pincfg &= ~(PULLDOWN | PULLUP);
+    }else{
 		return -EINVAL;
 	}
 
