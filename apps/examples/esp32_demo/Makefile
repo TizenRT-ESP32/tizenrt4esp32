@@ -78,6 +78,25 @@ ifeq ($(CONFIG_LEDC),y)
 CSRCS += esp32_ledc.c
 endif
 
+ifeq ($(CONFIG_SPI),y)
+CSRCS += w25q128.c
+endif
+
+ifeq ($(CONFIG_I2S),y)
+CSRCS += i2schar_demo.c
+CSRCS += wm8960.c
+CSRCS += wave_data.c
+endif
+
+ifeq ($(CONFIG_I2C),y)
+CSRCS += bmp280.c
+endif
+
+ifeq ($(CONFIG_GPIO),y)
+CSRCS += key_led.c
+endif
+
+CSRCS += esp32_i2c_gpio_test.c
 
 AOBJS = $(ASRCS:.S=$(OBJEXT))
 COBJS = $(CSRCS:.c=$(OBJEXT))

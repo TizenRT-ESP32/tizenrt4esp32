@@ -56,11 +56,15 @@
 
 #include <tinyara/config.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <apps/shell/tash.h>
 
 #include <tinyara/fs/fs.h>
 #include <tinyara/fs/ioctl.h>
+#include <tinyara/kmalloc.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <errno.h>
@@ -70,6 +74,16 @@
 #define ADC_MAX_SAMPLES	4
 #define TEST_TIME_SEC   30
 #endif
+
+#if defined(CONFIG_SPI)
+#include "w25q128.h"
+#endif
+
+#if defined(CONFIG_I2S)
+#include "i2schar_demo.h"
+#endif
+
+#include "esp32_i2c_gpio_test.h"
 
 /****************************************************************************
  * Definitions
@@ -241,7 +255,13 @@ int esp32_tash_main(int argc, char **args)
 #if defined(CONFIG_ADC)
 	tash_cmd_install("esp32_adc_demo", esp32_adc_os_cb, TASH_EXECMD_ASYNC);
 #endif
-
+#if defined(CONFIG_SPI)
+	ESP32_SPI_command_install();
+#endif
+#if defined(CONFIG_I2S)
+	esp32_i2schar_install();
+#endif
+	esp32_i2c_gpio_cmd_install();
 	return 0;
 }
 #endif
