@@ -50,6 +50,8 @@
 #
 ############################################################################
 
+CFLAGS += -I../include
+
 ifeq ($(CONFIG_NET_SECURITY_TLS),y)
 CONFIGURED_EXT += mbedtls
 endif

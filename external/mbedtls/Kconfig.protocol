@@ -2,12 +2,10 @@ if NET_SECURITY_TLS
 
 config TLS_WITH_SSS
 	bool "Enable HW Accelerator(SSS)"
-	depends on S5J_SSS
 	default n
 
 config SUPPORT_FULL_SECURITY
 	bool "Enable full security features"
-	depends on S5J_SSS && ARCH_BOARD_ARTIK05X_FAMILY
 	default n
 	---help---
 		Supports security features with secure storage.
