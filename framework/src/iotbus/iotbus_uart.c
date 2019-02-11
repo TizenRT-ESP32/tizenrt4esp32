@@ -27,8 +27,8 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <sys/ioctl.h>
-#include <iotbus/iotbus_error.h>
-#include <iotbus/iotbus_uart.h>
+#include "../../include/iotbus/iotbus_error.h"
+#include "../../include/iotbus/iotbus_uart.h"
 
 struct _iotbus_uart_s {
 	int fd;
