@@ -69,7 +69,7 @@ static void utc_systemio_i2c_set_frequency_n(void)
 
 static void utc_systemio_i2c_set_address_p(void)
 {
-	TC_ASSERT_EQ("iotbus_i2c_set_address", iotbus_i2c_set_address(i2c, 0x23), IOTBUS_ERROR_NONE);	
+	TC_ASSERT_EQ("iotbus_i2c_set_address", iotbus_i2c_set_address(i2c, 0x77), IOTBUS_ERROR_NONE);
 	TC_SUCCESS_RESULT();
 }
 
@@ -82,8 +82,9 @@ static void utc_systemio_i2c_set_address_n(void)
 #ifndef CONFIG_DISABLE_MANUAL_TESTCASE
 static void utc_systemio_i2c_write_p(void)
 {
-	uint8_t cmd[1] = { 0x01};
-	TC_ASSERT_GT("iotbus_i2c_write", iotbus_i2c_write(i2c, cmd, 1), IOTBUS_ERROR_NONE);
+	uint8_t cmd[2] = { 0x5F, 0XA0 };
+
+	TC_ASSERT_GT("iotbus_i2c_write", iotbus_i2c_write(i2c, cmd, 2), IOTBUS_ERROR_NONE);
 	TC_SUCCESS_RESULT();
 }
 #endif
@@ -97,8 +98,9 @@ static void utc_systemio_i2c_write_n(void)
 #ifndef CONFIG_DISABLE_MANUAL_TESTCASE
 static void utc_systemio_i2c_read_p(void)
 {
-	uint8_t buf[1];
-	TC_ASSERT_GT("iotbus_i2c_read", iotbus_i2c_read(i2c, buf, 1), IOTBUS_ERROR_NONE);
+	uint8_t cmd[2] = { 0x0D, 1 };
+
+	TC_ASSERT_GT("iotbus_i2c_read", iotbus_i2c_read(i2c, cmd, 2), IOTBUS_ERROR_NONE);
 	TC_SUCCESS_RESULT();
 }
 #endif
