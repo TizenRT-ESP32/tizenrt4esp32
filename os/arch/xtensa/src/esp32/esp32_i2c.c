@@ -592,7 +592,7 @@ static int i2c_esp32_transmit(struct i2c_dev_s *dev)
 	}
 #endif
 
-	return 0;
+	return ret;
 }
 
 static int i2c_esp32_transmit_wait(struct i2c_dev_s *dev, volatile struct i2c_esp32_cmd *wait_cmd)
@@ -617,6 +617,7 @@ static int i2c_esp32_read_msg(struct i2c_dev_s *dev, uint16_t addr, struct i2c_m
 	volatile struct i2c_esp32_cmd *cmd = (void *)I2C_COMD0_REG(priv->i2c_num);
 	uint32_t i;
 	int ret;
+	uint32_t read_count = 0;
 
 	/* Set the R/W bit to R */
 	addr |= BIT(0);
@@ -683,18 +684,20 @@ static int i2c_esp32_read_msg(struct i2c_dev_s *dev, uint16_t addr, struct i2c_m
 			*msg->buffer++ = v;
 		}
 		msg->length -= to_read;
+		read_count += to_read;
 
 		i2c_esp32_reset_txfifo(priv->i2c_num);
 	}
 
-	return 0;
+	return read_count;
 }
 
 static int i2c_esp32_write_msg(struct i2c_dev_s *dev, uint16_t addr, struct i2c_msg_s *msg)
 {
 	struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev;
 	volatile struct i2c_esp32_cmd *cmd = (void *)I2C_COMD0_REG(priv->i2c_num);
-	int addrSent = 0;			///
+	int addrSent = 0;
+	uint32_t send_count = 0;
 
 	/* I2C_ESP32_OP_RSTART must be the first one;
 	 * if I2C_M_NOSTART, it means the i2c-frame is too long to be handled in one msg!
@@ -732,6 +735,7 @@ static int i2c_esp32_write_msg(struct i2c_dev_s *dev, uint16_t addr, struct i2c_
 			 .ack_en = true,
 		};
 
+		send_count =+ to_send;
 		msg->length -= to_send;
 
 		/*stop when end of msgdata and no more msg to excute */
@@ -748,13 +752,13 @@ static int i2c_esp32_write_msg(struct i2c_dev_s *dev, uint16_t addr, struct i2c_
 
 		ret = i2c_esp32_transmit_wait(dev, cmd);
 		if (ret < 0) {
-			return ret;
+			return send_count;
 		}
 
 		i2c_esp32_reset_txfifo(priv->i2c_num);
 	}
 
-	return 0;
+	return send_count;
 }
 
 static int esp32_i2c_initialize(struct esp32_i2c_priv_s *priv)
