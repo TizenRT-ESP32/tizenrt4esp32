@@ -60,7 +60,7 @@ void itc_systemio_i2c_init_stop_p(void)
 void itc_systemio_i2c_set_frequency_p(void)
 {
 	int ret = IOTBUS_ERROR_NONE;
-	int freq_mode[] = { IOTBUS_I2C_STD, IOTBUS_I2C_FAST, IOTBUS_I2C_HIGH };
+	int freq_mode[] = { IOTBUS_I2C_STD, IOTBUS_I2C_FAST };
 	int num_modes = sizeof(freq_mode) / sizeof(int);
 	int index = 0;
 	bool check = true;
@@ -105,6 +105,31 @@ void itc_systemio_i2c_set_address_p(void)
 	TC_SUCCESS_RESULT();
 }
 
+
+
+uint32_t calculate_temprature(uint8_t *dgtbuf, uint8_t *tmpbuf)
+{
+	int adc_T = ((tmpbuf[0] << 16) | (tmpbuf[1] << 8) | (tmpbuf[2])) >> 4;
+	unsigned short dig_T1 = (dgtbuf[1] << 8) | (dgtbuf[0]);
+	short dig_T2 = (dgtbuf[3] << 8) | (dgtbuf[2]);
+	short dig_T3 = (dgtbuf[5] << 8) | (dgtbuf[4]);
+
+	printf("adc_T is %d , dig_T1 is %d ,dig_T2 is %d ,dig_T3 is %d ,", adc_T, dig_T1, dig_T2, dig_T3);
+
+	uint32_t var1 = 0, var2 = 0;
+	uint32_t T = 0;
+	var1 = (((double)adc_T) / 16384.0 - ((double)dig_T1) / 1024.0) * ((double)dig_T2);
+	var2 = ((((double)adc_T) / 131072.0 - ((double)dig_T1) / 8192.0) * (((double)adc_T) / 131072.0 - ((double)dig_T1) / 8192.0)) * ((double)dig_T2);
+
+	printf(" var1 is %d, var2 is %d\n",var1, var2);
+	T = (var1 + var2) / 5120;
+	if (var1 + var2 - T * 5120 >= 5120/2) {
+		T += 1;
+	}
+	return T;
+ }
+
+
 /**
 * @testcase         itc_systemio_i2c_write_read_p
 * @brief            writes to i2c device and reads from i2c device
@@ -116,8 +141,13 @@ void itc_systemio_i2c_set_address_p(void)
 void itc_systemio_i2c_write_read_p(void)
 {
 	int ret = IOTBUS_ERROR_NONE;
-	uint8_t write_cmd[2] = { 0x1, 0x2 };
-	uint8_t address = 0x23;
+	uint8_t rd_cmd = 0x88;
+	uint8_t temp_cmd = 0xFA;
+	uint8_t active_cmd[2] = { 0xF4, 0xE3 };
+	uint8_t read_buff[6] = { 0 };
+	uint8_t temp_buff[3] = { 0 };
+	uint32_t tpt = 0;
+	uint8_t address = 0x77;
 	uint8_t read_buf;
 
 	iotbus_i2c_context_h h_i2c = iotbus_i2c_init(g_bus);
@@ -126,17 +156,25 @@ void itc_systemio_i2c_write_read_p(void)
 	ret = iotbus_i2c_set_address(h_i2c, address);
 	TC_ASSERT_EQ_CLEANUP("iotbus_i2c_set_address", ret, IOTBUS_ERROR_NONE, iotbus_i2c_stop(h_i2c));
 
-	ret = iotbus_i2c_write(h_i2c, &write_cmd[0], 1);
+	ret = iotbus_i2c_set_frequency(h_i2c, IOTBUS_I2C_FAST);
+
+	// CTRL_MEAS
+	ret = iotbus_i2c_write(h_i2c, active_cmd, 2);
+
+	ret = iotbus_i2c_write(h_i2c, &rd_cmd, 1);
 	TC_ASSERT_GEQ_CLEANUP("iotbus_i2c_write", ret, IOTBUS_ERROR_NONE, iotbus_i2c_stop(h_i2c));
 
-	ret = iotbus_i2c_read(h_i2c, &read_buf, 1);
+	ret = iotbus_i2c_read(h_i2c, read_buff, 6);
 	TC_ASSERT_GEQ_CLEANUP("iotbus_i2c_read", ret, IOTBUS_ERROR_NONE, iotbus_i2c_stop(h_i2c));
 
-	ret = iotbus_i2c_write(h_i2c, &write_cmd[1], 1);
+	ret = iotbus_i2c_write(h_i2c, &temp_cmd, 1);
 	TC_ASSERT_GEQ_CLEANUP("iotbus_i2c_write", ret, IOTBUS_ERROR_NONE, iotbus_i2c_stop(h_i2c));
 
-	ret = iotbus_i2c_read(h_i2c, &read_buf, 1);
+	ret = iotbus_i2c_read(h_i2c, temp_buff, 3);
 	TC_ASSERT_GEQ_CLEANUP("iotbus_i2c_read", ret, IOTBUS_ERROR_NONE, iotbus_i2c_stop(h_i2c));
+
+	tpt = calculate_temprature(read_buff, temp_buff);
+	printf("Current temperature is %d \n", tpt);
 
 	ret = iotbus_i2c_stop(h_i2c);
 	TC_ASSERT_EQ("iotbus_i2c_stop", ret, IOTBUS_ERROR_NONE);
@@ -155,8 +193,8 @@ void itc_systemio_i2c_write_read_p(void)
 void itc_systemio_i2c_set_frequency_address_p(void)
 {
 	int ret = IOTBUS_ERROR_NONE;
-	uint8_t address = 0x8;
-	int freq_mode[] = { IOTBUS_I2C_STD, IOTBUS_I2C_FAST, IOTBUS_I2C_HIGH };
+	uint8_t address = 0x77;
+	int freq_mode[] = { IOTBUS_I2C_STD, IOTBUS_I2C_FAST };
 	int num_modes = sizeof(freq_mode) / sizeof(freq_mode[0]);
 	int index = 0;
 	bool check = true;
@@ -196,10 +234,12 @@ void itc_systemio_i2c_set_frequency_address_p(void)
 void itc_systemio_i2c_write_read_p_all_freq(void)
 {
 	int ret = IOTBUS_ERROR_NONE;
-	uint8_t write_cmd[2] = { 0x1, 0x2 };
+	uint8_t write_cmd[2] = { 0xFA, 1 };
+	uint8_t read_cmd[2] = { 0xFA, 1 };
 	uint8_t read_buf[2];
-	uint8_t address = 0x23;
-	int freq_mode[] = { IOTBUS_I2C_STD, IOTBUS_I2C_FAST, IOTBUS_I2C_HIGH };
+	uint8_t address = 0x77;
+	//int freq_mode[] = { IOTBUS_I2C_STD, IOTBUS_I2C_FAST, IOTBUS_I2C_HIGH };
+	int freq_mode[] = { IOTBUS_I2C_STD, IOTBUS_I2C_FAST };
 	int num_modes = sizeof(freq_mode) / sizeof(freq_mode[0]);
 	int index = 0;
 	bool check = true;

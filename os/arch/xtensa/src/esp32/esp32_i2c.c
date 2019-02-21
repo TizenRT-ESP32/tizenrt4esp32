@@ -108,6 +108,9 @@
 #define ESP32_I2C1_DEFAULT_SDA_PIN          19
 #define ESP32_I2C1_DEFAULT_SDA_PULLUP_EN    0
 
+#define ESP32_I2C_FREQUENCY_STD (100*1000)
+#define ESP32_I2C_FREQUENCY_FAST (400*1000)
+
 #ifndef min
 #define min(a, b)       (((a) < (b)) ? (a) : (b))
 #endif
@@ -843,29 +846,32 @@ uint32_t esp32_i2c_setclock(FAR struct i2c_dev_s *dev, uint32_t frequency)
 	struct esp32_i2c_priv_s *priv = (struct esp32_i2c_priv_s *)dev;
 	int i2c_num = priv->i2c_num;
 
-	if (priv != NULL && priv->xfer_speed != frequency) {
-		sem_wait(&priv->sem_excl);
+	if (ESP32_I2C_FREQUENCY_STD == frequency || ESP32_I2C_FREQUENCY_FAST == frequency) {
+		if (priv != NULL && priv->xfer_speed != frequency) {
+			sem_wait(&priv->sem_excl);
 
-		priv->xfer_speed = frequency;
-		int cycle = (I2C_APB_CLK_FREQ / frequency);
-		int half_cycle = cycle / 2;
-		I2C[i2c_num]->timeout.tout = cycle * I2C_MASTER_TOUT_CNUM_DEFAULT;
-		//set timing for data
-		I2C[i2c_num]->sda_hold.time = half_cycle / 2;
-		I2C[i2c_num]->sda_sample.time = half_cycle / 2;
+			priv->xfer_speed = frequency;
+			int cycle = (I2C_APB_CLK_FREQ / frequency);
+			int half_cycle = cycle / 2;
+			I2C[i2c_num]->timeout.tout = cycle * I2C_MASTER_TOUT_CNUM_DEFAULT;
+			//set timing for data
+			I2C[i2c_num]->sda_hold.time = half_cycle / 2;
+			I2C[i2c_num]->sda_sample.time = half_cycle / 2;
 
-		I2C[i2c_num]->scl_low_period.period = half_cycle;
-		I2C[i2c_num]->scl_high_period.period = half_cycle;
-		//set timing for start signal
-		I2C[i2c_num]->scl_start_hold.time = half_cycle;
-		I2C[i2c_num]->scl_rstart_setup.time = half_cycle;
-		//set timing for stop signal
-		I2C[i2c_num]->scl_stop_hold.time = half_cycle;
-		I2C[i2c_num]->scl_stop_setup.time = half_cycle;
+			I2C[i2c_num]->scl_low_period.period = half_cycle;
+			I2C[i2c_num]->scl_high_period.period = half_cycle;
+			//set timing for start signal
+			I2C[i2c_num]->scl_start_hold.time = half_cycle;
+			I2C[i2c_num]->scl_rstart_setup.time = half_cycle;
+			//set timing for stop signal
+			I2C[i2c_num]->scl_stop_hold.time = half_cycle;
+			I2C[i2c_num]->scl_stop_setup.time = half_cycle;
 
-		sem_post(&priv->sem_excl);
+			sem_post(&priv->sem_excl);
+		}
+		return OK;
 	}
-	return OK;
+	return ERROR;
 }
 
 /**
