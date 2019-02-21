@@ -617,7 +617,8 @@ static void itc_systemio_gpio_set_get_direction_edge_drive_mode_p(void)
 */
 static void itc_systemio_gpio_open_close_p_different_pin(void)
 {
-	int gpio_pin[] = { 30, 31, 32, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 57, 58, 59 };
+	//int gpio_pin[] = { 30, 31, 32, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 57, 58, 59 };
+	int gpio_pin[] = { 0, 15, 2, 4 };
 	int ret;
 	int count;
 	int index;
