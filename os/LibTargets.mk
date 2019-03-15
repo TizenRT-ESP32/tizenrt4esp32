@@ -300,4 +300,13 @@ $(LIBRARIES_DIR)$(DELIM)libwpa$(LIBEXT): $(EXTDIR)$(DELIM)esp_idf_port/esp32$(DE
 
 $(LIBRARIES_DIR)$(DELIM)libwps$(LIBEXT): $(EXTDIR)$(DELIM)esp_idf_port/esp32$(DELIM)lib$(DELIM)libwps$(LIBEXT)
 	$(Q) install $(EXTDIR)$(DELIM)esp_idf_port/esp32$(DELIM)lib$(DELIM)libwps$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libwps$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libesp32$(LIBEXT): $(EXTDIR)$(DELIM)esp_idf_port/esp32$(DELIM)libesp32$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp_idf_port/esp32$(DELIM)libesp32$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libesp32$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libsoc$(LIBEXT): $(EXTDIR)$(DELIM)esp_idf_port/soc$(DELIM)libsoc$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp_idf_port/soc$(DELIM)libsoc$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libsoc$(LIBEXT)
+
+$(LIBRARIES_DIR)$(DELIM)libspiflash$(LIBEXT): $(EXTDIR)$(DELIM)esp_idf_port/spi_flash$(DELIM)libspiflash$(LIBEXT)
+	$(Q) install $(EXTDIR)$(DELIM)esp_idf_port/spi_flash$(DELIM)libspiflash$(LIBEXT) $(LIBRARIES_DIR)$(DELIM)libspiflash$(LIBEXT)
 endif

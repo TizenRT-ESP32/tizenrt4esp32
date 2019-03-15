@@ -63,6 +63,13 @@ if arch_board == 'sidk_s5jt200':
 		'-fno-strength-reduce'])
 	env.AppendUnique(CXXFLAGS = ['-fno-builtin', '-fexceptions', '-mcpu=cortex-r4', '-mfpu=vfpv3',
 		'-Wall', '-Wshadow', '-Wundef', '-fno-strict-aliasing',	'-fno-strength-reduce'])
+elif arch_board == 'esp32_DevKit':
+	env.AppendUnique(CCFLAGS = ['-fno-builtin', '-ffunction-sections', '-fdata-sections', '-Wall', '-mlongcalls',
+		'-Wstrict-prototypes', '-Wshadow', '-Wundef', '-Wno-implicit-function-declaration',
+		'-Wno-unused-function', '-Wno-unused-but-set-variable', '-fno-strict-aliasing',
+		'-fno-strength-reduce'])
+	env.AppendUnique(CXXFLAGS = ['-fno-builtin', '-ffunction-sections', '-fdata-sections', '-fexceptions', '-mlongcalls',
+		'-Wall', '-Wshadow', '-Wundef', '-fno-strict-aliasing',	'-fno-strength-reduce'])
 
 # we have variety of macros for tizenrt!!
 #env.AppendUnique(CPPDEFINES = ['CONFIG_CLOCK_MONOTONIC'])

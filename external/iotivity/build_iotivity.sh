@@ -81,7 +81,7 @@ if [ -z ${PLATFORM_TLS} ]; then PLATFORM_TLS=0; fi
 if [ ${CONFIG_ENABLE_IOTIVITY} -eq 1 ]; then
 	cd ${IOTIVITY_BUILD_DIR}
 
-	OPTIONS="TARGET_OS=tizenrt TARGET_ARCH=${IOTIVITY_TARGET_ARCH} TARGET_TRANSPORT=IP ROUTING=${IOTIVITY_ROUTING} TC_PREFIX=arm-none-eabi- VERBOSE=no TIZENRT_OS_DIR=${TOPDIR} PLATFORM_TLS=${PLATFORM_TLS} ARCH_BOARD=sidk_s5jt200 -j 8"
+	OPTIONS="TARGET_OS=tizenrt TARGET_ARCH=${IOTIVITY_TARGET_ARCH} TARGET_TRANSPORT=IP ROUTING=${IOTIVITY_ROUTING} TC_PREFIX=xtensa-esp32-elf- VERBOSE=no TIZENRT_OS_DIR=${TOPDIR} PLATFORM_TLS=${PLATFORM_TLS} ARCH_BOARD=esp32_DevKit -j 8"
 
 	if [ ${CONFIG_IOTIVITY_RELEASE} -eq 0 ]; then OPTIONS="${OPTIONS} RELEASE=false " ; fi
 
@@ -101,15 +101,15 @@ if [ ${CONFIG_ENABLE_IOTIVITY} -eq 1 ]; then
 		scons ${OPTIONS}
 	elif [ ${CONFIG_ENABLE_IOTIVITY_SECURED} -eq 0 -a ${CONFIG_ENABLE_IOTIVITY_CLOUD} -eq 1 ]; then
 		#IoTivity - D2C - No Security
-		echo "*********** Iotivity Build for TinyARA (D2C - No Security *************"
+		echo "*********** Iotivity Build for TinyARA (D2C - No Security) *************"
 		scons WITH_CLOUD=yes WITH_TCP=yes RD_MODE=CLIENT ${OPTIONS}
 	elif [ ${CONFIG_ENABLE_IOTIVITY_SECURED} -eq 1 -a ${CONFIG_ENABLE_IOTIVITY_CLOUD} -eq 0 ]; then
 		#IoTivity - D2D - Security
-		echo "*********** Iotivity Build for TinyARA (D2D - Security *************"
+		echo "*********** Iotivity Build for TinyARA (D2D - Security) *************"
 		scons SECURED=1 ${OPTIONS}
 	elif [ ${CONFIG_ENABLE_IOTIVITY_SECURED} -eq 1 -a ${CONFIG_ENABLE_IOTIVITY_CLOUD} -eq 1 ]; then
 		#IoTivity - D2C - Security
-		echo "*********** Iotivity Build for TinyARA (D2C - Security *************"
+		echo "*********** Iotivity Build for TinyARA (D2C - Security) *************"
 		scons WITH_CLOUD=yes WITH_TCP=yes RD_MODE=CLIENT SECURED=1 ${OPTIONS}
 	fi
 

@@ -27,7 +27,7 @@ os_arch_map = {
 		'ios': ['i386', 'x86_64', 'armv7', 'armv7s', 'arm64'],
 		'arduino': ['avr', 'arm'],
 		'yocto': ['i586', 'i686', 'x86_64', 'arm', 'aarch64', 'powerpc', 'powerpc64', 'mips', 'mipsel'],
-		'tizenrt': ['armv7-r', 'armv7-m'],
+		'tizenrt': ['armv7-r', 'armv7-m', 'xtensa-lx6'],
 		}
 
 host = platform.system().lower()

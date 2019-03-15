@@ -66,6 +66,14 @@ IOTIVITY_BASE_DIR = $(APPDIR)/../external/iotivity/iotivity_$(IOTIVITY_RELEASE)
 
 ASRCS =
 
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/log/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/nvs_flash/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/spi_flash/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/tcpip_adapter/include
+CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
+
 CFLAGS += -I$(IOTIVITY_BASE_DIR)/resource/c_common
 CFLAGS += -I$(IOTIVITY_BASE_DIR)/resource/csdk
 CFLAGS += -I$(IOTIVITY_BASE_DIR)/resource/csdk/connectivity/api

@@ -55,22 +55,34 @@ void uuid_unparse_lower(const uuid_t uu, char *out)
 			 "%02x%02x%02x%02x-" "%02x%02x-" "%02x%02x-" "%02x%02x-" "%02x%02x%02x%02x%02x%02x", uu[0], uu[1], uu[2], uu[3], uu[4], uu[5], uu[6], uu[7], uu[8], uu[9], uu[10], uu[11], uu[12], uu[13], uu[14], uu[15]);
 }
 
+#include <unistd.h>
 int getifaddrs(struct ifaddrs **ifap)
 {
+	printf("[getifaddrs] line %d\n", __LINE__);
 	static struct ifaddrs ifa;
 	static struct sockaddr_in addr, netmask;
 	uint8_t flags;
 
+	printf("[getifaddrs] line %d\n", __LINE__);
+	usleep(100*1000);
 	memset(&ifa, 0, sizeof(ifa));
 	memset(&addr, 0, sizeof(addr));
 	memset(&netmask, 0, sizeof(netmask));
 
 	struct netif *curr = g_netdevices;
 
+	printf("[getifaddrs] line %d, g_netdevices %p\n", __LINE__, g_netdevices);
+	usleep(100*1000);
 	netlib_get_ipv4addr(curr->d_ifname, &addr.sin_addr);
+	printf("[getifaddrs] line %d\n", __LINE__);
+	usleep(100*1000);
 	netlib_get_dripv4addr(curr->d_ifname, &netmask.sin_addr);
+	printf("[getifaddrs] line %d\n", __LINE__);
+	usleep(100*1000);
 	netlib_getifstatus(curr->d_ifname, &flags);
 
+	printf("[getifaddrs] line %d\n", __LINE__);
+	usleep(100*1000);
 	ifa.ifa_next = NULL;
 	ifa.ifa_name = curr->d_ifname;
 	ifa.ifa_flags = flags | IFF_RUNNING;
@@ -80,6 +92,8 @@ int getifaddrs(struct ifaddrs **ifap)
 
 	*ifap = &ifa;
 
+	printf("[getifaddrs] line %d\n", __LINE__);
+	usleep(100*1000);
 	return 0;
 }
 

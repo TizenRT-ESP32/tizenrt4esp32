@@ -109,27 +109,27 @@ static bool observeThreadStarted = false;
 #endif
 
 char *gResourceUri = (char *)"/a/light";
-const char *dateOfManufacture = "2016-12-16";
-const char *deviceName = "artik053_tinyara";
-const char *deviceUUID = "51b55ddc-ccbb-4cb3-a57f-494eeca13a21";
-const char *firmwareVersion = "LSI_1.0";
-const char *manufacturerName = "Samsung LSI";
-const char *operatingSystemVersion = "myOS";
-const char *hardwareVersion = "ARTIK_LSI_053";
-const char *platformID = "0A3E0D6F-DBF5-404E-8719-D6880042463A";
-const char *manufacturerLink = "https://www.iotivity.org";
-const char *modelNumber = "ARTIK053";
-const char *platformVersion = "TINYARA_1.0";
-const char *supportLink = "https://www.iotivity.org";
-const char *version = "IOTIVITY_1.2.1";
-const char *systemTime = "2016-12-16T00.00";
-const char *specVersion = "core.1.1.0";
-const char *dataModelVersions = "res.1.1.0";
+#define str_dateOfManufacture "2016-12-16"
+#define str_deviceName "artik053_tinyara"
+#define str_deviceUUID "51b55ddc-ccbb-4cb3-a57f-494eeca13a21"
+#define str_firmwareVersion "LSI_1.0"
+#define str_manufacturerName "Samsung LSI"
+#define str_operatingSystemVersion "myOS"
+#define str_hardwareVersion "ARTIK_LSI_053"
+#define str_platformID "0A3E0D6F-DBF5-404E-8719-D6880042463A"
+#define str_manufacturerLink "https://www.iotivity.org"
+#define str_modelNumber "ARTIK053"
+#define str_platformVersion "TINYARA_1.0"
+#define str_supportLink "https://www.iotivity.org"
+#define str_version "IOTIVITY_1.2.1"
+#define str_systemTime "2016-12-16T00.00"
+#define str_specVersion "core.1.1.0"
+#define str_dataModelVersions "res.1.1.0"
 
 // Entity handler should check for resourceTypeName and ResourceInterface in order to GET
 // the existence of a known resource
-const char *resourceTypeName = "core.light";
-const char *resourceInterface = OC_RSRVD_INTERFACE_DEFAULT;
+#define str_resourceTypeName "core.light"
+#define str_resourceInterface OC_RSRVD_INTERFACE_DEFAULT
 
 OCPlatformInfo platformInfo;
 OCDeviceInfo deviceInfo;
@@ -879,15 +879,19 @@ int simpleServer_cb(int argc, char *argv[])
 		return -1;
 	}
 #ifdef RA_ADAPTER
+	printf("\n[Iotivity Demo - OCSetRAInfo]\n");
 	OCSetRAInfo(&rainfo);
 #endif
-	printf("\n[Iotivity Demo - IOTIVITY version is %s] : OCServer is starting...\n", IOTIVITY_VERSION);
+	printf("\n[Iotivity Demo - OCInit]\n");
+	usleep(200*1000);
 	if (OCInit(NULL, 0, OC_SERVER) != OC_STACK_OK) {
 		printf("OCStack init error\n");
 		return 0;
 	}
 
 #ifdef WITH_PRESENCE
+	printf("\n[Iotivity Demo - OCStartPresence]\n");
+	usleep(200*1000);
 	if (OCStartPresence(0) != OC_STACK_OK) {
 		OIC_LOG(ERROR, TAG, "OCStack presence/discovery error");
 		return 0;
@@ -895,14 +899,16 @@ int simpleServer_cb(int argc, char *argv[])
 #endif
 
 	OCSetDefaultDeviceEntityHandler(OCDeviceEntityHandlerCb, NULL);
-	OCStackResult registrationResult = SetPlatformInfo(platformID, manufacturerName, manufacturerLink, modelNumber,
-									   dateOfManufacture, platformVersion, operatingSystemVersion, hardwareVersion,
-									   firmwareVersion, supportLink, systemTime);
+	OCStackResult registrationResult = SetPlatformInfo(str_platformID, str_manufacturerName, str_manufacturerLink, str_modelNumber,
+									   str_dateOfManufacture, str_platformVersion, str_operatingSystemVersion, str_hardwareVersion,
+									   str_firmwareVersion, str_supportLink, str_systemTime);
 	if (registrationResult != OC_STACK_OK) {
 		printf("Platform info setting failed locally!\n");
 		exit(EXIT_FAILURE);
 	}
 
+	printf("\n[Iotivity Demo - OCSetPlatformInfo]\n");
+	usleep(200*1000);
 	registrationResult = OCSetPlatformInfo(platformInfo);
 
 	if (registrationResult != OC_STACK_OK) {
@@ -910,13 +916,15 @@ int simpleServer_cb(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	registrationResult = SetDeviceInfoLocal(deviceName, specVersion, dataModelVersions);
+	registrationResult = SetDeviceInfoLocal(str_deviceName, str_specVersion, str_dataModelVersions);
 
 	if (registrationResult != OC_STACK_OK) {
 		printf("Device info setting failed locally!");
 		exit(EXIT_FAILURE);
 	}
 
+	printf("\n[Iotivity Demo - OCSetDeviceInfo]\n");
+	usleep(200*1000);
 	registrationResult = OCSetDeviceInfo(deviceInfo);
 
 	if (registrationResult != OC_STACK_OK) {
@@ -927,6 +935,8 @@ int simpleServer_cb(int argc, char *argv[])
 	/*
 	 * Declare and create the example resource: Light
 	 */
+	printf("\n[Iotivity Demo - createLightResource]\n");
+	usleep(200*1000);
 	createLightResource(gResourceUri, &Light);
 
 	// Initialize observations data structure for the resource
@@ -939,6 +949,8 @@ int simpleServer_cb(int argc, char *argv[])
 	 */
 
 #ifdef WITH_PRESENCE
+	printf("\n[Iotivity Demo - create task presenceNotificationGenerator]\n");
+	usleep(200*1000);
 	int ret = 0;
 	pthread_attr_t attr;
 	struct sched_param param;
@@ -959,11 +971,14 @@ int simpleServer_cb(int argc, char *argv[])
 #endif
 	// Break from loop with Ctrl-C
 	OIC_LOG(INFO, TAG, "Entering ocserver main loop...");
+	printf("\n[Iotivity Demo - Entering ocserver main loop...]\n");
+	usleep(200*1000);
 
 	DeletePlatformInfoLocal();
 
 	DeleteDeviceInfoLocal();
 
+	printf("\n[Iotivity Demo - OCProcess loop start...]\n");
 	while (!gQuitFlag) {
 		usleep(10000);
 		if (OCProcess() != OC_STACK_OK) {
@@ -972,6 +987,7 @@ int simpleServer_cb(int argc, char *argv[])
 		}
 	}
 
+	printf("\n[Iotivity Demo - OCProcess loop end...]\n");
 	if (observeThreadStarted) {
 		pthread_cancel(threadId_observe);
 		pthread_join(threadId_observe, NULL);
@@ -988,9 +1004,104 @@ int simpleServer_cb(int argc, char *argv[])
 	return 0;
 }
 
+#define SETUP_WIFI
+
+#ifdef SETUP_WIFI
+
+#include "esp_wifi.h"
+#include "esp_log.h"
+#include "esp_event_loop.h"
+#include "nvs_flash.h"
+#include "esp_wifi_internal.h"
+#include <string.h>
+
+/*======config for wifi softap mode=====*/
+#define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
+#define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
+#define EXAMPLE_MAX_STA_CONN       CONFIG_MAX_STA_CONN
+
+
+#define CONFIG_ESP_WIFI_SSID "ESP32"
+#define CONFIG_ESP_WIFI_PASSWORD "12345678"
+#define CONFIG_MAX_STA_CONN 4
+
+static esp_err_t event_handler(void *ctx, system_event_t *event)
+{
+ switch(event->event_id) {
+    case SYSTEM_EVENT_AP_STACONNECTED:
+        ESP_LOGI("AP", "station:"MACSTR" join, AID=%d",
+                 MAC2STR(event->event_info.sta_connected.mac),
+                 event->event_info.sta_connected.aid);
+        break;
+    case SYSTEM_EVENT_AP_STADISCONNECTED:
+        ESP_LOGI("AP", "station:"MACSTR"leave, AID=%d",
+                 MAC2STR(event->event_info.sta_disconnected.mac),
+                 event->event_info.sta_disconnected.aid);
+        break;
+    default:
+        break;
+    }
+    return ESP_OK;
+}
+
+/* Initialize Wi-Fi as sotfap mode */
+static void wifi_init_softap(void)
+{
+    esp_err_t ret;
+    tcpip_adapter_init();
+    ret = esp_event_loop_init(event_handler, NULL);
+    if(ret) {
+        ets_printf("esp_event_loop_init failed, %d\n", ret);
+        return;
+    }
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ret = esp_wifi_init(&cfg);
+    if(ret) {
+        ets_printf("esp_wifi_init failed, %d\n", ret);
+        return;
+    }
+    wifi_config_t wifi_config = {
+        .ap = {
+            .ssid = EXAMPLE_ESP_WIFI_SSID,
+            .ssid_len = strlen(EXAMPLE_ESP_WIFI_SSID),
+            .password = EXAMPLE_ESP_WIFI_PASS,
+            .max_connection = EXAMPLE_MAX_STA_CONN,
+            .authmode = WIFI_AUTH_WPA_WPA2_PSK
+        },
+    };
+    if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
+        wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+    }
+
+    ret = esp_wifi_set_mode(WIFI_MODE_AP);
+    if(ret) {
+        ets_printf("esp_wifi_set_mode failed, %d\n", ret);
+        return;
+    }
+
+    ret = esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config);
+    if(ret) {
+        ets_printf("esp_wifi_set_config failed, %d\n", ret);
+        return;
+    }
+     ret = esp_wifi_start();
+    if(ret) {
+        return;
+    }
+
+    ESP_LOGI("AP", "wifi_init_softap finished.SSID:%s password:%s",
+             EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+   //keep event hander
+    while(1);
+}
+#endif
 
 int simpleServer_main(int argc, char *argv[])
 {
+#ifdef SETUP_WIFI
+	wifi_init_softap();
+#endif
 	task_create("iotivity_simpleserver", IOTIVITY_TEST_PRI, IOTIVITY_TEST_STACKSIZE, simpleServer_cb, (FAR char * const *)NULL);
 	return 0;
 }
