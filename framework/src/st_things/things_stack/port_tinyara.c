@@ -90,6 +90,12 @@ error:
 	return ret;
 }
 
+const char *gai_strerror(int errcode)
+{
+	static const char *n_str = "gai_strerror dummy string";
+	return n_str;
+}
+
 unsigned int if_nametoindex(const char *ifname)
 {
 	return 0;					// TODO: Now supports only 1 device

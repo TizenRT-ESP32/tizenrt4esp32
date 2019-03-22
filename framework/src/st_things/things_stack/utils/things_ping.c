@@ -16,7 +16,7 @@
  *
  ****************************************************************************/
 
-#define THINGS_PING_ENABLE      1
+//#define THINGS_PING_ENABLE
 
 #include <stdbool.h>
 #include <unistd.h>

@@ -323,11 +323,13 @@ int things_start_stack(void)
 	}
 	sm_set_otm_event_handler(otm_event_cb);
 #endif
+
 	g_req_handler = get_handler_instance();
 	if (NULL == g_req_handler) {
 		THINGS_LOG_E(TAG, "Failed to initialize Request Handler");
 		return 0;
 	}
+	THINGS_LOG_V(TAG, "g_req_handler->init_module()");
 	// Will be refactored to received callbacks for GET/PUT/POST/DELETE/OBSERVE ..
 	g_req_handler->init_module();
 
@@ -338,10 +340,12 @@ int things_start_stack(void)
 		return 0;
 	}
 
+	THINGS_LOG_V(TAG, "g_server_builder->init_module()");
 	g_server_builder->init_module(g_server_builder, g_req_handler->entity_handler);
 
 #ifdef __SECURED__
 	// Generate device UUID
+	THINGS_LOG_V(TAG, "sm_generate_device_id");
 	if (0 != sm_generate_device_id()) {
 		THINGS_LOG_E(TAG, "Failed to generate device_id");
 		return 0;
@@ -349,11 +353,13 @@ int things_start_stack(void)
 #endif
 
 	// Register Device-ID & Resources
+	THINGS_LOG_V(TAG, "dm_register_device_id");
 	if (dm_register_device_id() == false) {
 		THINGS_LOG_E(TAG, "Failed to register Device ID");
 		return 0;
 	}
 
+	THINGS_LOG_V(TAG, "dm_register_resource");
 	if (!dm_register_resource(g_server_builder)) {
 		THINGS_LOG_E(TAG, "Failed to register Resource");
 		return 0;
@@ -366,6 +372,7 @@ int things_start_stack(void)
 	// Register Callback
 	esm_register_cloud_cb(cloud_data_cb_esm);
 
+	THINGS_LOG_V(TAG, "es_cloud_init");
 	if (es_cloud_init(g_server_builder) == NULL) {
 		THINGS_LOG_E(TAG, "Failed to initialize Cloud");
 		return 0;
@@ -456,7 +463,7 @@ GOTO_OUT:
 int things_stop_stack(void)
 {
 	THINGS_LOG_D(TAG, THINGS_FUNC_ENTRY);
-	pthread_mutex_lock(&g_things_stop_mutex);	
+	pthread_mutex_lock(&g_things_stop_mutex);
 	pthread_mutex_lock(&m_thread_oic_reset);
 
 	if (b_thread_things_reset == true) {

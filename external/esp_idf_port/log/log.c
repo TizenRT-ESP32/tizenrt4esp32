@@ -79,7 +79,7 @@ typedef struct {
 } cached_tag_entry_t;
 
 typedef struct uncached_tag_entry_{
-    SLIST_ENTRY(uncached_tag_entry_) entries; 
+    SLIST_ENTRY(uncached_tag_entry_) entries;
     uint8_t level;  // esp_log_level_t as uint8_t
     char tag[0];    // beginning of a zero-terminated string
 } uncached_tag_entry_t;
@@ -110,7 +110,7 @@ vprintf_like_t esp_log_set_vprintf(vprintf_like_t func)
         s_log_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
         pthread_mutex_init(s_log_mutex, NULL);
     }
-    
+
     pthread_mutex_lock(s_log_mutex);
     vprintf_like_t orig_func = s_log_print_func;
     s_log_print_func = func;
@@ -159,7 +159,7 @@ void esp_log_level_set(const char* tag, esp_log_level_t level)
         SLIST_INSERT_HEAD( &s_log_tags, new_entry, entries );
     }
 
-    //search in the cache and update it if exist         
+    //search in the cache and update it if exist
     for (int i = 0; i < s_log_cache_entry_count; ++i) {
 #ifdef LOG_BUILTIN_CHECKS
         assert(i == 0 || s_log_cache[(i - 1) / 2].generation < s_log_cache[i].generation);
@@ -184,6 +184,7 @@ void clear_log_level_list()
 #endif
 }
 
+#include <unistd.h>
 void IRAM_ATTR esp_log_write(esp_log_level_t level,
         const char* tag,
         const char* format, ...)
@@ -196,7 +197,7 @@ void IRAM_ATTR esp_log_write(esp_log_level_t level,
     if (xSemaphoreTake(s_log_mutex, MAX_MUTEX_WAIT_TICKS) == pdFALSE) {
         return;
     }*/
-    
+
     pthread_mutex_lock(s_log_mutex);
 
     esp_log_level_t level_for_tag;
@@ -219,6 +220,7 @@ void IRAM_ATTR esp_log_write(esp_log_level_t level,
     va_start(list, format);
     (*s_log_print_func)(format, list);
     va_end(list);
+	//usleep(100*1000);
 }
 
 static inline bool get_cached_log_level(const char* tag, esp_log_level_t* level)
@@ -448,7 +450,7 @@ void esp_log_buffer_hexdump_internal( const char *tag, const void *buffer, uint1
             ptr_line = buffer;
         }
         ptr_hd = hd_buffer;
-        
+
         ptr_hd += sprintf( ptr_hd, "%p ", buffer );
         for( int i = 0; i < BYTES_PER_LINE; i ++ ) {
             if ( (i&7)==0 ) {

@@ -22,6 +22,8 @@
 #include "logging/things_logger.h"
 #include "things_util.h"
 
+#define ENABLE_MALLOC_DEBUG
+
 #ifdef ENABLE_MALLOC_DEBUG
 #define TAG "[things_malloc]"
 #endif
@@ -38,9 +40,10 @@ void *things_malloc(size_t size)
 	/* Allocating Memory for given size using malloc API
 	 */
 #ifdef ENABLE_MALLOC_DEBUG
+	THINGS_LOG_D(TAG, "size=%u", size);
 	void *ptr = malloc(size);
 	count++;
-	THINGS_LOG_D(TAG, "malloc: ptr=%p, size=%u, count=%u", ptr, size, count);
+	THINGS_LOG_D(TAG, "ptr=%p, size=%u, count=%u", ptr, size, count);
 	return ptr;
 #else
 	return malloc(size);
@@ -55,8 +58,10 @@ void *things_calloc(size_t num, size_t size)
 	/* Allocating Memory for given size using calloc API
 	 */
 #ifdef ENABLE_MALLOC_DEBUG
+	THINGS_LOG_D(TAG, "num=%u, size=%u", num, size);
 	void *ptr = calloc(num, size);
-	THINGS_LOG_D(TAG, "calloc: ptr=%p, num=%u, size=%u", ptr, num, size);
+	count++;
+	THINGS_LOG_D(TAG, "calloc: ptr=%p, num=%u, size=%u, count=%u", ptr, num, size, count);
 	return ptr;
 #else
 	return calloc(num, size);
@@ -74,8 +79,10 @@ void *things_realloc(void *ptr, size_t size)
 	// Otherwise leave the behavior up to realloc() itself:
 
 #ifdef ENABLE_MALLOC_DEBUG
+	THINGS_LOG_D(TAG, "size=%u", size);
 	void *newptr = realloc(ptr, size);
-	THINGS_LOG_D(TAG, "realloc: ptr=%p, newptr=%p, size=%u", ptr, newptr, size);
+	count++;
+	THINGS_LOG_D(TAG, "realloc: ptr=%p, newptr=%p, size=%u, count=%u", ptr, newptr, size, count);
 	// Very important to return the correct pointer here, as it only *somtimes*
 	// differs and thus can be hard to notice/test:
 	return newptr;
@@ -89,14 +96,17 @@ void things_free(void *ptr)
 #ifdef ENABLE_MALLOC_DEBUG
 	// Since things_malloc() did not increment count if it returned NULL,
 	// guard the decrement:
+	THINGS_LOG_D(TAG, "free: ptr=%p, count=%u--", ptr, count);
 	if (ptr) {
 		count--;
 	}
-	THINGS_LOG_D(TAG, "free: ptr=%p, count=%u", ptr, count);
 #endif
 
 	free(ptr);
-	ptr = NULL;
+
+#ifdef ENABLE_MALLOC_DEBUG
+		THINGS_LOG_D(TAG, "free: ptr=%p, done", ptr);
+#endif
 }
 #endif
 

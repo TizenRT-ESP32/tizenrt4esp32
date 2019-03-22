@@ -119,19 +119,23 @@ int ess_process(void)
 	iotbus_gpio_register_cb(m_gpio, IOTBUS_GPIO_EDGE_RISING, gpio_callback_event, (void *)m_gpio);
 #endif
 
+	printf("[%s] call st_things_initialize \n", TAG);
 	bool easysetup_complete = false;
 	st_things_initialize("device_def.json", &easysetup_complete);
 
+	printf("[%s] call st_things_initialize end \n", TAG);
 	st_things_register_request_cb(handle_get_request, handle_set_request);
 	st_things_register_reset_cb(handle_reset_request, handle_reset_result);
 	st_things_register_user_confirm_cb(handle_ownership_transfer_request);
 	st_things_register_things_status_change_cb(handle_things_status_change);
 
+	printf("[%s] call st_things_start \n", TAG);
 	if (st_things_start() == ST_THINGS_ERROR_NONE) {
 		printf("[%s]=====================================================\n", TAG);
 		printf("[%s]                    Stack Started                    \n", TAG);
 		printf("[%s]=====================================================\n", TAG);
 	}
 
+	printf("[%s] call st_things_start end \n", TAG);
 	return 0;
 }

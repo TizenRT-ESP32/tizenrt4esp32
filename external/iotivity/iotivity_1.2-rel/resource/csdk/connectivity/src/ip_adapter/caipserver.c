@@ -749,6 +749,8 @@ void CAIPPullData()
 
 static CASocketFd_t CACreateSocket(int family, uint16_t *port, bool isMulticast)
 {
+	OIC_LOG_V(ERROR, TAG, "family: %d isMulticast %d", family, isMulticast);
+
     int socktype = SOCK_DGRAM;
 #ifdef SOCK_CLOEXEC
     socktype |= SOCK_CLOEXEC;
@@ -969,8 +971,11 @@ CAResult_t CAIPStartServer(const ca_thread_pool_t threadPool)
 {
     CAResult_t res = CA_STATUS_OK;
 
+    OIC_LOG(DEBUG, TAG, "enter");
+
     if (caglobals.ip.started)
     {
+		OIC_LOG(DEBUG, TAG, "already started");
         return res;
     }
 #if defined (_WIN32)
@@ -1003,6 +1008,7 @@ CAResult_t CAIPStartServer(const ca_thread_pool_t threadPool)
 
     if (caglobals.ip.ipv6enabled)
     {
+		OIC_LOG_V(DEBUG, TAG, "LINE %d", __LINE__);
         NEWSOCKET(AF_INET6, u6, false)
         NEWSOCKET(AF_INET6, u6s, false)
         NEWSOCKET(AF_INET6, m6, true)
@@ -1011,6 +1017,7 @@ CAResult_t CAIPStartServer(const ca_thread_pool_t threadPool)
     }
     if (caglobals.ip.ipv4enabled)
     {
+		OIC_LOG_V(DEBUG, TAG, "LINE %d", __LINE__);
         NEWSOCKET(AF_INET, u4, false)
         NEWSOCKET(AF_INET, u4s, false)
         NEWSOCKET(AF_INET, m4, true)
@@ -1040,14 +1047,19 @@ CAResult_t CAIPStartServer(const ca_thread_pool_t threadPool)
         return CA_STATUS_FAILED;
     }
 #endif
+
+	OIC_LOG_V(DEBUG, TAG, "LINE %d", __LINE__);
     // set up appropriate FD mechanism for fast shutdown
     CAInitializeFastShutdownMechanism();
 
+	OIC_LOG_V(DEBUG, TAG, "LINE %d", __LINE__);
     // create source of network interface change notifications
     CAInitializeNetlink();
 
+	OIC_LOG_V(DEBUG, TAG, "LINE %d", __LINE__);
     caglobals.ip.selectTimeout = CAGetPollingInterval(caglobals.ip.selectTimeout);
 
+	OIC_LOG_V(DEBUG, TAG, "LINE %d", __LINE__);
     res = CAIPStartListenServer();
     if (CA_STATUS_OK != res)
     {
@@ -1059,6 +1071,7 @@ CAResult_t CAIPStartServer(const ca_thread_pool_t threadPool)
 #ifndef __TIZENRT__
     res = ca_thread_pool_add_task(threadPool, CAReceiveHandler, NULL, NULL);
 #else
+	OIC_LOG_V(DEBUG, TAG, "LINE %d", __LINE__);
     res = ca_thread_pool_add_task(threadPool, CAReceiveHandler, NULL, NULL, "IoT_ReceiveHandler",
                                   CONFIG_IOTIVITY_RECEIVEHANDLER_PTHREAD_STACKSIZE);
 #endif

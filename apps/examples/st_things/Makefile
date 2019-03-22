@@ -42,6 +42,15 @@ endif
 
 MAINSRC = st_things_sample_main.c
 
+
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/log/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/nvs_flash/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/spi_flash/include
+CFLAGS += -I$(TOPDIR)/../external/esp_idf_port/tcpip_adapter/include
+CFLAGS += -I$(TOPDIR)/arch/xtensa/src/esp32
+
 AOBJS = $(ASRCS:.S=$(OBJEXT))
 COBJS = $(CSRCS:.c=$(OBJEXT))
 MAINOBJ = $(MAINSRC:.c=$(OBJEXT))

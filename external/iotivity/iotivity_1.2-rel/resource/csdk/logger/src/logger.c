@@ -282,6 +282,7 @@ void OCLogv(LogLevel level, const char * tag, const char * format, ...)
  * @param tag    - Module name
  * @param logStr - log string
  */
+ #include <unistd.h>
 void OCLog(LogLevel level, const char * tag, const char * logStr)
 {
     if (!logStr || !tag)
@@ -361,6 +362,7 @@ void OCLog(LogLevel level, const char * tag, const char * logStr)
            }
    #endif
            printf("%02d:%02d.%03d %s: %s: %s\n", min, sec, ms, LEVEL[level], tag, logStr);
+           //usleep(50*1000);
        }
    #endif
    }

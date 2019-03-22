@@ -646,11 +646,14 @@ RESPONSE_ERROR:
 
 void init_handler()
 {
+	THINGS_LOG_V(TAG, THINGS_FUNC_ENTRY);
 	g_quit_flag = 0;
+	THINGS_LOG_V(TAG, THINGS_FUNC_EXIT);
 }
 
 void deinit_handler()
 {
+	THINGS_LOG_V(TAG, THINGS_FUNC_ENTRY);
 	g_quit_flag = 1;
 
 	int iter = 0;
@@ -665,6 +668,7 @@ void deinit_handler()
 		g_handle_res_list = NULL;
 	}
 	g_handle_res_cnt = 0;
+	THINGS_LOG_V(TAG, THINGS_FUNC_EXIT);
 }
 
 struct things_request_handler_s *get_handler_instance()

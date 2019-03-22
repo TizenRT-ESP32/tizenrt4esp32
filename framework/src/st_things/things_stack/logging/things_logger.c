@@ -97,10 +97,12 @@ void things_log(things_log_level_e level, const char *tag, const char *func_name
 	 * [<MM/YY H:M:S.uS> <LOGGER_VERSION>] <LOG_LEVEL> <TAG> <API> <LINE_NO> <LOG_STR>
 	 */
 	if (p_version) {
-		dbg("[%s %s] %s %s %s %d %s\n", buf, p_version, LEVEL[level], tag, func_name, line_num, logStr);
+		dbg("[%s %s] %s %s %s() L%d %s\n", buf, p_version, LEVEL[level], tag, func_name, line_num, logStr);
 	} else {
-		dbg("T%d [%s] %s %s %s %d %s\n", getpid(), buf, LEVEL[level], tag, func_name, line_num, logStr);
+		dbg("T%d [%s] %s %s %s() L%d %s\n", getpid(), buf, LEVEL[level], tag, func_name, line_num, logStr);
 	}
+
+	//usleep(20*1000);
 }
 
 /**

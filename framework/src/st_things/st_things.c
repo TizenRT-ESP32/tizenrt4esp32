@@ -349,22 +349,22 @@ int st_things_start(void)
 	// Register callback for receiving the Security Ownership Transfer state changes.
 	if (1 != (result = things_register_otm_event_handler(ownership_transfer_state_cb))) {
 		THINGS_LOG_E(TAG, "things_register_otm_event_handler failed (result:%d)", result);
-		goto error;
+		//goto error;
 	}
 	// Register callback for receiving request during ownership transfer for getting confirmation from user.
 	if (1 != (result = things_register_user_confirm_func(get_user_confirm_cb))) {
 		THINGS_LOG_E(TAG, "things_register_user_confirm_func failed (result:%d)", result);
-		goto error;
+		//goto error;
 	}
 	// Register callback for receiving the pin generated for ownership transfer.
 	if (1 != (result = things_register_pin_generated_func(generated_pin_cb))) {
 		THINGS_LOG_E(TAG, "things_register_pin_generated_func failed (result:%d)", result);
-		goto error;
+		//goto error;
 	}
 	// Register callback to receiving request for closing the PIN display.
 	if (1 != (result = things_register_pin_display_close_func(close_pin_display_cb))) {
 		THINGS_LOG_E(TAG, "things_register_pin_display_close_func failed (result:%d)", result);
-		goto error;
+		//goto error;
 	}
 	// Register callback to handle GET and POST requests.
 	if (1 != (result = things_register_handle_request_func(handle_get_request_cb, handle_set_request_cb))) {

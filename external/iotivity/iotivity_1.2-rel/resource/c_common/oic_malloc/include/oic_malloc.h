@@ -35,6 +35,7 @@
 // Includes
 //-----------------------------------------------------------------------------
 #include <stdio.h>
+#include <stdlib.h>
 #define OICMalloc(x) malloc(x)
 #define OICCalloc(n,x) calloc(n,x)
 #define OICRealloc(p,x) realloc(p,x)

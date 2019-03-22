@@ -239,7 +239,7 @@ static void *queue_send_thread(void *queue_handle)
 			g_wifi_osi_funcs._queue_send(queue_handle, &data, 1);
 		} else {
 			printf("g_wifi_osi_funcs._queue_send null piont!\n");
-		}	
+		}
 	}
 	return NULL;
 }
@@ -275,7 +275,7 @@ void queue_operate_demo(void)
 	uint32_t queue_len = 20;
 	pthread_attr_t attr;
 	int status = -1;
-	
+
 	if (g_wifi_osi_funcs._queue_create) {
 		queue_info_t *queue_handle = g_wifi_osi_funcs._queue_create(queue_len, sizeof(queue_item_t));
 		if (!queue_handle) {
@@ -304,7 +304,7 @@ void queue_operate_demo(void)
 		}
 
 		pthread_setname_np(queue_send_thread_handle, "esp32 wifi queue sender");
-		
+
 		status = pthread_join(queue_send_thread_handle, NULL);
 		if (status != OK) {
 			printf("esp32 wifi queue sender: ERROR: pthread_join failed: %d\n", status);
@@ -319,7 +319,7 @@ void queue_operate_demo(void)
 	} else {
 		printf("g_wifi_osi_funcs._queue_create null pionter!\n");
 	}
-	
+
 }
 
 //event group test code
@@ -479,7 +479,7 @@ static int event_handler(void *ctx, system_event_t *event)
             break;
         default:
             break;
-    }   
+    }
     return OK;
 }
 
@@ -500,7 +500,7 @@ void test_event_loop()
     esp_event_loop_init(event_handler, NULL);
     pthread_t thread_handle = NULL;
     pthread_create(&thread_handle, NULL, sendevent_func, NULL);
-    pthread_join(thread_handle, NULL); 
+    pthread_join(thread_handle, NULL);
 }
 
 void get_wifi_mac_address()
@@ -518,6 +518,13 @@ extern int esp_spiram_test();
 pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 {
 	printf("start esp32 demo!\n");
+
+	extern int kdbg_heapinfo(int argc, char **args);
+	kdbg_heapinfo(0,NULL);
+	usleep(100*1000);
+
+	printf("start esp32 demo ...\n");
+
 	//test_timer();
     //get_wifi_mac_address();
 #ifdef CONFIG_ESP_WIFI_MODE_STATION
@@ -525,7 +532,7 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 #else
     wifi_softap_entry();
 #endif
-    
+
 #if 0
 #ifdef CONFIG_SPIRAM_SUPPORT
 	esp_spiram_test();

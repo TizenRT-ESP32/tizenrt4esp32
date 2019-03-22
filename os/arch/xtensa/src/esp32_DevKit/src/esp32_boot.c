@@ -171,6 +171,12 @@ void esp32_devKit_config_partions(void)
 					smart_initialize(CONFIG_ESP32_FLASH_MINOR, mtd_part, partref);
 				} else
 #endif
+#if defined(CONFIG_FS_ROMFS) && defined(CONFIG_FS_SMARTFS)
+				if (!strncmp(types, "romfs,", 6)) {
+					ftl_initialize(partno, mtd_part);
+				} else
+#endif
+
 				{
 				}
 
@@ -218,6 +224,13 @@ void esp32_devKit_mount_partions(void)
 			lldbg("ERROR: mounting '%s' failed\n", CONFIG_ESP32_AUTOMOUNT_USERFS_DEVNAME);
 		}
 	}
+
+#ifdef CONFIG_ESP32_AUTOMOUNT_ROMFS
+	ret = mount(CONFIG_ESP32_AUTOMOUNT_ROMFS_DEVNAME, CONFIG_ESP32_AUTOMOUNT_ROMFS_MOUNTPOINT, "romfs", 1, NULL);
+	if (ret != OK) {
+		lldbg("ERROR: mounting '%s' failed\n", CONFIG_ESP32_AUTOMOUNT_ROMFS_DEVNAME);
+	}
+#endif
 
 #ifdef CONFIG_FS_PROCFS
 	/* Mount the procfs file system */

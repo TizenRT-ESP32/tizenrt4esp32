@@ -41,6 +41,8 @@
 
 #define TAG "THINGS_SSS"
 
+#ifdef CONFIG_SUPPORT_FULL_SECURITY
+
 static OicSecKey_t cacert;
 static OicSecKey_t subca;
 static OicSecKey_t devicecert;
@@ -103,7 +105,7 @@ int OCFreeHwKey(void* keyContext)
 int OCGetOwnCertFromHw(const void* keyContext, uint8_t** certChain, size_t* certChainLen)
 {
 	(void *)keyContext;
-	
+
 	THINGS_LOG_D(TAG, "IN : %s", __func__);
 
 	if (certChain == NULL || certChainLen == NULL) {
@@ -192,7 +194,7 @@ static int things_set_cert_chains(void)
 	for (i = 0; i < buflen - 2; i++) {
 		if (buf[i] == 0x30 && buf[i + 1] == 0x82 && buf[i + 2] == 0x02) {
 			cnt++;
-		
+
 			// For rootCA
 			if (cnt == 2) {
 				cacert.len = (buf + i) - ptr;
@@ -267,13 +269,13 @@ OCStackResult things_sss_key_handler_init(void)
 bool things_encrypt_artik_uuid(unsigned char *output)
 {
 	THINGS_LOG_D(TAG, "In %s", __func__);
-	
+
 	unsigned char uuid[((UUID_LENGTH * 2) + 4 + 1)] = { 0, };
 	unsigned int uuid_len = 0;
 
 	get_artik_crt_uuid(uuid, &uuid_len);
 
-	/* 
+	/*
 	 * urlsafe((base64(sha256(base64(sha256(CertUUID))))).substring(0,7))
 	 */
 
@@ -320,3 +322,4 @@ bool things_encrypt_artik_uuid(unsigned char *output)
 
 	return true;
 }
+#endif

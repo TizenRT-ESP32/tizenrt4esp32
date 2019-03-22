@@ -25,7 +25,7 @@ IOTIVITY_BASE_DIR = $(TOPDIR)/../external/iotivity/iotivity_$(IOTIVITY_RELEASE)
 CSRCS += st_things.c st_things_request_handler.c st_things_representation.c
 
 ifeq ($(CONFIG_ST_THINGS_COLLECTION), y)
-CSRCS += st_things_request_handler_collection.c 
+CSRCS += st_things_request_handler_collection.c
 endif
 
 CFLAGS += -D__TIZENRT__
@@ -60,7 +60,7 @@ endif
 ####################################
 # IOTIVITY
 ####################################
-CFLAGS += -I$(IOTIVITY_BASE_DIR)/extlibs/mbedtls/mbedtls/include 
+CFLAGS += -I$(IOTIVITY_BASE_DIR)/extlibs/mbedtls/mbedtls/include
 CFLAGS += -I$(IOTIVITY_BASE_DIR)/resource/c_common
 CFLAGS += -I$(IOTIVITY_BASE_DIR)/resource/c_common/oic_malloc/include
 CFLAGS += -I$(IOTIVITY_BASE_DIR)/resource/c_common/oic_string/include
@@ -97,6 +97,8 @@ CFLAGS += -D__SECURED__
 CFLAGS += -DTCP_ADAPTER
 CFLAGS += -D__ST_THINGS_RTOS_CLOUD__
 endif
+
+#CFLAGS += -DENABLE_THINGS_MALLOC
 
 DEPPATH += --dep-path src/st_things
 VPATH += :src/st_things

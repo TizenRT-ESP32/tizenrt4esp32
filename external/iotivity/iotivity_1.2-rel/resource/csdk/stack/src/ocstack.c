@@ -2389,19 +2389,24 @@ OCStackResult OCInit2(OCMode mode, OCTransportFlags serverFlags, OCTransportFlag
     defaultDeviceHandler = NULL;
     defaultDeviceHandlerCallbackParameter = NULL;
 
+    OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
     result = InitializeScheduleResourceList();
     VERIFY_SUCCESS(result, OC_STACK_OK);
 
+    OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
     result = CAResultToOCResult(CAInitialize((CATransportAdapter_t)transportType));
     VERIFY_SUCCESS(result, OC_STACK_OK);
 
+    OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
     result = CAResultToOCResult(OCSelectNetwork(transportType));
     VERIFY_SUCCESS(result, OC_STACK_OK);
 
+    OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
     result = CAResultToOCResult(CARegisterNetworkMonitorHandler(
       OCDefaultAdapterStateChangedHandler, OCDefaultConnectionStateChangedHandler));
     VERIFY_SUCCESS(result, OC_STACK_OK);
 
+    OIC_LOG_V(INFO, TAG, "Line %d myStackMode %d", __LINE__, myStackMode);
     switch (myStackMode)
     {
         case OC_CLIENT:
@@ -2425,8 +2430,10 @@ OCStackResult OCInit2(OCMode mode, OCTransportFlags serverFlags, OCTransportFlag
             break;
     }
     VERIFY_SUCCESS(result, OC_STACK_OK);
+    OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
 
 #ifdef TCP_ADAPTER
+    OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
     CARegisterKeepAliveHandler(OCHandleKeepAliveConnCB);
 #endif
 
@@ -2440,16 +2447,19 @@ OCStackResult OCInit2(OCMode mode, OCTransportFlags serverFlags, OCTransportFlag
     // Initialize resource
     if(myStackMode != OC_CLIENT)
     {
+		OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
         result = initResources();
     }
 
     // Initialize the SRM Policy Engine
     if(result == OC_STACK_OK)
     {
+		OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
         result = SRMInitPolicyEngine();
         // TODO after BeachHead delivery: consolidate into single SRMInit()
     }
 #if defined (ROUTING_GATEWAY) || defined (ROUTING_EP)
+	OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
     RMSetStackMode(mode);
 #ifdef ROUTING_GATEWAY
     if (OC_GATEWAY == myStackMode)
@@ -2462,6 +2472,7 @@ OCStackResult OCInit2(OCMode mode, OCTransportFlags serverFlags, OCTransportFlag
 #ifdef TCP_ADAPTER
     if (result == OC_STACK_OK)
     {
+		OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
         result = OCInitializeKeepAlive(myStackMode);
     }
 #endif
@@ -2475,6 +2486,8 @@ exit:
         CATerminate();
         stackState = OC_STACK_UNINITIALIZED;
     }
+
+	OIC_LOG_V(INFO, TAG, "Line %d", __LINE__);
     return result;
 }
 
@@ -3817,6 +3830,7 @@ OCStackResult BindResourceTypeToResource(OCResource* resource,
     pointer = (OCResourceType *) OICCalloc(1, sizeof(OCResourceType));
     if (!pointer)
     {
+        OIC_LOG_V(ERROR, TAG, "OICCalloc(1,%u) failed", sizeof(OCResourceType));
         result = OC_STACK_NO_MEMORY;
         goto exit;
     }
@@ -3824,6 +3838,7 @@ OCStackResult BindResourceTypeToResource(OCResource* resource,
     str = OICStrdup(resourceTypeName);
     if (!str)
     {
+        OIC_LOG_V(ERROR, TAG, "OICStrdup(strlen %u) failed", strlen(resourceTypeName));
         result = OC_STACK_NO_MEMORY;
         goto exit;
     }

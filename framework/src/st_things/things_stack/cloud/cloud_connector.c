@@ -78,7 +78,7 @@ int CICheckDomain(const char *DomainName, char **pIP)
 			}
 			return 0;
 		}
-	} 
+	}
 
 	THINGS_LOG_E(TAG, " Failed to get the IP");
 
@@ -131,7 +131,7 @@ OCStackResult things_cloud_signup(const char *host, const char *device_id, const
 	OCCallbackData cb_data;
 	OCRepPayload *registerPayload = NULL;
 	OCRepPayload *aafPayload = NULL;
-	char *mnid = NULL;	
+	char *mnid = NULL;
 
 	if (host == NULL || device_id == NULL || event_data == NULL || (event_data->accesstoken[0] == 0 && event_data->auth_code[0] == 0)) {
 		THINGS_LOG_E(TAG, "Invalid event_data.");
@@ -374,7 +374,7 @@ OCStackResult things_cloud_rsc_publish(char *host, things_resource_s **list, int
 	}
 
 	if (things_is_empty_request_handle() == true) {
-		result = OCRDPublish(&g_req_handle, host, CT_ADAPTER_TCP, resourceHandles, iter, &cb_data, OC_LOW_QOS);
+//		result = OCRDPublish(&g_req_handle, host, CT_ADAPTER_TCP, resourceHandles, iter, &cb_data, OC_LOW_QOS);
 
 		if (result == OC_STACK_OK && timeoutHandler != NULL) {
 			if (things_add_request_handle(g_req_handle) == NULL) {

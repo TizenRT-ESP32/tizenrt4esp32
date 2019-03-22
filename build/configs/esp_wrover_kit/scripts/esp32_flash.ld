@@ -61,6 +61,8 @@ SECTIONS
     _iram_text_end = ABSOLUTE(.);
   } > iram0_0_seg
 
+  /* Shared RAM */
+
   .dram0.data :
   {
     /* .data initialized on power-up in ROMed configurations. */
@@ -79,10 +81,7 @@ SECTIONS
     KEEP (*(.jcr))
     *(.dram1 .dram1.*)
     _edata = ABSOLUTE(.);
-    . = ALIGN(4);
   } >dram0_0_seg
-
-  /* Shared RAM */
 
   .dram0.bss (NOLOAD) :
   {
@@ -110,6 +109,7 @@ SECTIONS
     /* Uninitialized .bss */
     *(.noinit)
 
+    . = ALIGN(4);
     /* Heap starts at the end of .data */
     _sheap = ABSOLUTE(.);
 

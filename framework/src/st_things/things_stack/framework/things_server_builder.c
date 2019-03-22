@@ -169,7 +169,7 @@ struct things_resource_s *create_collection_resource(struct things_server_builde
 		THINGS_LOG_V(TAG, "Resource Creation Failed - ret = %d, %s", ret, uri);
 		return NULL;
 	}
-	
+
 	OCBindResourceTypeToResource(hd, OIC_RTYPE_COLLECTION_WK);
 	OCBindResourceInterfaceToResource(hd, OIC_INTERFACE_BATCH);
 
@@ -272,6 +272,7 @@ struct things_resource_s *get_resource(things_server_builder_s *builder, const c
 
 void init_builder(struct things_server_builder_s *builder, request_handler_cb cb)
 {
+	THINGS_LOG_V(TAG, THINGS_FUNC_ENTRY);
 	OCTransportAdapter m_transport = (OC_ADAPTER_IP | OC_ADAPTER_TCP);
 	if (OC_STACK_OK != OCInit2(OC_CLIENT_SERVER, OC_IP_USE_V4, OC_IP_USE_V4, m_transport)) {
 		THINGS_LOG_E(TAG, "RESOURCE SERVER START FAILED");
@@ -285,10 +286,13 @@ void init_builder(struct things_server_builder_s *builder, request_handler_cb cb
 	pthread_create_rtos(&g_thread_id_server, NULL, server_execute_loop, (void *)NULL, THINGS_STACK_SERVEREXCETUE_LOOP_THREAD);
 
 	register_req_handler(builder, cb);
+
+	THINGS_LOG_V(TAG, THINGS_FUNC_EXIT);
 }
 
 void deinit_builder(things_server_builder_s *builder)
 {
+	THINGS_LOG_V(TAG, THINGS_FUNC_ENTRY);
 	if (builder != NULL) {
 		g_quit_flag = 1;
 		pthread_cancel(g_thread_id_server);
@@ -313,6 +317,8 @@ void deinit_builder(things_server_builder_s *builder)
 	if (OCStop() != OC_STACK_OK) {
 		THINGS_LOG_E(TAG, "OCStack process error");
 	}
+
+	THINGS_LOG_V(TAG, THINGS_FUNC_EXIT);
 }
 
 void set_device_info(things_server_builder_s *builder, char *device_name, char *device_type)

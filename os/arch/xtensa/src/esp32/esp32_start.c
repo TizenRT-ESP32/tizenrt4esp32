@@ -118,6 +118,8 @@ void IRAM_ATTR __start(void)
 
 	up_irq_disable();
 
+	ets_printf("[%s] line %d\n", __FUNCTION__, __LINE__);
+
 #ifdef CONFIG_STACK_COLORATION
 	{
 		register uint32_t *ptr;
@@ -144,7 +146,11 @@ void IRAM_ATTR __start(void)
 
 	/* Make page 0 access raise an exception */
 
+	ets_printf("[%s] line %d\n", __FUNCTION__, __LINE__);
+
 	esp32_region_protection();
+
+	ets_printf("[%s] line %d\n", __FUNCTION__, __LINE__);
 
 	/* Move CPU0 exception vectors to IRAM */
 
@@ -152,7 +158,11 @@ void IRAM_ATTR __start(void)
 
 	/* Set .bss to zero */
 
+	ets_printf("[%s] line %d _sbss %p _ebss %p regval %p\n", __FUNCTION__, __LINE__, &_sbss, &_ebss, &regval);
+
 	memset(&_sbss, 0, (&_ebss - &_sbss) * sizeof(_sbss));
+
+	ets_printf("[%s] line %d\n", __FUNCTION__, __LINE__);
 
 	/* Make sure that the APP_CPU is disabled for now */
 
@@ -161,6 +171,8 @@ void IRAM_ATTR __start(void)
 	putreg32(regval, DPORT_APPCPU_CTRL_B_REG);
 
 #if XTENSA_CP_ALLSET != 0
+	ets_printf("[%s] line %d\n", __FUNCTION__, __LINE__);
+
     /* Set initial co-processor state */
     g_cpstate.cpasa = (uint32_t*)&cpstate;
     g_cpstate.cpenable = xtensa_get_cpenable();
@@ -168,23 +180,24 @@ void IRAM_ATTR __start(void)
     xtensa_coproc_enable((struct xtensa_cpstate_s*)&g_cpstate, XTENSA_CP_ALLSET);
 #endif
 
+	ets_printf("[%s] line %d\n", __FUNCTION__, __LINE__);
+
 	/* Set CPU frequency configured in board.h */
 
 	esp32_clockconfig();
 
+	ets_printf("[%s] line %d\n", __FUNCTION__, __LINE__);
+
 #ifdef USE_EARLYSERIALINIT
 	/* Perform early serial initialization */
-
+	ets_printf("[%s] line %d\n", __FUNCTION__, __LINE__);
 	xtensa_early_serial_initialize();
-
 #endif
 
 	/* Initialize onboard resources */
-
 	esp32_board_initialize();
 
 	/* Bring up NuttX */
-
 	os_start();
 
 	for (;;) ;					/* Should not return */

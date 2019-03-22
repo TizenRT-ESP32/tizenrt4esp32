@@ -89,7 +89,6 @@ SECTIONS
     *libphy.a:(.rodata .rodata.*)
     *libsoc.a:rtc_clk.*(.rodata .rodata.*)
     _edata = ABSOLUTE(.);
-    . = ALIGN(4);
 
   } >dram0_0_seg
 
@@ -121,6 +120,7 @@ SECTIONS
     /* Uninitialized .bss */
     *(.noinit)
 
+    . = ALIGN(4);
     /* Heap starts at the end of .data */
     _sheap = ABSOLUTE(.);
 

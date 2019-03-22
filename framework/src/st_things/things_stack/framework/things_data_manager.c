@@ -433,18 +433,237 @@ static void delete_device(st_device_s *device)
 	}
 }
 
+#define ROM_READ_FROM_MEM
+#ifdef ROM_READ_FROM_MEM
+const char rom_device_def_json[] =
+"{    "
+"  \"device\": [    "
+"    {    "
+"      \"specification\": {    "
+"        \"device\": {    "
+"          \"deviceType\": \"oic.d.light\",    "
+"          \"deviceName\": \"LAMP_SEOKEY_TEST\",    "
+"          \"specVersion\": \"core.1.1.0\",    "
+"          \"dataModelVersion\": \"res.1.1.0\"    "
+"        },    "
+"        \"platform\": {    "
+"          \"MNID\": \"0ADY\",    "
+"          \"manufacturerUrl\": \"http://www.samsung.com/sec/\",    "
+"          \"manufacturingDate\": \"2018-06-18\",    "
+"          \"modelNumber\": \"ARTIK05x\",    "
+"          \"platformVersion\": \"1.0\",    "
+"          \"osVersion\": \"1.0\",    "
+"          \"hardwareVersion\": \"1.0\",    "
+"          \"firmwareVersion\": \"1.0\",    "
+"          \"VID\": \"SEC_VENDOR_TEST_02\"    "
+"        }    "
+"      },    "
+"      \"resources\": {    "
+"        \"single\": [    "
+"          {    "
+"            \"uri\": \"/capability/switch/main/0\",    "
+"            \"types\": [    "
+"              \"x.com.st.powerswitch\"    "
+"            ],    "
+"            \"interfaces\": [    "
+"              \"oic.if.a\",    "
+"              \"oic.if.baseline\"    "
+"            ],    "
+"            \"policy\": 3    "
+"          },    "
+"          {    "
+"            \"uri\": \"/capability/switchLevel/main/0\",    "
+"            \"types\": [    "
+"              \"oic.r.light.dimming\"    "
+"            ],    "
+"            \"interfaces\": [    "
+"              \"oic.if.a\"    "
+"            ],    "
+"            \"policy\": 3    "
+"          },    "
+"          {    "
+"            \"uri\": \"/capability/colorTemperature/main/0\",    "
+"            \"types\": [    "
+"              \"x.com.st.color.temperature\"    "
+"            ],    "
+"            \"interfaces\": [    "
+"              \"oic.if.a\",    "
+"              \"oic.if.s\",    "
+"              \"oic.if.baseline\"    "
+"            ],    "
+"            \"policy\": 3    "
+"          }    "
+"        ]    "
+"      }    "
+"    }    "
+"  ],    "
+"  \"resourceTypes\": [    "
+"    {    "
+"      \"type\": \"x.com.st.powerswitch\",    "
+"      \"properties\": [    "
+"        {    "
+"          \"key\": \"power\",    "
+"          \"type\": 3,    "
+"          \"mandatory\": true,    "
+"          \"rw\": 3    "
+"        }    "
+"      ]    "
+"    },    "
+"    {    "
+"      \"type\": \"oic.r.light.dimming\",    "
+"      \"properties\": [    "
+"        {    "
+"          \"key\": \"dimmingSetting\",    "
+"          \"type\": 1,    "
+"          \"mandatory\": true,    "
+"          \"rw\": 3    "
+"        },    "
+"        {    "
+"          \"key\": \"range\",    "
+"          \"type\": 6,    "
+"          \"mandatory\": false,    "
+"          \"rw\": 1    "
+"        },    "
+"        {    "
+"          \"key\": \"step\",    "
+"          \"type\": 1,    "
+"          \"mandatory\": false,    "
+"          \"rw\": 1    "
+"        }    "
+"      ]    "
+"    },    "
+"    {    "
+"      \"type\": \"x.com.st.color.temperature\",    "
+"      \"properties\": [    "
+"        {    "
+"          \"key\": \"ct\",    "
+"          \"type\": 1,    "
+"          \"mandatory\": true,    "
+"          \"rw\": 3    "
+"        },    "
+"        {    "
+"          \"key\": \"range\",    "
+"          \"type\": 6,    "
+"          \"mandatory\": true,    "
+"          \"rw\": 1    "
+"        }    "
+"      ]    "
+"    }    "
+"  ],    "
+"  \"configuration\": {    "
+"    \"easySetup\": {    "
+"      \"connectivity\": {    "
+"        \"type\": 1,    "
+"        \"softAP\": {    "
+"          \"setupId\": \"999\",    "
+"          \"artik\": false    "
+"        }    "
+"      },    "
+"      \"ownershipTransferMethod\": 2    "
+"    },    "
+"    \"wifi\": {    "
+"      \"interfaces\": 15,    "
+"      \"frequency\": 1    "
+"    },    "
+"    \"filePath\": {    "
+"      \"svrdb\": \"artikserversecured.dat\",    "
+"      \"provisioning\": \"provisioning.dat\",    "
+"      \"certificate\": \"crt.pem\",    "
+"      \"privateKey\": \"key.der\"    "
+"    }    "
+"  }    "
+"}    "
+;
+
+const char rom_crt_pem[] =
+"-----BEGIN CERTIFICATE-----"
+"MIICyTCCAnCgAwIBAgIUREVWM1AwMTE1NDU5NTk0ODQwNDYwCgYIKoZIzj0EAwIw"
+"fTE4MDYGA1UEAwwvU2Ftc3VuZyBFbGVjdHJvbmljcyBPQ0YgRGV2ZWxvcGVyIFN1"
+"YkNBIHYzIFRFU1QxFjAUBgNVBAsMDU9DRiBEZXYgU3ViQ0ExHDAaBgNVBAoME1Nh"
+"bXN1bmcgRWxlY3Ryb25pY3MxCzAJBgNVBAYTAktSMB4XDTE4MTIyODAxMTEyNFoX"
+"DTE5MDIyNjAxMTEyNFowgbMxZzBlBgNVBAMMXkRldmVsb3BlciBEZXZpY2UgVEVT"
+"VDogQVJUSUtfRk9UQSAoNjA0NzhlZTctZTE4MC00ZDQwLTg0NGItMjgxMDA2Nzgw"
+"YTNiKS9pb3RtLm1hbnVAc2Ftc3VuZy5jb20xHTAbBgNVBAsMFE9DRiBEZXYgRGV2"
+"aWNlKDBBRFkpMRwwGgYDVQQKDBNTYW1zdW5nIEVsZWN0cm9uaWNzMQswCQYDVQQG"
+"EwJLUjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABFjQj/vmgbxlf2p/GxVjvfhN"
+"mmIIKNjdm7xTIcDvQbFkOP+CnyY5AaL750s56mS0Qj+/gnaFNdqc6bS3NaOyiUCj"
+"gZYwgZMwCwYDVR0PBAQDAgPIMDwGCCsGAQUFBwEBBDAwLjAsBggrBgEFBQcwAYYg"
+"aHR0cDovL29jc3AtdGVzdC5zYW1zdW5naW90cy5jb20wOwYDVR0fBDQwMjAwoC6g"
+"LIYqaHR0cDovL2NybC10ZXN0LnNhbXN1bmdpb3RzLmNvbS9kZXYzY2EuY3JsMAkG"
+"A1UdEwQCMAAwCgYIKoZIzj0EAwIDRwAwRAIgdt9ARvO5rYl4e4Cv9SQUY3/dEeuT"
+"GuaHcB2f4r5OFssCIDV15OBWap6UAjptZd/nwByKY5CZRA4EpjN68sXMhSRo"
+"-----END CERTIFICATE-----"
+"-----BEGIN CERTIFICATE-----"
+"MIIClDCCAjmgAwIBAgITCBdmNie8mlu4WgGqOB3KClKsjzAMBggqhkjOPQQDAgUA"
+"MHAxLTArBgNVBAMTJFNhbXN1bmcgRWxlY3Ryb25pY3MgT0NGIFJvb3QgQ0EgVEVT"
+"VDEUMBIGA1UECxMLT0NGIFJvb3QgQ0ExHDAaBgNVBAoTE1NhbXN1bmcgRWxlY3Ry"
+"b25pY3MxCzAJBgNVBAYTAktSMCAXDTE3MTAxMDEwMjY0NloYDzIwNjkxMjMxMTQ1"
+"OTU5WjB9MTgwNgYDVQQDEy9TYW1zdW5nIEVsZWN0cm9uaWNzIE9DRiBEZXZlbG9w"
+"ZXIgU3ViQ0EgdjMgVEVTVDEWMBQGA1UECxMNT0NGIERldiBTdWJDQTEcMBoGA1UE"
+"ChMTU2Ftc3VuZyBFbGVjdHJvbmljczELMAkGA1UEBhMCS1IwWTATBgcqhkjOPQIB"
+"BggqhkjOPQMBBwNCAASaLdjStXbZ6UcF7TFXDqratJxficMlBt8ec46MYQEocqZw"
+"cIAh6UP8mpDMlOs1cUxatCoEDrGUNOZyFuNpztqfo4GgMIGdMA4GA1UdDwEB/wQE"
+"AwIBBjA5BgNVHR8EMjAwMC6gLKAqhihodHRwOi8vY3JsLXRlc3Quc2Ftc3VuZ2lv"
+"dHMuY29tL3Jvb3QuY3JsMBIGA1UdEwEB/wQIMAYBAf8CAQAwPAYIKwYBBQUHAQEE"
+"MDAuMCwGCCsGAQUFBzABhiBodHRwOi8vb2NzcC10ZXN0LnNhbXN1bmdpb3RzLmNv"
+"bTAMBggqhkjOPQQDAgUAA0cAMEQCIDAcuxI2o3RATk1JOGCmNmAqwPNLJxXzq1LA"
+"GPqAP+fnAiBbrlkNBbmWk3q3nLO+0yJP1jd+uh5a7gd8/WF6t5osGA=="
+"-----END CERTIFICATE-----"
+;
+
+const char rom_key_der[] = {
+	0x30, 0x77, 0x02, 0x01, 0x01, 0x04, 0x20, 0x93, 0x9e, 0xf9, 0x17, 0x97, 0x6f, 0x85, 0x2b, 0xf8,
+	0xe0, 0xd5, 0x49, 0xe5, 0x3b, 0xc6, 0x6a, 0x3d, 0x9f, 0x8f, 0xa1, 0xef, 0x99, 0x8c, 0x35, 0xf0,
+	0xe8, 0xcd, 0xe1, 0xc9, 0x5b, 0x60, 0x5c, 0xa0, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d,
+	0x03, 0x01, 0x07, 0xa1, 0x44, 0x03, 0x42, 0x00, 0x04, 0x58, 0xd0, 0x8f, 0xfb, 0xe6, 0x81, 0xbc,
+	0x65, 0x7f, 0x6a, 0x7f, 0x1b, 0x15, 0x63, 0xbd, 0xf8, 0x4d, 0x9a, 0x62, 0x08, 0x28, 0xd8, 0xdd,
+	0x9b, 0xbc, 0x53, 0x21, 0xc0, 0xef, 0x41, 0xb1, 0x64, 0x38, 0xff, 0x82, 0x9f, 0x26, 0x39, 0x01,
+	0xa2, 0xfb, 0xe7, 0x4b, 0x39, 0xea, 0x64, 0xb4, 0x42, 0x3f, 0xbf, 0x82, 0x76, 0x85, 0x35, 0xda,
+	0x9c, 0xe9, 0xb4, 0xb7, 0x35, 0xa3, 0xb2, 0x89, 0x40
+};
+#endif
+
+
+//#define MNT_WRITE_TO_MEM
+
+#ifdef MNT_WRITE_TO_MEM
+#define MNT_READ_FROM_MEM
+#define MNT_PSEUDO_DAT_SIZE 4096
+char mnt_artikserversecured_dat[MNT_PSEUDO_DAT_SIZE] = {0};
+char mnt_provisioning_dat[MNT_PSEUDO_DAT_SIZE] = {0};
+char mnt_easysetup_state_dat[MNT_PSEUDO_DAT_SIZE] = {0};
+#endif
+
 size_t get_json_file_size(const char *filename)
 {
 	size_t size = 0;
-	FILE *fp = fopen(filename, "r");
-
-	if (fp) {
-		if (0 == fseek(fp, 0L, SEEK_END)) {
-			size = ftell(fp);
-			rewind(fp);
-		}
-		fclose(fp);
+#ifdef ROM_READ_FROM_MEM
+	if (strstr(filename, "device_def.json")) {
+		size = sizeof(rom_device_def_json);
 	}
+	else
+#endif
+#ifdef MNT_READ_FROM_MEM
+	if (strstr(filename, "provisioning.dat")) {
+		size = strlen(mnt_provisioning_dat);
+	}
+	else
+#endif
+	{
+		FILE *fp = fopen(filename, "r");
+
+		if (fp) {
+			if (0 == fseek(fp, 0L, SEEK_END)) {
+				size = ftell(fp);
+				rewind(fp);
+			}
+			fclose(fp);
+		} else {
+			THINGS_LOG_E(TAG, "JSON file (%s) not exist!", filename);
+		}
+	}
+
+	THINGS_LOG_D(TAG, "file %s size %d", filename, size);
 	return size;
 }
 
@@ -456,6 +675,8 @@ char *get_json_string_from_file(const char *filename)
 	size_t readed = 0;
 	int fp_acess_cnt = 0;
 
+	THINGS_LOG_D(TAG, "filename %s", filename);
+
 	if (size <= 0) {
 		THINGS_LOG_E(TAG, "Failed converting to JSON");
 		return NULL;
@@ -465,34 +686,51 @@ char *get_json_string_from_file(const char *filename)
 
 	json_str = (char *)things_malloc(size + 1);
 
-	// 1. File Read
-	fp = fopen(filename, "r");
-	if (NULL == fp) {
-		THINGS_LOG_V(TAG, "Failed to open %s", filename);
-		things_free(json_str);
-		return NULL;
+#ifdef ROM_READ_FROM_MEM
+	if (strstr(filename, "device_def")) {
+		memcpy(json_str, rom_device_def_json, size);
+		json_str[size] = '\0';
 	}
-	// 2. Json String read from the given file.
-	size_t bytes_read = 0;
-	while (readed < size && fp_acess_cnt < MAX_FILE_ACCESS_CNT) {
-		bytes_read = fread(&(json_str[readed]), 1, size - readed, fp);
-		readed += bytes_read;
-		THINGS_LOG_D(TAG, "Read Size: %d, total Size =%d", readed, size);
-		fp_acess_cnt++;
+	else
+#endif
+#ifdef MNT_READ_FROM_MEM
+	if (strstr(filename, "provisioning.dat")) {
+		memcpy(json_str, mnt_provisioning_dat, size);
+		json_str[size] = '\0';
 	}
+	else
+#endif
+	{
+		// 1. File Read
+		fp = fopen(filename, "r");
+		if (NULL == fp) {
+			THINGS_LOG_V(TAG, "Failed to open %s", filename);
+			things_free(json_str);
+			return NULL;
+		}
+		// 2. Json String read from the given file.
+		size_t bytes_read = 0;
+		while (readed < size && fp_acess_cnt < MAX_FILE_ACCESS_CNT) {
+			bytes_read = fread(&(json_str[readed]), 1, size - readed, fp);
+			readed += bytes_read;
+			THINGS_LOG_D(TAG, "Read Size: %d, total Size =%d", readed, size);
+			fp_acess_cnt++;
+		}
 
-	if (fp_acess_cnt >= MAX_FILE_ACCESS_CNT) {
-		THINGS_LOG_V(TAG, "Access-Times is Over for File Read. (Readed Size: %d, total Size =%d)", readed, size);
-		things_free(json_str);
+		if (fp_acess_cnt >= MAX_FILE_ACCESS_CNT) {
+			THINGS_LOG_V(TAG, "Access-Times is Over for File Read. (Readed Size: %d, total Size =%d)", readed, size);
+			things_free(json_str);
+			fclose(fp);
+			return NULL;
+		}
+
+		json_str[readed] = '\0';
+
 		fclose(fp);
-		return NULL;
+		fp = NULL;
 	}
 
-	json_str[readed] = '\0';
-
-	fclose(fp);
-	fp = NULL;
-
+	THINGS_LOG_D(TAG, "filename %s succeed", filename);
 	return json_str;
 }
 
@@ -544,7 +782,7 @@ char *get_json_string_from_securestorage(void)
 	ret = 1;
 GOTO_OUT:
 	if (ret == 0) {
-		json_str = things_strdup(origin_cloud_json_str);		 
+		json_str = things_strdup(origin_cloud_json_str);
 	}
 
 	THINGS_LOG_V(TAG, "get_json_string_from_securestorage [%s]", json_str);
@@ -587,7 +825,7 @@ int set_json_string_into_securestorage(const char *json_str)
 	if (json_print == NULL) {
 		THINGS_LOG_E(TAG, "json_print is NULL");
 		goto GOTO_OUT;
-	}	
+	}
 
 	int json_print_len = strlen(json_print);
 	THINGS_LOG_V(TAG, "json_print size : %d[%s] ", json_print, json_print_len);
@@ -598,7 +836,7 @@ int set_json_string_into_securestorage(const char *json_str)
 		len = json_print_len;
 	}
 
-	see_write_secure_storage(json_print, len, SECURESTOARGE_CLOUD_DATA_INDEX_1);	
+	see_write_secure_storage(json_print, len, SECURESTOARGE_CLOUD_DATA_INDEX_1);
 	if (len < SECURESTOARGE_MAX_DATA_SIZE) {
 		unsigned char *empty = "";
 		see_write_secure_storage(empty, 1, SECURESTOARGE_CLOUD_DATA_INDEX_2);
@@ -621,18 +859,32 @@ GOTO_OUT:
 
 int set_json_string_into_file(const char *filename, const char *json_str)
 {
-	FILE *fp = NULL;
-	// 1. File Read
-	fp = fopen(filename, "w");
-	if (NULL == fp) {
-		THINGS_LOG_V(TAG, "Failed to open \"%s\" with Write permission.", filename);
-		return 0;
-	}
-	// 2. Json String read from the given file.
-	fwrite(json_str, 1, strlen(json_str), fp);
+	THINGS_LOG_D(TAG, "filename %s size %d", filename, strlen(json_str));
 
-	fclose(fp);
-	fp = NULL;
+#ifdef MNT_WRITE_TO_MEM
+	if (strstr(filename, "provisioning.dat")) {
+		size_t size = strlen(json_str);
+		assert(size < sizeof(mnt_provisioning_dat));
+		memcpy(mnt_provisioning_dat, json_str, size);
+		mnt_provisioning_dat[size] = '\0';
+	}
+	else
+#endif
+	{
+		FILE *fp = NULL;
+		// 1. File Read
+		fp = fopen(filename, "w");
+		if (NULL == fp) {
+			THINGS_LOG_V(TAG, "Failed to open \"%s\" with Write permission.", filename);
+			return 0;
+		}
+		// 2. Json String read from the given file.
+		fwrite(json_str, 1, strlen(json_str), fp);
+
+		fclose(fp);
+		fp = NULL;
+	}
+	THINGS_LOG_D(TAG, "filename %s succeed", filename);
 	return 1;
 }
 
@@ -785,8 +1037,8 @@ wifi_manager_softap_config_s *dm_get_softap_wifi_config(void)
 			THINGS_LOG_E(TAG, "Fail to encrypt artik uuid");
 			return NULL;
 		}
-	} else 
-#endif	
+	} else
+#endif
 	{
 		snprintf(ext_value, sizeof(ext_value), "%02X%02X", st_wifi_info.mac_address[4], st_wifi_info.mac_address[5]);
 	}
@@ -812,7 +1064,7 @@ int parse_things_cloud_json(const char *filename)
 #else
 	json_str = get_json_string_from_file(filename);
 #endif
-	
+
 
 	if (json_str == NULL) {
 		THINGS_LOG_V(TAG, "cloud file initialization.");
@@ -828,8 +1080,7 @@ int parse_things_cloud_json(const char *filename)
 		}
 #endif
 	}
-
-	if (strlen(json_str) > 0) {
+	else if (strlen(json_str) > 0) {
 		cJSON *root = cJSON_Parse((const char *)json_str);
 		if (root != NULL) {
 			cJSON *cloud = cJSON_GetObjectItem(root, KEY_CLOUD);
@@ -844,9 +1095,9 @@ int parse_things_cloud_json(const char *filename)
 			}
 			cJSON_Delete(root);
 		}
+		things_free(json_str);
 	}
-	things_free(json_str);
-	THINGS_LOG_D(TAG, THINGS_FUNC_EXIT);	
+	THINGS_LOG_D(TAG, THINGS_FUNC_EXIT);
 	return ret;
 }
 
@@ -924,7 +1175,7 @@ static int parse_configuration_json(cJSON *configuration)
 		THINGS_LOG_V(TAG, "ownershipTransferMethod is NULL");
 		goto JSON_ERROR;
 	}
-	
+
 	g_ownership_transfer_method = ownership_transfer_method->valueint;
 	THINGS_LOG_V(TAG, "[configuration] ownership_transfer_method : %d", g_ownership_transfer_method);
 
@@ -933,7 +1184,7 @@ static int parse_configuration_json(cJSON *configuration)
 		THINGS_LOG_V(TAG, "[configuration] wifi is NULL");
 		goto JSON_ERROR;
 	}
-	
+
 	cJSON *wifi_interfaces = cJSON_GetObjectItem(wifi, KEY_CONFIGURATION_WIFI_INTERFACES);
 	cJSON *wifi_frequency = cJSON_GetObjectItem(wifi, KEY_CONFIGURATION_WIFI_FREQUENCY);
 	if (wifi_interfaces == NULL) {
@@ -957,13 +1208,13 @@ static int parse_configuration_json(cJSON *configuration)
 	} else {
 		THINGS_LOG_V(TAG, "unknown wifi freq value");
 	}
-	
+
 	cJSON *file_path = cJSON_GetObjectItem(configuration, KEY_CONFIGURATION_FILEPATH);
 	if (file_path == NULL) {
 		THINGS_LOG_V(TAG, "filePath is NULL");
 		goto JSON_ERROR;
 	}
-	
+
 	cJSON *svrdb = cJSON_GetObjectItem(file_path, KEY_CONFIGURATION_FILEPATH_SVRDB);
 	cJSON *provisioning = cJSON_GetObjectItem(file_path, KEY_CONFIGURATION_FILEPATH_PROVISIONING);
 	cJSON *certificate = cJSON_GetObjectItem(file_path, KEY_CONFIGURATION_FILEPATH_CERTIFICATE);
@@ -980,7 +1231,7 @@ static int parse_configuration_json(cJSON *configuration)
 	if (certificate == NULL) {
 		THINGS_LOG_V(TAG, "[configuration] certificate is null");
 		goto JSON_ERROR;
-	}				
+	}
 	if (privateKey == NULL) {
 		THINGS_LOG_V(TAG, "[configuration] privateKey is null");
 		goto JSON_ERROR;
@@ -995,7 +1246,7 @@ static int parse_configuration_json(cJSON *configuration)
 			THINGS_LOG_V(TAG, "svrdb file path length exceeded");
 			goto JSON_ERROR;
 		}
-		memcpy(g_svrdb_file_path, svrdb->valuestring, strlen(svrdb->valuestring));					
+		memcpy(g_svrdb_file_path, svrdb->valuestring, strlen(svrdb->valuestring));
 	} else {
 		if (strlen(svrdb->valuestring) > (size_t)MAX_FILE_PATH_LENGTH - strlen(PATH_MNT)) {
 			THINGS_LOG_V(TAG, "svrdb file path length exceeded");
@@ -1087,7 +1338,7 @@ static int parse_resource_type_json_with_internal(cJSON *resource_types_user)
 	if (parse_internal_json(json_internal_root, &internal_resource_cnt, &internal_resource_type_cnt) == 0) {
 		THINGS_LOG_E(TAG, "parse_internal_json fail");
 		goto JSON_ERROR;
-	}	
+	}
 
 	cJSON *resource_types = NULL;
 	int iter_cnt = 0;
@@ -1153,7 +1404,7 @@ static int parse_resource_type_json_with_internal(cJSON *resource_types_user)
 			}
 
 			hashmap_insert(g_resource_type_hmap, restype, index);
-		} 
+		}
 	}
 
 	ret = 1;
@@ -1173,7 +1424,7 @@ void parse_resource_with_internal(cJSON *single_rsc, cJSON *internal_rsc, int us
 	for (i = 0; i < 2; i++) {
 		int iter_cnt;
 		cJSON *single;
-		
+
 		if (i == 0) {
 			iter_cnt = internal_single_cnt;
 			single = internal_rsc;
@@ -1272,12 +1523,12 @@ static int parse_resource_json(cJSON *device)
 				goto JSON_ERROR;
 			}
 			parse_resource_with_internal(single, internal_single, user_single_cnt, internal_single_cnt);
-			
+
 			THINGS_LOG_V(TAG, "[SINGLE] Resources for Single Usage Cnt : %d", g_device->sig_cnt);
 		} else {
 			THINGS_LOG_V(TAG, "[SINGLE] Reosurces Not Exist");
 		}
-#ifdef CONFIG_ST_THINGS_COLLECTION	
+#ifdef CONFIG_ST_THINGS_COLLECTION
 		cJSON *collection = cJSON_GetObjectItem(resources, KEY_RESOURCES_COL);
 
 		if (collection != NULL) {
@@ -1518,16 +1769,16 @@ static int parse_device_json(cJSON *device)
 				g_model_number = (char *) things_malloc(sizeof(char) * strlen(model_number->valuestring) + 1);
 				strncpy(g_model_number, model_number->valuestring, strlen(model_number->valuestring) + 1);
 			}
-			
+
 			g_device->ver_p = (char *) things_malloc(sizeof(char) * (sizeof(DEVICE_PLATFORM_VERSION)));
 			strncpy(g_device->ver_p, DEVICE_PLATFORM_VERSION, sizeof(DEVICE_PLATFORM_VERSION));
-		
+
 			g_device->ver_os = (char *) things_malloc(sizeof(char) + (sizeof(DEVICE_OS_VERSION)));
 			strncpy(g_device->ver_os, DEVICE_OS_VERSION, sizeof(DEVICE_OS_VERSION));
-		
+
 			g_device->ver_hw = (char *) things_malloc(sizeof(char) * (sizeof(DEVICE_HARDWARE_VERSION)));
 			strncpy(g_device->ver_hw, DEVICE_HARDWARE_VERSION, sizeof(DEVICE_HARDWARE_VERSION));
-			
+
 			if (firmware_version != NULL) {
 				g_device->ver_fw = (char *) things_malloc(sizeof(char) * (strlen(firmware_version->valuestring) + 1));
 				strncpy(g_device->ver_fw, firmware_version->valuestring, strlen(firmware_version->valuestring) + 1);
@@ -1597,7 +1848,7 @@ static int parse_things_info_json(const char *filename)
 		// 3. Parse the Json string
 		json_user_root = cJSON_Parse((const char *)json_str);
 		assert(json_user_root != NULL);
-		
+
 		// Device Items
 		cJSON *devices = cJSON_GetObjectItem(json_user_root, KEY_DEVICE);
 		if (devices == NULL) {
@@ -1624,16 +1875,19 @@ static int parse_things_info_json(const char *filename)
 			THINGS_LOG_E(TAG, "parse_resource_type_json fail");
 			goto JSON_ERROR;
 		}
-		
+
 		cJSON *configuration = cJSON_GetObjectItem(json_user_root, KEY_CONFIGURATION);
 		if (parse_configuration_json(configuration) == 0) {
 			THINGS_LOG_E(TAG, "parse_configuration_json fail");
 			goto JSON_ERROR;
 		}
+	} else {
+		THINGS_LOG_E(TAG, "info json empty");
+		goto JSON_ERROR;
 	}
 
 	if (parse_things_cloud_json(g_things_cloud_file_path) == 0) {
-		THINGS_LOG_D(THINGS_ERROR, TAG, "cloud data parsing error");			
+		THINGS_LOG_D(TAG, "cloud data parsing error");
 	}
 
 	ret = 1;
@@ -1645,7 +1899,7 @@ JSON_ERROR:
 	if (json_str != NULL) {
 		things_free(json_str);
 	}
-	
+
 	THINGS_LOG_D(TAG, THINGS_FUNC_EXIT);
 	return ret;
 }
@@ -1710,7 +1964,7 @@ static int update_things_cloud_json_by_cloud_signup(const char *filename, es_clo
 			THINGS_LOG_V(TAG, "cloud cJSON is NULL.");
 			goto GOTO_OUT;
 		}
-		
+
 		cJSON_DeleteItemFromObject(cloud, KEY_CLOUD_ADDRESS);
 		cJSON_DeleteItemFromObject(cloud, KEY_CLOUD_DOMAIN);
 		cJSON_DeleteItemFromObject(cloud, KEY_CLOUD_PORT);
@@ -1887,7 +2141,7 @@ static things_resource_s *register_resource(things_server_builder_s *p_builder, 
 		strncat(res_uri, resource->uri, MAX_URI_LENGTH);
 
 		ret = p_builder->create_resource(p_builder, res_uri, resource->resource_types[0],
-			resource->interface_types[0], CHECK_DISCOVERABLE(resource->policy), 
+			resource->interface_types[0], CHECK_DISCOVERABLE(resource->policy),
 			CHECK_OBSERVABLE(resource->policy), CHECK_SECURE(resource->policy));
 
 		THINGS_LOG_D(TAG, "add_resource_type : %s", resource->resource_types[0]);
@@ -2069,7 +2323,7 @@ int dm_register_resource(things_server_builder_s *p_builder)
 		if (device->col_cnt < 1) {
 			THINGS_LOG_D(TAG, "NO COLLECTION & ITS CHILDREN RESOURCE(S)");
 		} else {
-			THINGS_LOG_V(TAG, "COLLECTION CHILDREN RESOURCE(S) CNT : %d", device->col_cnt);				
+			THINGS_LOG_V(TAG, "COLLECTION CHILDREN RESOURCE(S) CNT : %d", device->col_cnt);
 
 			memset(res_uri, 0, (size_t) MAX_URI_LENGTH);
 			strncat(res_uri, device->collection[0].uri, MAX_URI_LENGTH);
@@ -2124,9 +2378,9 @@ int dm_register_resource(things_server_builder_s *p_builder)
 											device->vid,	// gVenderId
 											device->mnid,	// manufacturer_name
 											device->manufacturer_url);	// manufacturer_url
-		} 
+		}
 
-		THINGS_LOG_D(TAG, 
+		THINGS_LOG_D(TAG,
 			"[n_count_of_children : %d] : [device_cnt : %d]",
 			n_count_of_children, (device->col_cnt + device->sig_cnt));
 
@@ -2177,7 +2431,7 @@ int dm_update_things_cloud(es_cloud_signup_s *cl_data)
 	if (update_things_cloud_json_by_cloud_signup(g_things_cloud_file_path, cl_data) == 0) {
 		THINGS_LOG_E(TAG, "Provisioning file update failed.");
 		return 0;
-	}	
+	}
 	return 1;
 }
 
@@ -2204,7 +2458,7 @@ bool dm_is_es_complete(void)
 {
 	bool ret = (esm_read_easysetup_state() == 1);
 	THINGS_LOG_D(TAG, "is_easysetup_complete = %d", ret);
-	
+
 	return ret;
 }
 
@@ -2419,7 +2673,7 @@ int dm_termiate_module()
 {
 	long key_cnt;
 	unsigned long *keyset;
-	
+
 	st_device_s *device = dm_get_info_of_dev(0);
 	delete_device(device);
 

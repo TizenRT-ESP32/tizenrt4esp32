@@ -16,6 +16,8 @@
  *
  ****************************************************************************/
 
+#ifdef __SECURED__
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <ifaddrs.h>
@@ -497,7 +499,7 @@ static int get_mac_addr(unsigned char *p_id_buf, size_t p_id_buf_size, unsigned 
 	wifi_manager_get_info(&st_wifi_info);
 
 	if (wifi_manager_get_info(&st_wifi_info) != WIFI_MANAGER_SUCCESS) {
-		
+
 		THINGS_LOG_E(TAG, "MAC Get Error\n");
 		return OIC_SEC_ERROR;
 	}
@@ -648,7 +650,7 @@ int sm_init_things_security(int auth_type, const char *db_path)
 	}
 
 	THINGS_LOG_V(TAG, "******* WARNING : SVR DB will be used without encryption *******");
-	
+
 	OCStackResult oc_res = OCRegisterPersistentStorageHandler(&ps);
 	if (OC_STACK_INCONSISTENT_DB == oc_res || OC_STACK_SVR_DB_NOT_EXIST == oc_res) {
 		//If failed to load SVR DB
@@ -868,9 +870,9 @@ static OCStackResult save_signed_asymmetric_key(OicUuid_t *subject_uuid)
 			*/
 #ifdef CONFIG_ST_THINGS_STG_MODE
 			res = CredSaveTrustCertChain(subject_uuid, g_regional_test_root_ca, sizeof(g_regional_test_root_ca), OIC_ENCODING_DER, MF_TRUST_CA, &cred_id);
-#else		
+#else
 			res = CredSaveTrustCertChain(subject_uuid, g_regional_root_ca, sizeof(g_regional_root_ca), OIC_ENCODING_DER, MF_TRUST_CA, &cred_id);
-#endif		
+#endif
 
 			if (OC_STACK_OK != res) {
 				THINGS_LOG_E(TAG, "SRPCredSaveOwnCertChain error");
@@ -1009,3 +1011,4 @@ void sm_set_otm_event_handler(OicSecOtmEventHandler_t otmEventHandler)
 
 	THINGS_LOG_D(TAG, "OUT : %s", __func__);
 }
+#endif

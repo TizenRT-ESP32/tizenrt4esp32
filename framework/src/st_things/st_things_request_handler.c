@@ -356,18 +356,18 @@ static bool get_supported_properties(const char *res_type, const char *res_uri, 
 		// 2. Get the properties for each resource type.
 		props = (things_attribute_info_s ***) things_calloc(type_count, sizeof(things_attribute_info_s **));
 		if (NULL == props) {
-			THINGS_LOG_E(THINGS_ERROR, TAG, "Failed to allocate memory for resource properties.");
+			THINGS_LOG_E(TAG, "Failed to allocate memory for resource properties.");
 			goto EXIT_WITH_ERROR;
 		}
 		prop_count = (int *)things_calloc(type_count, sizeof(int));
 		if (NULL == prop_count) {
-			THINGS_LOG_E(THINGS_ERROR, TAG, "Failed to allocate memory for resource properties.");
+			THINGS_LOG_E(TAG, "Failed to allocate memory for resource properties.");
 			goto EXIT_WITH_ERROR;
 		}
 
 		for (int index = 0; index < type_count; index++) {
 			if (!things_get_attributes_by_resource_type(res_types[index], &prop_count[index], &props[index])) {
-				THINGS_LOG_V(THINGS_ERROR, TAG, "Failed to get the properties of resource type (%s).", res_types[index]);
+				THINGS_LOG_V(TAG, "Failed to get the properties of resource type (%s).", res_types[index]);
 				goto EXIT_WITH_ERROR;
 			}
 			THINGS_LOG_D(TAG, "Number of properties of resource type(%s): %d.", res_types[index], prop_count[index]);
@@ -378,21 +378,21 @@ static bool get_supported_properties(const char *res_type, const char *res_uri, 
 
 		*properties = (things_attribute_info_s **) things_calloc(*count, sizeof(things_attribute_info_s *));
 		if (NULL == *properties) {
-			THINGS_LOG_E(THINGS_ERROR, TAG, "Failed to allocate memory for resource properties.");
+			THINGS_LOG_E(TAG, "Failed to allocate memory for resource properties.");
 			goto EXIT_WITH_ERROR;
 		}
 
 		int cur_index = 0;
 		for (int index = 0; index < type_count; index++) {
 			if (NULL == props[index]) {
-				THINGS_LOG_V(THINGS_ERROR, TAG, "Resource type(%s) doesn't have any properties.", res_types[index]);
+				THINGS_LOG_V(TAG, "Resource type(%s) doesn't have any properties.", res_types[index]);
 				goto EXIT_WITH_ERROR;
 			}
 
 			for (int sub_index = 0; sub_index < prop_count[index]; sub_index++) {
 				things_attribute_info_s *prop = *(props[index] + sub_index);
 				if (NULL == prop) {
-					THINGS_LOG_E(THINGS_ERROR, TAG, "NULL Property.");
+					THINGS_LOG_E(TAG, "NULL Property.");
 					goto EXIT_WITH_ERROR;
 				}
 				// If this prop is already added, then ignore it and decrement the total count by 1.
