@@ -61,6 +61,27 @@ SECTIONS
     _iram_text_end = ABSOLUTE(.);
   } > iram0_0_seg
 
+  .dram0.data :
+  {
+    /* .data initialized on power-up in ROMed configurations. */
+
+    _sdata = ABSOLUTE(.);
+    KEEP (*(.data))
+    KEEP (*(.data.*))
+    KEEP (*(.gnu.linkonce.d.*))
+    KEEP (*(.data1))
+    KEEP (*(.sdata))
+    KEEP (*(.sdata.*))
+    KEEP (*(.gnu.linkonce.s.*))
+    KEEP (*(.sdata2))
+    KEEP (*(.sdata2.*))
+    KEEP (*(.gnu.linkonce.s2.*))
+    KEEP (*(.jcr))
+    *(.dram1 .dram1.*)
+    _edata = ABSOLUTE(.);
+    . = ALIGN(4);
+  } >dram0_0_seg
+
   /* Shared RAM */
 
   .dram0.bss (NOLOAD) :
@@ -87,33 +108,11 @@ SECTIONS
     _ebss = ABSOLUTE(.);
 
     /* Uninitialized .bss */
-
     *(.noinit)
-  } >dram0_0_seg
-
-  .dram0.data :
-  {
-    /* .data initialized on power-up in ROMed configurations. */
-
-    _sdata = ABSOLUTE(.);
-    KEEP (*(.data))
-    KEEP (*(.data.*))
-    KEEP (*(.gnu.linkonce.d.*))
-    KEEP (*(.data1))
-    KEEP (*(.sdata))
-    KEEP (*(.sdata.*))
-    KEEP (*(.gnu.linkonce.s.*))
-    KEEP (*(.sdata2))
-    KEEP (*(.sdata2.*))
-    KEEP (*(.gnu.linkonce.s2.*))
-    KEEP (*(.jcr))
-    *(.dram1 .dram1.*)
-    _edata = ABSOLUTE(.);
-    . = ALIGN(4);
 
     /* Heap starts at the end of .data */
-
     _sheap = ABSOLUTE(.);
+
   } >dram0_0_seg
 
   .flash.rodata :

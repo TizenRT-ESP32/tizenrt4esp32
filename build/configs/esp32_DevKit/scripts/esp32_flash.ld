@@ -59,7 +59,7 @@ SECTIONS
     *libnet.a:panic.*(.literal .text .literal.* .text.*)
     *libmm.a:panic.*(.literal .text .literal.* .text.*)
     *libarch.a:panic.*(.literal .text .literal.* .text.*)
-    *libc.a:panic.*(.literal .text .literal.* .text.*) 
+    *libc.a:panic.*(.literal .text .literal.* .text.*)
     *libesp32.a:panic.*(.literal .text .literal.* .text.*)
     *libesp32.a:core_dump.*(.literal .text .literal.* .text.*)
     *librtc.a:(.literal .text .literal.* .text.*)
@@ -67,6 +67,31 @@ SECTIONS
     *libspiflash.a:spi_flash_rom_patch.*(.literal .text .literal.* .text.*)
     _iram_text_end = ABSOLUTE(.);
   } > iram0_0_seg
+
+  .dram0.data :
+  {
+    /* .data initialized on power-up in ROMed configurations. */
+
+    _sdata = ABSOLUTE(.);
+    KEEP (*(.data))
+    KEEP (*(.data.*))
+    KEEP (*(.gnu.linkonce.d.*))
+    KEEP (*(.data1))
+    KEEP (*(.sdata))
+    KEEP (*(.sdata.*))
+    KEEP (*(.gnu.linkonce.s.*))
+    KEEP (*(.sdata2))
+    KEEP (*(.sdata2.*))
+    KEEP (*(.gnu.linkonce.s2.*))
+    KEEP (*(.jcr))
+    *(.dram1 .dram1.*)
+    *libesp32.a:panic.*(.rodata .rodata.*)
+    *libphy.a:(.rodata .rodata.*)
+    *libsoc.a:rtc_clk.*(.rodata .rodata.*)
+    _edata = ABSOLUTE(.);
+    . = ALIGN(4);
+
+  } >dram0_0_seg
 
   /* Shared RAM */
 
@@ -94,36 +119,11 @@ SECTIONS
     _ebss = ABSOLUTE(.);
 
     /* Uninitialized .bss */
-
     *(.noinit)
-  } >dram0_0_seg
-
-  .dram0.data :
-  {
-    /* .data initialized on power-up in ROMed configurations. */
-
-    _sdata = ABSOLUTE(.);
-    KEEP (*(.data))
-    KEEP (*(.data.*))
-    KEEP (*(.gnu.linkonce.d.*))
-    KEEP (*(.data1))
-    KEEP (*(.sdata))
-    KEEP (*(.sdata.*))
-    KEEP (*(.gnu.linkonce.s.*))
-    KEEP (*(.sdata2))
-    KEEP (*(.sdata2.*))
-    KEEP (*(.gnu.linkonce.s2.*))
-    KEEP (*(.jcr))
-    *(.dram1 .dram1.*)
-    *libesp32.a:panic.*(.rodata .rodata.*)
-    *libphy.a:(.rodata .rodata.*)
-    *libsoc.a:rtc_clk.*(.rodata .rodata.*)  
-    _edata = ABSOLUTE(.);
-    . = ALIGN(4);
 
     /* Heap starts at the end of .data */
-
     _sheap = ABSOLUTE(.);
+
   } >dram0_0_seg
 
   .flash.rodata :
