@@ -534,6 +534,11 @@ pthread_addr_t esp32_demo_entry(pthread_addr_t arg)
 #endif
 
 #if 0
+	extern int ess_process(void);
+	ess_process();
+#endif
+
+#if 0
 #ifdef CONFIG_SPIRAM_SUPPORT
 	esp_spiram_test();
 #endif

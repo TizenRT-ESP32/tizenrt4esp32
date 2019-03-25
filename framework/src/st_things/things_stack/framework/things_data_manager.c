@@ -1048,6 +1048,7 @@ wifi_manager_softap_config_s *dm_get_softap_wifi_config(void)
 
 	snprintf(ap_config.ssid, sizeof(ap_config.ssid), "%s", g_easysetup_softap_ssid);
 	snprintf(ap_config.passphrase, sizeof(ap_config.passphrase), "%s", g_easysetup_softap_passphrase);
+	THINGS_LOG_V(TAG, "SoftAP passphrase : %s", ap_config.passphrase);
 	ap_config.channel = g_easysetup_softap_channel;
 
 	return &ap_config;

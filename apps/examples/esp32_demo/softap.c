@@ -28,6 +28,7 @@
 #include "esp_wifi_internal.h"
 
 #include <string.h>
+#include <unistd.h>
 
 /*======config for wifi softap mode=====*/
 #define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
@@ -56,7 +57,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
         break;
     default:
         break;
-    }   
+    }
     return ESP_OK;
 }
 
@@ -69,23 +70,23 @@ static void wifi_init_softap(void)
     if(ret) {
         ets_printf("esp_event_loop_init failed, %d\n", ret);
         return;
-    }   
-    
+    }
+
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ret = esp_wifi_init(&cfg);
     if(ret) {
         ets_printf("esp_wifi_init failed, %d\n", ret);
         return;
-    }   
-    wifi_config_t wifi_config = { 
-        .ap = { 
+    }
+    wifi_config_t wifi_config = {
+        .ap = {
             .ssid = EXAMPLE_ESP_WIFI_SSID,
             .ssid_len = strlen(EXAMPLE_ESP_WIFI_SSID),
             .password = EXAMPLE_ESP_WIFI_PASS,
             .max_connection = EXAMPLE_MAX_STA_CONN,
             .authmode = WIFI_AUTH_WPA_WPA2_PSK
-        },  
-    };  
+        },
+    };
     if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
     }
@@ -109,7 +110,12 @@ static void wifi_init_softap(void)
     ESP_LOGI(TAG, "wifi_init_softap finished.SSID:%s password:%s",
              EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
    //keep event hander
-    while(1); 
+    while(1) {
+		sleep(3);
+		extern int kdbg_heapinfo(int argc, char **args);
+		kdbg_heapinfo(0,NULL);
+		//usleep(100*1000);
+    }
 }
 
 void wifi_softap_entry()

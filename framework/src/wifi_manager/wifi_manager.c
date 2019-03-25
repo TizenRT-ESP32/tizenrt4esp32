@@ -124,7 +124,7 @@ struct _wifimgr_info {
 	pthread_mutex_t state_lock;
 	pthread_mutex_t info_lock;
 	pthread_mutex_t softap_lock;
-	pthread_cond_t softap_signal; 
+	pthread_cond_t softap_signal;
 	wifi_manager_cb_s cb;
 
 	//
@@ -775,7 +775,7 @@ wifi_manager_result_e _wifimgr_run_softap(wifi_manager_softap_config_s *config)
 	softap_config.passphrase[softap_config.passphrase_length] = '\0';
 
 	WIFIMGR_CHECK_UTILRESULT(wifi_utils_start_softap(&softap_config), "[WM] Starting softap mode failed.", WIFI_MANAGER_FAIL);
-	WIFIMGR_CHECK_RESULT(_start_dhcpd(), "[WM] Starting DHCP server failed.\n", WIFI_MANAGER_FAIL);
+	//WIFIMGR_CHECK_RESULT(_start_dhcpd(), "[WM] Starting DHCP server failed.\n", WIFI_MANAGER_FAIL);
 
 	/* update wifi_manager_info */
 	WIFIMGR_SET_SSID(config->ssid);
@@ -794,7 +794,7 @@ wifi_manager_result_e _wifimgr_stop_softap(void)
 {
 	WM_LOG_START;
 	WIFIMGR_CHECK_UTILRESULT(wifi_utils_stop_softap(), "[WM] Stoping softap failed", WIFI_MANAGER_FAIL);
-	WIFIMGR_CHECK_RESULT(_stop_dhcpd(), "[WM] Stoping softap DHCP server failed.", WIFI_MANAGER_FAIL);
+	//WIFIMGR_CHECK_RESULT(_stop_dhcpd(), "[WM] Stoping softap DHCP server failed.", WIFI_MANAGER_FAIL);
 	return WIFI_MANAGER_SUCCESS;
 }
 

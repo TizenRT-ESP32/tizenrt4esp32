@@ -21,16 +21,17 @@
 #include <stdio.h>
 #include "st_things_sample.h"
 
-//#define SETUP_WIFI
+#define TEST_WIFI
 
-#ifdef SETUP_WIFI
-
+#ifdef TEST_WIFI
 #include "esp_wifi.h"
 #include "esp_log.h"
 #include "esp_event_loop.h"
 #include "nvs_flash.h"
 #include "esp_wifi_internal.h"
+
 #include <string.h>
+#include <unistd.h>
 
 /*======config for wifi softap mode=====*/
 #define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
@@ -38,20 +39,22 @@
 #define EXAMPLE_MAX_STA_CONN       CONFIG_MAX_STA_CONN
 
 
-#define CONFIG_ESP_WIFI_SSID "SRCN-2.4G"
-#define CONFIG_ESP_WIFI_PASSWORD "wc6rn9v3"
+#define CONFIG_ESP_WIFI_SSID "ESP32"
+#define CONFIG_ESP_WIFI_PASSWORD "12345678"
 #define CONFIG_MAX_STA_CONN 4
+
+static const char *TAG = "AP";
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
  switch(event->event_id) {
     case SYSTEM_EVENT_AP_STACONNECTED:
-        ESP_LOGI("AP", "station:"MACSTR" join, AID=%d",
+        ESP_LOGI(TAG, "station:"MACSTR" join, AID=%d",
                  MAC2STR(event->event_info.sta_connected.mac),
                  event->event_info.sta_connected.aid);
         break;
     case SYSTEM_EVENT_AP_STADISCONNECTED:
-        ESP_LOGI("AP", "station:"MACSTR"leave, AID=%d",
+        ESP_LOGI(TAG, "station:"MACSTR"leave, AID=%d",
                  MAC2STR(event->event_info.sta_disconnected.mac),
                  event->event_info.sta_disconnected.aid);
         break;
@@ -84,7 +87,7 @@ static void wifi_init_softap(void)
             .ssid_len = strlen(EXAMPLE_ESP_WIFI_SSID),
             .password = EXAMPLE_ESP_WIFI_PASS,
             .max_connection = EXAMPLE_MAX_STA_CONN,
-            .authmode = WIFI_AUTH_WPA2_PSK
+            .authmode = WIFI_AUTH_WPA_WPA2_PSK
         },
     };
     if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
@@ -107,16 +110,13 @@ static void wifi_init_softap(void)
         return;
     }
 
-    ESP_LOGI("AP", "wifi_init_softap finished.SSID:%s password:%s",
+    ESP_LOGI(TAG, "wifi_init_softap finished.SSID:%s password:%s",
              EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
    //keep event hander
-    //while(1);
+    while(1) usleep(100*1000);
 }
+
 #endif
-
-
-
-
 
 
 #ifdef CONFIG_BUILD_KERNEL
@@ -125,13 +125,11 @@ int main(int argc, FAR char *argv[])
 int st_things_sample_main(int argc, char *argv[])
 #endif
 {
-	printf("st_things_sample!!\n");
-
-#ifdef SETUP_WIFI
+#ifdef TEST_WIFI
 	wifi_init_softap();
 #endif
 
-	printf("ess_process!!\n");
+	printf("st_things_sample!!\n");
 
 	ess_process();
 
